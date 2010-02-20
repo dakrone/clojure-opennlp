@@ -1,5 +1,5 @@
 ; Clojure opennlp tools
-(ns opennlp
+(ns opennlp.nlp
   (:import [java.io File FileNotFoundException])
   (:import [opennlp.maxent DataStream GISModel])
   (:import [opennlp.maxent.io SuffixSensitiveGISModelReader])
