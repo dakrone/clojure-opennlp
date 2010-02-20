@@ -1,4 +1,4 @@
-(use 'opennlp) ; http://github.com/dakrone/clojure-opennlp
+(use 'opennlp.nlp) ; http://github.com/dakrone/clojure-opennlp
 (use 'clojure.contrib.pprint)
 (use 'clojure.contrib.duck-streams)
 (use 'clojure.contrib.seq-utils)
