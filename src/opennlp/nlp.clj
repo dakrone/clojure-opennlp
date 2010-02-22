@@ -1,11 +1,15 @@
 ; Clojure opennlp tools
 (ns opennlp.nlp
+  (:use [clojure.contrib.pprint])
+  (:use [clojure.contrib.seq-utils])
   (:import [java.io File FileNotFoundException])
   (:import [opennlp.maxent DataStream GISModel])
-  (:import [opennlp.maxent.io SuffixSensitiveGISModelReader])
+  (:import [opennlp.maxent.io PooledGISModelReader SuffixSensitiveGISModelReader])
+  (:import [opennlp.tools.util Span])
   (:import [opennlp.tools.dictionary Dictionary])
   (:import [opennlp.tools.tokenize TokenizerME])
   (:import [opennlp.tools.sentdetect SentenceDetectorME])
+  (:import [opennlp.tools.namefind NameFinderME])
   (:import [opennlp.tools.postag POSTaggerME DefaultPOSContextGenerator POSContextGenerator]))
 
 ; OpenNLP property for pos-tagging
@@ -56,6 +60,21 @@
         (map #(vector %1 %2) tokens (first tags))))))
 
 
+(defn make-name-finder
+  "Return a function for finding names from tokens based on given model file(s)."
+  [& modelfiles]
+  (fn
+    [tokens]
+    (distinct
+      (flatten
+        (for [modelfile modelfiles]
+          (let [model   (.getModel (PooledGISModelReader. (File. modelfile)))
+                finder  (NameFinderME. model)
+                matches (.find finder tokens)]
+            (map #(nth tokens (.getStart %)) matches)))))))
+
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -68,24 +87,25 @@
 (def get-sentences (make-sentence-detector "models/EnglishSD.bin.gz"))
 (def tokenize (make-tokenizer "models/EnglishTok.bin.gz"))
 (def pos-tag (make-pos-tagger "models/tag.bin.gz"))
+(def name-find (make-name-finder "models/namefind/person.bin.gz" "models/namefind/organization.bin.gz"))
 
 (pprint (get-sentences "First sentence. Second sentence? Here is another one. And so on and so forth - you get the idea..."))
 
-;opennlp=> (pprint (get-sentences "First sentence. Second sentence? Here is another one. And so on and so forth - you get the idea..."))
+;opennlp.nlp=> (pprint (get-sentences "First sentence. Second sentence? Here is another one. And so on and so forth - you get the idea..."))
 ;["First sentence. ", "Second sentence? ", "Here is another one. ",
 ; "And so on and so forth - you get the idea..."]
 ;nil
 
 (pprint (tokenize "Mr. Smith gave a car to his son on Friday"))
 
-;opennlp=> (pprint (tokenize "Mr. Smith gave a car to his son on Friday"))
+;opennlp.nlp=> (pprint (tokenize "Mr. Smith gave a car to his son on Friday"))
 ;["Mr.", "Smith", "gave", "a", "car", "to", "his", "son", "on",
 ; "Friday"]
 ;nil
 
 (pprint (pos-tag (tokenize "Mr. Smith gave a car to his son on Friday.")))
 
-;opennlp=> (pprint (pos-tag (tokenize "Mr. Smith gave a car to his son on Friday.")))
+;opennlp.nlp=> (pprint (pos-tag (tokenize "Mr. Smith gave a car to his son on Friday.")))
 ;(["Mr." "NNP"]
 ; ["Smith" "NNP"]
 ; ["gave" "VBD"]
@@ -98,5 +118,11 @@
 ; ["Friday." "NNP"])
 ;nil
  
+(name-find (tokenize "My name is Lee, not John."))
+
+;opennlp.nlp=> (name-find (tokenize "My name is Lee Hinman, not John Locke."))
+;("Lee" "John")
+
+
 )
 

@@ -6,7 +6,7 @@ A library to interface with the OpenNLP (Open Natural Language Processing) libra
 Basic Example usage (from a REPL):
 ----------------------------------
 
-    (use 'clojure.contrib.pprint)
+    (use 'clojure.contrib.pprint) ; just for this documentation
     (use 'opennlp.nlp)
 
 You will need to make the processing functions using the model files. These assume you're running
@@ -16,7 +16,13 @@ at http://opennlp.sourceforge.net/models/
     user=> (def get-sentences (make-sentence-detector "models/EnglishSD.bin.gz"))
     user=> (def tokenize (make-tokenizer "models/EnglishTok.bin.gz"))
     user=> (def pos-tag (make-pos-tagger "models/tag.bin.gz"))
+
+For name-finders in particular, it's possible to have multiple model files:
+
+    user=> (def name-find (make-name-finder "models/namefind/person.bin.gz" "models/namefind/organization.bin.gz"))
     
+Then, use the functions you've created to perform operations on text:
+
     user=> (pprint (get-sentences "First sentence. Second sentence? Here is another one. And so on and so forth - you get the idea..."))
     ["First sentence. ", "Second sentence? ", "Here is another one. ",
      "And so on and so forth - you get the idea..."]
@@ -39,6 +45,9 @@ at http://opennlp.sourceforge.net/models/
      ["on" "IN"]
      ["Friday." "NNP"])
     nil
+
+    user=> (name-find (tokenize "My name is Lee, not John."))
+    ("Lee" "John")
 
 Filtering pos-tagged sequences
 ------------------------------
