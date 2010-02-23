@@ -1,6 +1,5 @@
 ; Clojure opennlp tools
 (ns opennlp.nlp
-  (:use [clojure.contrib.pprint])
   (:use [clojure.contrib.seq-utils])
   (:import [java.io File FileNotFoundException])
   (:import [opennlp.maxent DataStream GISModel])
@@ -63,15 +62,17 @@
 (defn make-name-finder
   "Return a function for finding names from tokens based on given model file(s)."
   [& modelfiles]
-  (fn
-    [tokens]
-    (distinct
-      (flatten
-        (for [modelfile modelfiles]
-          (let [model   (.getModel (PooledGISModelReader. (File. modelfile)))
-                finder  (NameFinderME. model)
-                matches (.find finder tokens)]
-            (map #(nth tokens (.getStart %)) matches)))))))
+  (if (not (reduce 'and (map file-exist? modelfiles)))
+    (throw (FileNotFoundException. "Not all model files exist."))
+    (fn
+      [tokens]
+      (distinct
+        (flatten
+          (for [modelfile modelfiles]
+            (let [model   (.getModel (PooledGISModelReader. (File. modelfile)))
+                  finder  (NameFinderME. model)
+                  matches (.find finder tokens)]
+              (map #(nth tokens (.getStart %)) matches))))))))
 
 
 
@@ -120,7 +121,7 @@
  
 (name-find (tokenize "My name is Lee, not John."))
 
-;opennlp.nlp=> (name-find (tokenize "My name is Lee Hinman, not John Locke."))
+;opennlp.nlp=> (name-find (tokenize "My name is Lee, not John."))
 ;("Lee" "John")
 
 
