@@ -52,27 +52,35 @@
 
 
 (defn contains-token?
+  "Given a sentence, does the given term exist in that sentence?"
   [sentence term]
   (let [tokens (tokenize sentence)]
     (boolean (some #{term} tokens))))
 
 
 (defn get-matching-sentences
+  "Given a sequence of sentences, return the sentences containing
+  the term."
   [sentences term]
   (filter #(contains-token? % term) sentences))
 
 
 (defn get-tagged-sentences
+  "Return a sequence of POS-tagged sentences."
   [sentences]
   (map #(pos-tag (tokenize %)) sentences))
 
 
 (defn get-weighted-sentences
+  "Given POS-tagged sentences and a term, return a sequence of
+  sentences that have been weighted."
   [tagged-sentences term]
   (map #(score-words term (map first (nouns-and-verbs %))) tagged-sentences))
 
 
 (defn get-new-terms
+  "Given a sequence of weighted sentences, return a map of new terms
+  to be used for searching."
   [weighted-sentences]
   (into {}
         (reduce conj
@@ -81,6 +89,7 @@
                              weighted-sentences)))))
 
 (defn get-ranked-sentences
+  "Incomplete."
   [text term]
   (let [sentences (get-sentences text)
         matched-sentences (get-matching-sentences sentences term)
