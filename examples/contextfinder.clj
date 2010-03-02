@@ -74,11 +74,11 @@
 
 (defn get-new-terms
   [weighted-sentences]
-  (distinct (map first
-                 (reduce conj
-                         (reduce conj
-                                 (map #(filter (fn [pair] (not= 0 (second pair))) %)
-                                      weighted-sentences))))))
+  (into {}
+        (reduce conj
+                (reduce conj
+                        (map #(filter (fn [pair] (not= 0 (second pair))) %)
+                             weighted-sentences)))))
 
 (defn get-ranked-sentences
   [text term]
@@ -87,7 +87,7 @@
         tagged-sentences (get-tagged-sentences matched-sentences)
         weighted-sentences (get-weighted-sentences tagged-sentences term)
         new-terms (get-new-terms weighted-sentences)]
-    (pprint weighted-sentences)
+    ;(pprint weighted-sentences)
     (pprint new-terms)))
 
 
