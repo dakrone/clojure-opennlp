@@ -14,6 +14,7 @@
 
 ; It's easy to define your own filters!
 (pos-filter nouns #"^NN")
+(pos-filter nouns-and-verbs #"^(NN|VB)")
 (pos-filter proper-nouns #"^NNP")
 (pos-filter verbs #"^VB")
 
@@ -63,6 +64,9 @@
      (if (= 0 (count iterms))
        (map #(vector % 0) words)
        (map #(vector (second %) (score-word % iterms base)) iwords)))))
+
+
+;(into {} (filter #(not= 0 (second %)) (score-words "truck" ["bobby" "fire" "truck" "city" "truck" "state" "colorado"])))
 
 ;opennlp.tools.filters=> words
 ;["bobby" "fire" "truck" "city" "department" "state" "colorado"]
