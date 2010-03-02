@@ -9,7 +9,7 @@
   <scm>
     <connection>scm:git:git://github.com/dakrone/clojure-opennlp.git</connection>
     <developerConnection>scm:git:ssh://git@github.com/dakrone/clojure-opennlp.git</developerConnection>
-    <tag>19aade9473ef260a72f6684e589c926c507ae401</tag>
+    <tag>ec1ef823e4a477168e1a63ab7e22c1f648b5018b</tag>
     <url>http://github.com/dakrone/clojure-opennlp</url>
   </scm>
   <repositories>
