@@ -5,11 +5,11 @@
   <artifactId>opennlp</artifactId>
   <version>0.0.1</version>
   <name>opennlp</name>
-  <description>Natural Language Processing with Clojure, library for opennlp</description>
+  <description>Natural Language Processing with Clojure, library for opennlp. http://github.com/dakrone/clojure-opennlp</description>
   <scm>
     <connection>scm:git:git://github.com/dakrone/clojure-opennlp.git</connection>
     <developerConnection>scm:git:ssh://git@github.com/dakrone/clojure-opennlp.git</developerConnection>
-    <tag>ec1ef823e4a477168e1a63ab7e22c1f648b5018b</tag>
+    <tag>218f0be604d37d055988f6233fae3fa939f6a25d</tag>
     <url>http://github.com/dakrone/clojure-opennlp</url>
   </scm>
   <repositories>
