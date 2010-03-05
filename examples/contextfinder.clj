@@ -111,8 +111,27 @@
     (reduce + (map #(get score-words % 0) tokens))))
 
 
+(defn score-sentences
+  "Given a text and a map of words/scores. Return a list of sentences
+  and their scores."
+  [text score-words]
+  (let [sentences (get-sentences text)]
+    (for [s sentences]
+      [s (score-sentence s score-words)])))
+
+
+(defn score-text
+  "Score a block of text, given a map of score-words."
+  [text score-words]
+  (let [sentences (get-sentences text)]
+    (reduce + (map #(score-sentence % score-words) sentences))))
 
 (def mytext "The Obama administration is considering requiring all automobiles to contain a brake override system intended to prevent sudden acceleration episodes like those that have led to the recall of millions of Toyotas, the Transportation secretary, Ray LaHood, said Tuesday. The override system is meant to deactivate the accelerator when the brake pedal is pressed. That will let the driver stop safely even if the car’s throttle sticks open. Often called a \"smart pedal,\" the feature is already found on many automobiles sold worldwide, including models from BMW, Chrysler, Mercedes-Benz, Nissan and Volkswagen.")
 
-(get-scored-terms mytext "brake")
+(def sw (get-scored-terms mytext "brake"))
+
+; Ranked sentences
+(reverse (sort-by second (score-sentences mytext sw)))
+
+(score-text mytext sw)
 
