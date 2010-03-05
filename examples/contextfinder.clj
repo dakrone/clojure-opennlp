@@ -107,8 +107,7 @@
   "Given a sentence and a map of words & their scores, return the score
   of the sentence."
   [sentence score-words]
-  (let [tokens (tokenize sentence)
-        score  (ref 0)]
+  (let [tokens (tokenize sentence)]
     (reduce + (map #(get score-words % 0) tokens))))
 
 
