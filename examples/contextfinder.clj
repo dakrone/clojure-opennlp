@@ -43,14 +43,11 @@
        (map #(vector % 0) words)
        (map #(vector (second %) (score-word % iterms base)) iwords)))))
 
-;(into {} (filter #(not= 0 (second %)) (score-words "truck" ["bobby" "fire" "truck" "city" "truck" "state" "colorado"])))
 
-;opennlp.tools.filters=> words
-;["bobby" "fire" "truck" "city" "department" "state" "colorado"]
-;opennlp.tools.filters=> (score-words "truck" words)
-;(["bobby" 1/3] ["fire" 1/2] ["truck" 1] ["city" 1/2] ["department" 1/3] ["state" 0] ["colorado" 0])
-;opennlp.tools.filters=> (score-words "truck" words 10)
-;(["bobby" 10/3] ["fire" 5] ["truck" 10] ["city" 5] ["department" 10/3] ["state" 0] ["colorado" 0])
+(defn nv-filter
+  "Filter tagged sentences by noun, verb and >= 3 characters."
+  [tagged-sentence]
+  (filter #(>= (count (first %)) 3) (nouns-and-verbs tagged-sentence)))
 
 
 (defn contains-token?
@@ -77,7 +74,7 @@
   "Given POS-tagged sentences and a term, return a sequence of
   sentences that have been weighted."
   [tagged-sentences term]
-  (map #(score-words term (map first (nouns-and-verbs %))) tagged-sentences))
+  (map #(score-words term (map first (nv-filter %))) tagged-sentences))
 
 
 (defn get-new-terms
@@ -133,5 +130,6 @@
 ; Ranked sentences
 (reverse (sort-by second (score-sentences mytext sw)))
 
+; Score the whole text
 (score-text mytext sw)
 
