@@ -9,10 +9,11 @@
   (:use [clojure.contrib.math]))
 
 
+; Requires you to run this from the root opennlp directory or have the
+; models downloaded into a "models" folder
 (def get-sentences (make-sentence-detector "models/EnglishSD.bin.gz"))
 (def tokenize (make-tokenizer "models/EnglishTok.bin.gz"))
 (def pos-tag (make-pos-tagger "models/tag.bin.gz"))
-(def name-find (make-name-finder "models/namefind/person.bin.gz" "models/namefind/organization.bin.gz"))
 
 
 (defn- mindist
@@ -127,7 +128,7 @@
 
 (def sw (get-scored-terms mytext "brake"))
 
-; Ranked sentences
+; Get a list of ranked sentences
 (reverse (sort-by second (score-sentences mytext sw)))
 
 ; Score the whole text
