@@ -108,6 +108,13 @@
     (cons (take v s) (split-at* vs (drop v s)))))
 
 
+(defn- de-interleave
+  "De-interleave a sequence, returning a vector of the two resulting
+  sequences."
+  [s]
+  [(map first s) (map last s)])
+
+
 (defn make-treebank-chunker
   "Return a function for chunking phrases from pos-tagged tokens based on
   a given model file."
@@ -116,15 +123,13 @@
     (throw (FileNotFoundException. "Model file does not exist."))
     (fn treebank-chunker
       [pos-tagged-tokens]
-      (let [model        (.getModel (SuffixSensitiveGISModelReader. (File. modelfile)))
-            chunker      (ChunkerME. model)
-            tokens       (map first pos-tagged-tokens)
-            tags         (map second pos-tagged-tokens)
-            chunks       (into [] (seq (.chunk chunker tokens tags)))
-            sized-chunks (map size-chunk (split-chunks chunks))
-            types        (map first sized-chunks)
-            sizes        (map last sized-chunks)
-            token-chunks (split-with-size sizes tokens)]
+      (let [model         (.getModel (SuffixSensitiveGISModelReader. (File. modelfile)))
+            chunker       (ChunkerME. model)
+            [tokens tags] (de-interleave pos-tagged-tokens)
+            chunks        (into [] (seq (.chunk chunker tokens tags)))
+            sized-chunks  (map size-chunk (split-chunks chunks))
+            [types sizes] (de-interleave sized-chunks)
+            token-chunks  (split-with-size sizes tokens)]
         (partition 2 (interleave types token-chunks))))))
 
 
