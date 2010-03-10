@@ -105,7 +105,7 @@
   [[v & vs] s]
   (if-not v
     (list s)
-    (cons (take v s) (split-at* vs (drop v s)))))
+    (cons (take v s) (split-with-size vs (drop v s)))))
 
 
 (defn- de-interleave
