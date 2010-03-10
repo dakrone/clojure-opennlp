@@ -115,6 +115,8 @@
   [(map first s) (map last s)])
 
 
+(defstruct treebank-phrase :phrase :tag)
+
 (defn make-treebank-chunker
   "Return a function for chunking phrases from pos-tagged tokens based on
   a given model file."
@@ -130,7 +132,8 @@
             sized-chunks  (map size-chunk (split-chunks chunks))
             [types sizes] (de-interleave sized-chunks)
             token-chunks  (split-with-size sizes tokens)]
-        (partition 2 (interleave types token-chunks))))))
+        (map #(struct treebank-phrase (last %) (first %))
+             (partition 2 (interleave types token-chunks)))))))
 
 
 ; Docs for treebank chunking:

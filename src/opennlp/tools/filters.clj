@@ -17,7 +17,7 @@
     `(defn ~n
        ~docstring
        [elements#]
-       (filter (fn [t#] (re-find ~r (first t#))) elements#))))
+       (filter (fn [t#] (re-find ~r (:tag t#))) elements#))))
 
 
 ; It's easy to define your own filters!
