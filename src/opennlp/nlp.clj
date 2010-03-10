@@ -30,7 +30,7 @@
       (let [model     (.getModel (SuffixSensitiveGISModelReader. (File. modelfile)))
             detector  (SentenceDetectorME. model)
             sentences (.sentDetect detector text)]
-        sentences))))
+        (into [] sentences)))))
 
 
 (defn make-tokenizer
