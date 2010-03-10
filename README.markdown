@@ -3,6 +3,11 @@ Clojure library interface to OpenNLP - http://opennlp.sf.net
 
 A library to interface with the OpenNLP (Open Natural Language Processing) library of functions. Not all functions are implemented yet.
 
+Additional information/documentation:
+
+- [Natural Language Processing in Clojure with clojure-opennlp](http://writequit.org/blog/?p=365)
+- [Context searching using Clojure-OpenNLP](http://writequit.org/blog/?p=351)
+
 Basic Example usage (from a REPL):
 ----------------------------------
 
@@ -79,4 +84,11 @@ Creating your own filters:
     user=> (pprint (determiners (pos-tag (tokenize "Mr. Smith gave a car to his son on Friday."))))
     (["a" "DT"])
     nil
-    
+
+TODO
+----
+- Treebank chunker (in progress)
+- Treebank parser
+- Model training/trainer
+- Revisit datastructure format for tagged sentences
+- Document *beam-size* functionality
