@@ -71,9 +71,10 @@
       (distinct
         (flatten
           (for [modelfile modelfiles]
-            (let [model   (.getModel (PooledGISModelReader. (File. modelfile)))
+            (let [token-array (if (vector? tokens) (into-array tokens) tokens)
+                  model   (.getModel (PooledGISModelReader. (File. modelfile)))
                   finder  (NameFinderME. model)
-                  matches (.find finder tokens)]
+                  matches (.find finder token-array)]
               (map #(nth tokens (.getStart %)) matches))))))))
 
 

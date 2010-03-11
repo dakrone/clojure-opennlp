@@ -92,4 +92,4 @@ TODO
 - Model training/trainer
 - Revisit datastructure format for tagged sentences
 - Document *beam-size* functionality
-- Build a full test suite
+- Build a full test suite (in progress)
