@@ -43,7 +43,7 @@
       (let [model     (.getModel (SuffixSensitiveGISModelReader. (File. modelfile)))
             tokenizer (TokenizerME. model)
             tokens    (.tokenize tokenizer sentence)]
-        tokens))))
+        (into [] tokens)))))
 
 
 (defn make-pos-tagger
@@ -53,10 +53,11 @@
     (throw (FileNotFoundException. "Model file does not exist."))
     (fn pos-tagger
       [tokens]
-      (let [#^POSContextGenerator cg (DefaultPOSContextGenerator. nil)
+      (let [token-array (if (vector? tokens) (into-array tokens) tokens)
+            #^POSContextGenerator cg (DefaultPOSContextGenerator. nil)
             model  (.getModel (SuffixSensitiveGISModelReader. (File. modelfile)))
             tagger (POSTaggerME. *beam-size* model cg nil)
-            tags   (.tag tagger 1 tokens)]
+            tags   (.tag tagger 1 token-array)]
         (map #(vector %1 %2) tokens (first tags))))))
 
 
