@@ -93,9 +93,7 @@
 (defn- size-chunk
   "Given a chunk ('B-NP' 'I-NP' 'I-NP' ...), return a vector of the
   chunk type and item count.
-
-  So, for ['B-NP' 'I-NP' 'I-NP' 'B-VP' 'B-VP' 'I-VP'] it would return:
-  ['B-NP' 3] ['B-VP' 1] ['B-VP' 2]."
+  So, for ('B-NP' 'I-NP' 'I-NP') it would return ['B-NP' 3]."
   [tb-chunk]
   (let [chunk-type  (second (re-find #"B-(.*)" (first tb-chunk)))
         chunk-count (count tb-chunk)]
