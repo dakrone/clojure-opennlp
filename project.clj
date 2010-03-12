@@ -1,4 +1,4 @@
-(defproject org.clojars.thnetos/opennlp "0.0.2"
+(defproject org.clojars.thnetos/opennlp "0.0.3"
   :description "Natural Language Processing with Clojure, library for opennlp. http://github.com/dakrone/clojure-opennlp"
   :dependencies [[org.clojure/clojure "1.1.0"]
                  [org.clojure/clojure-contrib "1.0-SNAPSHOT"]

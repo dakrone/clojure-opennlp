@@ -86,6 +86,17 @@ Filtering pos-tagged sequences
     (["gave" "VBD"])
     nil
 
+Filtering treebank-chunks
+-------------------------
+
+    (use 'opennlp.tools.filters)
+
+    opennlp.nlp=> (pprint (noun-phrases (chunker (pos-tag (tokenize "The override system is meant to deactivate the accelerator when the brake pedal is pressed")))))
+    ({:phrase ["The" "override" "system"], :tag "NP"}
+     {:phrase ["the" "accelerator"], :tag "NP"}
+     {:phrase ["the" "brake" "pedal"], :tag "NP"})
+    nil
+
 Creating your own filters:
 --------------------------
 
@@ -99,6 +110,16 @@ Creating your own filters:
     nil
     user=> (pprint (determiners (pos-tag (tokenize "Mr. Smith gave a car to his son on Friday."))))
     (["a" "DT"])
+    nil
+
+You can also create treebank-chunk filters using (chunk-filter ...)
+
+    user=> (chunk-filter fragments #"^FRAG$")
+    opennlp.nlp=> (doc fragments)
+    -------------------------
+    opennlp.nlp/fragments
+    ([elements__178__auto__])
+      Given a list of treebank-chunked elements, return only the fragments in a list.
     nil
 
 Known Issues
