@@ -45,3 +45,4 @@
          (is (thrown? FileNotFoundException (make-pos-tagger "nonexistantfile")))
          (is (thrown? FileNotFoundException (make-name-finder "nonexistantfile" "anotherfilethatdoesnotexist")))
          (is (thrown? FileNotFoundException (make-treebank-chunker "nonexistantfile"))))
+

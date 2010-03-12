@@ -1,7 +1,8 @@
 Clojure library interface to OpenNLP - http://opennlp.sf.net
 ============================================================
 
-A library to interface with the OpenNLP (Open Natural Language Processing) library of functions. Not all functions are implemented yet.
+A library to interface with the OpenNLP (Open Natural Language Processing)
+library of functions. Not all functions are implemented yet.
 
 Additional information/documentation:
 
@@ -14,13 +15,14 @@ Basic Example usage (from a REPL):
     (use 'clojure.contrib.pprint) ; just for this documentation
     (use 'opennlp.nlp)
 
-You will need to make the processing functions using the model files. These assume you're running
-from the root project directory. You can also download the model files from the opennlp project
-at http://opennlp.sourceforge.net/models/
+You will need to make the processing functions using the model files. These
+assume you're running from the root project directory. You can also download
+the model files from the opennlp project at [http://opennlp.sourceforge.net/models/](http://opennlp.sourceforge.net/models/)
 
     user=> (def get-sentences (make-sentence-detector "models/EnglishSD.bin.gz"))
     user=> (def tokenize (make-tokenizer "models/EnglishTok.bin.gz"))
     user=> (def pos-tag (make-pos-tagger "models/tag.bin.gz"))
+    user=> (def chunker (make-treebank-chunker "models/EnglishChunk.bin.gz"))
 
 For name-finders in particular, it's possible to have multiple model files:
 
@@ -54,6 +56,20 @@ Then, use the functions you've created to perform operations on text:
     user=> (name-find (tokenize "My name is Lee, not John."))
     ("Lee" "John")
 
+Treebank-chunking splits and tags phrases from a pos-tagged sentence.
+A notable difference is that it returns a list of structs with the
+:phrase and :tag keys, as seen below:
+
+    user=> (pprint (chunker (pos-tag (tokenize "The override system is meant to deactivate the accelerator when the brake pedal is pressed."))))
+    ({:phrase ["The" "override" "system"], :tag "NP"}
+     {:phrase ["is" "meant" "to" "deactivate"], :tag "VP"}
+     {:phrase ["the" "accelerator"], :tag "NP"}
+     {:phrase ["when"], :tag "ADVP"}
+     {:phrase ["the" "brake" "pedal"], :tag "NP"}
+     {:phrase ["is" "pressed"], :tag "VP"})
+    nil
+
+
 Filtering pos-tagged sequences
 ------------------------------
 
@@ -85,9 +101,13 @@ Creating your own filters:
     (["a" "DT"])
     nil
 
+Known Issues
+------------
+- When using the treebank-chunker on a sentence, please ensure you have a period at the end of the sentence, if you do not have a period, the chunker gets confused and drops the last word.
+
 TODO
 ----
-- Treebank chunker (in progress)
+- <del>Treebank chunker</del> (done!)
 - Treebank parser
 - Model training/trainer
 - Revisit datastructure format for tagged sentences
