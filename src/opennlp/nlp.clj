@@ -134,7 +134,7 @@
             sized-chunks  (map size-chunk (split-chunks chunks))
             [types sizes] (de-interleave sized-chunks)
             token-chunks  (split-with-size sizes tokens)]
-        (map #(struct treebank-phrase (last %) (first %))
+        (map #(struct treebank-phrase (into [] (last %)) (first %))
              (partition 2 (interleave types token-chunks)))))))
 
 
