@@ -1,6 +1,6 @@
 ; Clojure opennlp tools
 (ns opennlp.nlp
-  (:use [clojure.contrib.seq-utils])
+  (:use [clojure.contrib.seq-utils :only [partition-by flatten]])
   (:import [java.io File FileNotFoundException])
   (:import [opennlp.maxent DataStream GISModel])
   (:import [opennlp.maxent.io PooledGISModelReader SuffixSensitiveGISModelReader])
