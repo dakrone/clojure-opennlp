@@ -4,9 +4,9 @@
 (ns contextfinder
   (:use [opennlp.nlp])
   (:use [opennlp.tools.filters])
-  (:use [clojure.contrib.seq-utils])
+  (:use [clojure.contrib.seq-utils :only [flatten indexed partition-by]])
   (:use [clojure.contrib.pprint])
-  (:use [clojure.contrib.math]))
+  (:use [clojure.contrib.math :only [abs]]))
 
 
 ; Requires you to run this from the root opennlp directory or have the
