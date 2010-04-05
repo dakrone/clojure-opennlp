@@ -200,8 +200,8 @@
   ; TODO: Check model file existance
   (fn treebank-parser
     [something] ; FIXME
-    (let [builder (.getModel (SuffixSensitiveGISModelReader. (File. buildmodel)))
-          checker (.getModel (SuffixSensitiveGISModelReader. (File. checkmodel)))
+    (let [builder (-> (File. buildmodel) SuffixSensitiveGISModelReader. .getModel)
+          checker (-> (File. checkmodel) SuffixSensitiveGISModelReader. .getModel)
           parsetagger (ParserTagger. tagmodel nil)
           parsechunker (ParserChunker. chunkmodel)
           headrules (HeadRules. headrules)
