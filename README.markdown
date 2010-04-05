@@ -129,7 +129,7 @@ Known Issues
 TODO
 ----
 - <del>Treebank chunker</del> (done!)
-- Treebank parser
+- Treebank parser (in progress)
 - Model training/trainer
 - Revisit datastructure format for tagged sentences
 - Document *beam-size* functionality

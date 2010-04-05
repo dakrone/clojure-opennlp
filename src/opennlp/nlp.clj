@@ -10,6 +10,9 @@
   (:import [opennlp.tools.sentdetect SentenceDetectorME])
   (:import [opennlp.tools.namefind NameFinderME])
   (:import [opennlp.tools.chunker ChunkerME])
+  (:import [opennlp.tools.lang.english ParserTagger ParserChunker HeadRules])
+  (:import [opennlp.tools.parser.chunking Parser])
+  (:import [opennlp.tools.parser AbstractBottomUpParser Parse])
   (:import [opennlp.tools.postag POSTaggerME DefaultPOSContextGenerator POSContextGenerator]))
 
 ; OpenNLP property for pos-tagging
@@ -153,7 +156,68 @@
 
 ; So, B-* starts a sequence, I-* continues it. New phrase starts when B-* is encountered
 
+    ;if (useTagDictionary) {
+      ;return new opennlp.tools.parser.chunking.Parser(
+        ;new SuffixSensitiveGISModelReader(new File(dataDir + "/build.bin.gz")).getModel(),
+        ;new SuffixSensitiveGISModelReader(new File(dataDir + "/check.bin.gz")).getModel(),
+        ;new ParserTagger(dataDir + "/tag.bin.gz", dataDir + "/tagdict", useCaseSensitiveTagDictionary ),//, new Dictionary(dataDir+"/dict.bin.gz")),
+        ;new ParserChunker(dataDir + "/chunk.bin.gz"),
+        ;new HeadRules(dataDir + "/head_rules"),beamSize,advancePercentage);
+    ;}
+    ;else {
+      ;return new opennlp.tools.parser.chunking.Parser(
+        ;new SuffixSensitiveGISModelReader(new File(dataDir + "/build.bin.gz")).getModel(),
+        ;new SuffixSensitiveGISModelReader(new File(dataDir + "/check.bin.gz")).getModel(),
+        ;new ParserTagger(dataDir + "/tag.bin.gz",null), //new Dictionary(dataDir+"/dict.bin.gz")),
+        ;new ParserChunker(dataDir + "/chunk.bin.gz"),
+        ;new HeadRules(dataDir + "/head_rules"),beamSize,advancePercentage);
+    ;}
+;
 
+; Default advance percentage as defined by AbstractBottomUpParser.defaultAdvancePercentage
+(def *advance-percentage* 0.95)
+
+;private static Pattern untokenizedParenPattern1 = Pattern.compile("([^ ])([({)}])");
+;private static Pattern untokenizedParenPattern2 = Pattern.compile("([({)}])([^ ])");
+;line = untokenizedParenPattern1.matcher(line).replaceAll("$1 $2");
+;line = untokenizedParenPattern2.matcher(line).replaceAll("$1 $2");
+
+(defn- parse-line
+  "Given a line, parse it?"
+  [line parser]
+  (let [p (Parse. line (Span. 0 (count line)) AbstractBottomUpParser/INC_NODE 1 0)
+        parses (.parse parser p)]
+    parses))
+
+
+(defn make-treebank-parser
+  "Return a function for stuff."
+  [#^String buildmodel
+   #^String checkmodel
+   #^String tagmodel
+   #^String chunkmodel
+   #^String headrules]
+  ; TODO: Check model file existance
+  (fn treebank-parser
+    [something] ; FIXME
+    (let [builder (.getModel (SuffixSensitiveGISModelReader. (File. buildmodel)))
+          checker (.getModel (SuffixSensitiveGISModelReader. (File. checkmodel)))
+          parsetagger (ParserTagger. tagmodel nil)
+          parsechunker (ParserChunker. chunkmodel)
+          headrules (HeadRules. headrules)
+          parser (Parser. builder checker parsetagger parsechunker headrules (int *beam-size*) (double *advance-percentage*)) ; FIXME
+          parses (map #(parse-line % parser) something)]
+      parses)))
+
+;testing
+
+;(def treebank-parser (make-treebank-parser "parser-models/build.bin.gz"
+                                           ;"parser-models/check.bin.gz"
+                                           ;"parser-models/tag.bin.gz"
+                                           ;"parser-models/chunk.bin.gz"
+                                           ;"parser-models/head_rules"))
+
+;(treebank-parser "This is a line .")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
