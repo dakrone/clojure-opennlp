@@ -39,10 +39,20 @@
                   {:phrase ["the" "brake" "pedal"] :tag "NP"}
                   {:phrase ["is" "pressed"] :tag "VP"}))))
 
+;(try
+  ;(do
+    ;(def parser (make-treebank-parser "parser-models/build.bin.gz" "parser-models/check.bin.gz" "parser-models/tag.bin.gz" "parser-models/chunk.bin.gz" "parser-models/head_rules"))
+    ;(deftest parser-test
+             ;(is (= (parser ["This is a sentence ."])
+                    ;"..."))))
+  ;(catch FileNotFoundException e
+    ;(println "Unable to execute treebank-parser tests. Download the model files to $PROJECT_ROOT/parser-models.")))
+
 (deftest no-model-file-test
          (is (thrown? FileNotFoundException (make-sentence-detector "nonexistantfile")))
          (is (thrown? FileNotFoundException (make-tokenizer "nonexistantfile")))
          (is (thrown? FileNotFoundException (make-pos-tagger "nonexistantfile")))
          (is (thrown? FileNotFoundException (make-name-finder "nonexistantfile" "anotherfilethatdoesnotexist")))
-         (is (thrown? FileNotFoundException (make-treebank-chunker "nonexistantfile"))))
+         (is (thrown? FileNotFoundException (make-treebank-chunker "nonexistantfile")))
+         (is (thrown? FileNotFoundException (make-treebank-parser "nonexistantfile" "asdf" "fdsa" "qwer" "rewq"))))
 

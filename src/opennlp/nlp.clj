@@ -216,10 +216,10 @@
   [line parser]
   (let [words (.split line " ")
         p (Parse. line (Span. 0 (count line)) AbstractBottomUpParser/INC_NODE (double 1) (int 0))]
-    (loop [i 0 parse-index 0 start-index 0]
-      (if (> (+ i 1) (count words))
+    (loop [parse-index 0 start-index 0]
+      (if (> (+ parse-index 1) (count words))
         nil
-        (let [token (get words i)]
+        (let [token (get words parse-index)]
           ;(println "inserting " token " at " i " pidx " parse-index " sidx " start-index)
           ; Mutable state, but contained only in the parse-line function
           (.insert p (Parse. line
@@ -227,7 +227,7 @@
                              AbstractBottomUpParser/TOK_NODE
                              (double 0)
                              (int parse-index)))
-          (recur (inc i) (inc parse-index) (+ 1 start-index (count token))))))
+          (recur (inc parse-index) (+ 1 start-index (count token))))))
     (.parse parser p)))
 
 
