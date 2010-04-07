@@ -26,7 +26,7 @@
 (defn make-sentence-detector
   "Return a function for detecting sentences based on a given model file."
   [modelfile]
-  (if (not (file-exist? modelfile))
+  (if-not (file-exist? modelfile)
     (throw (FileNotFoundException. "Model file does not exist."))
     (fn sentenizer
       [text]
@@ -39,7 +39,7 @@
 (defn make-tokenizer
   "Return a function for tokenizing a sentence based on a given model file."
   [modelfile]
-  (if (not (file-exist? modelfile))
+  (if-not (file-exist? modelfile)
     (throw (FileNotFoundException. "Model file does not exist."))
     (fn tokenizer
       [sentence]
@@ -52,7 +52,7 @@
 (defn make-pos-tagger
   "Return a function for tagging tokens based on a given model file."
   [modelfile]
-  (if (not (file-exist? modelfile))
+  (if-not (file-exist? modelfile)
     (throw (FileNotFoundException. "Model file does not exist."))
     (fn pos-tagger
       [tokens]
@@ -67,7 +67,7 @@
 (defn make-name-finder
   "Return a function for finding names from tokens based on given model file(s)."
   [& modelfiles]
-  (if (not (reduce 'and (map file-exist? modelfiles)))
+  (if-not (reduce 'and (map file-exist? modelfiles))
     (throw (FileNotFoundException. "Not all model files exist."))
     (fn name-finder
       [tokens]
@@ -124,7 +124,7 @@
   "Return a function for chunking phrases from pos-tagged tokens based on
   a given model file."
   [modelfile]
-  (if (not (file-exist? modelfile))
+  (if-not (file-exist? modelfile)
     (throw (FileNotFoundException. "Model file does not exist."))
     (fn treebank-chunker
       [pos-tagged-tokens]
@@ -174,51 +174,102 @@
     ;}
 ;
 
+;for (Iterator ti = tokens.iterator(); ti.hasNext();i++) {
+;String tok = (String) ti.next();
+;p.insert(new Parse(text, new Span(start, start + tok.length()), AbstractBottomUpParser.TOK_NODE, 0,i));
+;start += tok.length() + 1;
+;}
+;public Parse(String text, Span span, String type, double p, int index) {
+
 ; Default advance percentage as defined by AbstractBottomUpParser.defaultAdvancePercentage
 (def *advance-percentage* 0.95)
 
-;private static Pattern untokenizedParenPattern1 = Pattern.compile("([^ ])([({)}])");
-;private static Pattern untokenizedParenPattern2 = Pattern.compile("([({)}])([^ ])");
-;line = untokenizedParenPattern1.matcher(line).replaceAll("$1 $2");
-;line = untokenizedParenPattern2.matcher(line).replaceAll("$1 $2");
+
+;(defn- insert-token
+  ;"Insert word tokens into the Parse object"
+  ;[token p text pidx sidx]
+  ;(println "tokens: " token " for: " text)
+  ;(.insert p (Parse. text
+                     ;(Span. @sidx (+ @sidx (count token)))
+                     ;AbstractBottomUpParser/TOK_NODE
+                     ;(double 0)
+                     ;(int @pidx)))
+  ;(swap! pidx inc)
+  ;(reset! sidx (+ @sidx (count token))))
+
+
+;(defn- parse-line-old
+  ;"Given a line and Parser object, return a list of Parses."
+  ;[line parser]
+  ;(println "line: " line)
+  ;(let [words (.split line " ")
+        ;p (Parse. line (Span. 0 (count line)) AbstractBottomUpParser/INC_NODE (double 1) (int 0))
+        ;pidx (atom 0)
+        ;sidx (atom 0)]
+    ;(doall (map #(insert-token % p line pidx sidx) words))
+    ;(let [parses (.parse parser p)]
+      ;parses)))
+
 
 (defn- parse-line
-  "Given a line, parse it?"
+  "Given a line and Parser object, return a list of Parses."
   [line parser]
-  (let [p (Parse. line (Span. 0 (count line)) AbstractBottomUpParser/INC_NODE 1 0)
-        parses (.parse parser p)]
-    parses))
+  (let [words (.split line " ")
+        p (Parse. line (Span. 0 (count line)) AbstractBottomUpParser/INC_NODE (double 1) (int 0))]
+    (loop [i 0 parse-index 0 start-index 0]
+      (if (> i (count words))
+        nil
+        (let [token (get words i)]
+          (.insert p (Parse. line
+                             (Span. start-index (+ start-index (count token)))
+                             AbstractBottomUpParser/TOK_NODE
+                             (double 0)
+                             (int parse-index)))
+          (recur (inc i) (inc parse-index) (+ start-index (count token))))))
+    (.parse parser p)))
 
 
 (defn make-treebank-parser
-  "Return a function for stuff."
-  [#^String buildmodel
-   #^String checkmodel
-   #^String tagmodel
-   #^String chunkmodel
-   #^String headrules]
-  ; TODO: Check model file existance
-  (fn treebank-parser
-    [something] ; FIXME
-    (let [builder (-> (File. buildmodel) SuffixSensitiveGISModelReader. .getModel)
-          checker (-> (File. checkmodel) SuffixSensitiveGISModelReader. .getModel)
-          parsetagger (ParserTagger. tagmodel nil)
-          parsechunker (ParserChunker. chunkmodel)
-          headrules (HeadRules. headrules)
-          parser (Parser. builder checker parsetagger parsechunker headrules (int *beam-size*) (double *advance-percentage*)) ; FIXME
-          parses (map #(parse-line % parser) something)]
-      parses)))
+  "Return a function for treebank parsing a sequence of sentences, based on
+  given build, check, tag, chunk models and a set of head rules."
+  [buildmodel checkmodel tagmodel chunkmodel headrules]
+  (if-not (and (file-exist? buildmodel)
+               (file-exist? checkmodel)
+               (file-exist? tagmodel)
+               (file-exist? chunkmodel)
+               (file-exist? headrules))
+    (throw (FileNotFoundException. "One or more of the model or rule files does not exist"))
+    (fn treebank-parser
+      [text]
+      (let [builder (-> (File. buildmodel) SuffixSensitiveGISModelReader. .getModel)
+            checker (-> (File. checkmodel) SuffixSensitiveGISModelReader. .getModel)
+            parsetagger (ParserTagger. tagmodel nil)
+            parsechunker (ParserChunker. chunkmodel)
+            headrules (HeadRules. headrules)
+            parser (Parser. builder
+                            checker
+                            parsetagger
+                            parsechunker
+                            headrules
+                            (int *beam-size*)
+                            (double *advance-percentage*))
+            parses (map #(parse-line % parser) text)]
+        parses))))
+
 
 ;testing
 
-;(def treebank-parser (make-treebank-parser "parser-models/build.bin.gz"
-                                           ;"parser-models/check.bin.gz"
-                                           ;"parser-models/tag.bin.gz"
-                                           ;"parser-models/chunk.bin.gz"
-                                           ;"parser-models/head_rules"))
+(comment
 
-;(treebank-parser "This is a line .")
+(def treebank-parser (make-treebank-parser "parser-models/build.bin.gz"
+                                           "parser-models/check.bin.gz"
+                                           "parser-models/tag.bin.gz"
+                                           "parser-models/chunk.bin.gz"
+                                           "parser-models/head_rules"))
 
+(println (.show (first (treebank-parser ["This is a line ."]))))
+
+)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
