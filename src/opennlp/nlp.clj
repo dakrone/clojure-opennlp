@@ -255,7 +255,6 @@
           ;)))))
 
 
-
 ;testing
 
 (comment
@@ -266,6 +265,37 @@
 
 user=>  (.show (first (treebank-parser ["I mind their smoking cigars in my car ."])))
 (TOP (S (NP (PRP I)) (VP (VB mind) (NP (PRP$ their) (NN smoking) (NNS cigars)) (PP (IN in) (NP (PRP$ my) (NN car)))) (. .)))
+
+(TOP
+  (S
+    (NP
+      (PRP I))
+    (VP
+      (VB mind)
+      (NP
+        (PRP$ their)
+        (NN smoking)
+        (NNS cigars))
+      (PP
+        (IN in)
+        (NP (PRP$ my)
+        (NN car))))
+    (. .)))
+
+
+Henshin! -->
+
+(:tag TOP :chunk
+  (:tag S :chunk
+    [(:tag NP :chunk (:tag PRP :chunk I))
+     (:tag VP :chunk [(:tag VB :chunk mind)
+                      (:tag NP :chunk [(:tag PRP$ :chunk their)
+                                       (:tag NN :chunk smoking)
+                                       (:tag NNS :chunk cigars)])
+                      (:tag PP :chunk [(:tag IN :chunk in)
+                                       (:tag NP :chunk (:tag PRP$ :chunk my))
+                                       (:tag NN :chunk car)])])
+     (:tag . :chunk .)]))
 
 )
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
