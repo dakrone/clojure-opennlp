@@ -1,6 +1,7 @@
 ; Clojure opennlp tools
 (ns opennlp.nlp
   (:use [clojure.contrib.seq-utils :only [partition-by flatten]])
+  (:require [clojure.contrib.string :only [drop] :as ccs])
   (:import [java.io File FileNotFoundException])
   (:import [opennlp.maxent DataStream GISModel])
   (:import [opennlp.maxent.io PooledGISModelReader SuffixSensitiveGISModelReader])
@@ -155,61 +156,40 @@
 ;#<ArrayList [B-NP, I-NP, I-NP, B-VP, I-VP, I-VP, I-VP, B-NP, I-NP, B-ADVP, B-NP, I-NP, I-NP, B-VP, I-VP, O]>
 
 ; So, B-* starts a sequence, I-* continues it. New phrase starts when B-* is encountered
+; -------------------------------------------
 
-    ;if (useTagDictionary) {
-      ;return new opennlp.tools.parser.chunking.Parser(
-        ;new SuffixSensitiveGISModelReader(new File(dataDir + "/build.bin.gz")).getModel(),
-        ;new SuffixSensitiveGISModelReader(new File(dataDir + "/check.bin.gz")).getModel(),
-        ;new ParserTagger(dataDir + "/tag.bin.gz", dataDir + "/tagdict", useCaseSensitiveTagDictionary ),//, new Dictionary(dataDir+"/dict.bin.gz")),
-        ;new ParserChunker(dataDir + "/chunk.bin.gz"),
-        ;new HeadRules(dataDir + "/head_rules"),beamSize,advancePercentage);
-    ;}
-    ;else {
-      ;return new opennlp.tools.parser.chunking.Parser(
-        ;new SuffixSensitiveGISModelReader(new File(dataDir + "/build.bin.gz")).getModel(),
-        ;new SuffixSensitiveGISModelReader(new File(dataDir + "/check.bin.gz")).getModel(),
-        ;new ParserTagger(dataDir + "/tag.bin.gz",null), //new Dictionary(dataDir+"/dict.bin.gz")),
-        ;new ParserChunker(dataDir + "/chunk.bin.gz"),
-        ;new HeadRules(dataDir + "/head_rules"),beamSize,advancePercentage);
-    ;}
-;
-
-;for (Iterator ti = tokens.iterator(); ti.hasNext();i++) {
-;String tok = (String) ti.next();
-;p.insert(new Parse(text, new Span(start, start + tok.length()), AbstractBottomUpParser.TOK_NODE, 0,i));
-;start += tok.length() + 1;
-;}
-;public Parse(String text, Span span, String type, double p, int index) {
+; Treebank parsing
 
 ; Default advance percentage as defined by AbstractBottomUpParser.defaultAdvancePercentage
 (def *advance-percentage* 0.95)
 
-
-;(defn- insert-token
-  ;"Insert word tokens into the Parse object"
-  ;[token p text pidx sidx]
-  ;(println "tokens: " token " for: " text)
-  ;(.insert p (Parse. text
-                     ;(Span. @sidx (+ @sidx (count token)))
-                     ;AbstractBottomUpParser/TOK_NODE
-                     ;(double 0)
-                     ;(int @pidx)))
-  ;(swap! pidx inc)
-  ;(reset! sidx (+ @sidx (count token))))
-
-
-;(defn- parse-line-old
-  ;"Given a line and Parser object, return a list of Parses."
-  ;[line parser]
-  ;(println "line: " line)
-  ;(let [words (.split line " ")
-        ;p (Parse. line (Span. 0 (count line)) AbstractBottomUpParser/INC_NODE (double 1) (int 0))
-        ;pidx (atom 0)
-        ;sidx (atom 0)]
-    ;(doall (map #(insert-token % p line pidx sidx) words))
-    ;(let [parses (.parse parser p)]
-      ;parses)))
-
+  ;public void show(StringBuffer sb) {
+    ;int start;
+    ;start = span.getStart();
+    ;if (!type.equals(AbstractBottomUpParser.TOK_NODE)) {
+      ;sb.append("(");
+      ;sb.append(type +" ");
+      ;//System.out.print(label+" ");
+      ;//System.out.print(head+" ");
+      ;//System.out.print(df.format(prob)+" ");
+    ;}
+    ;for (Iterator i = parts.iterator(); i.hasNext();) {
+      ;Parse c = (Parse) i.next();
+      ;Span s = c.span;
+      ;if (start < s.getStart()) {
+        ;//System.out.println("pre "+start+" "+s.getStart());
+        ;sb.append(text.substring(start, s.getStart()));
+      ;}
+      ;c.show(sb);
+      ;start = s.getEnd();
+    ;}
+    ;if (start < span.getEnd()) {
+      ;sb.append(text.substring(start, span.getEnd()));
+    ;}
+    ;if (!type.equals(AbstractBottomUpParser.TOK_NODE)) {
+      ;sb.append(")");
+    ;}
+  ;}
 
 (defn- parse-line
   "Given a line and Parser object, return a list of Parses."
@@ -259,6 +239,23 @@
         parses))))
 
 
+(defstruct treebank-tree :tag :chunk)
+
+;(defn- parse-tree
+  ;"Takes something like (TOP (S (NP (PRP I)) (VP (VB mind) etc...
+  ;and generates a struct tree out of it using treebank-tree structs."
+  ;[text]
+  ;(let [tokens (.split text " ")]
+    ;(loop [i 0]
+      ;(let [tok (get tokens i)]
+        ;(if (= (get tok 0) "(")
+          ;(let [t (struct treebank-tree (ccs/drop 1 tok) (recur (inc i)))]
+            ;t)
+          ;bleh... this is heading to a bad place
+          ;)))))
+
+
+
 ;testing
 
 (comment
@@ -266,6 +263,9 @@
 (def treebank-parser (make-treebank-parser "parser-models/build.bin.gz" "parser-models/check.bin.gz" "parser-models/tag.bin.gz" "parser-models/chunk.bin.gz" "parser-models/head_rules"))
 
 (.show (first (treebank-parser ["This is a line ."])))
+
+user=>  (.show (first (treebank-parser ["I mind their smoking cigars in my car ."])))
+(TOP (S (NP (PRP I)) (VP (VB mind) (NP (PRP$ their) (NN smoking) (NNS cigars)) (PP (IN in) (NP (PRP$ my) (NN car)))) (. .)))
 
 )
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
