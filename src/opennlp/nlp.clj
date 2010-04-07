@@ -217,15 +217,17 @@
   (let [words (.split line " ")
         p (Parse. line (Span. 0 (count line)) AbstractBottomUpParser/INC_NODE (double 1) (int 0))]
     (loop [i 0 parse-index 0 start-index 0]
-      (if (> i (count words))
+      (if (> (+ i 1) (count words))
         nil
         (let [token (get words i)]
+          ;(println "inserting " token " at " i " pidx " parse-index " sidx " start-index)
+          ; Mutable state, but contained only in the parse-line function
           (.insert p (Parse. line
                              (Span. start-index (+ start-index (count token)))
                              AbstractBottomUpParser/TOK_NODE
                              (double 0)
                              (int parse-index)))
-          (recur (inc i) (inc parse-index) (+ start-index (count token))))))
+          (recur (inc i) (inc parse-index) (+ 1 start-index (count token))))))
     (.parse parser p)))
 
 
@@ -261,13 +263,9 @@
 
 (comment
 
-(def treebank-parser (make-treebank-parser "parser-models/build.bin.gz"
-                                           "parser-models/check.bin.gz"
-                                           "parser-models/tag.bin.gz"
-                                           "parser-models/chunk.bin.gz"
-                                           "parser-models/head_rules"))
+(def treebank-parser (make-treebank-parser "parser-models/build.bin.gz" "parser-models/check.bin.gz" "parser-models/tag.bin.gz" "parser-models/chunk.bin.gz" "parser-models/head_rules"))
 
-(println (.show (first (treebank-parser ["This is a line ."]))))
+(.show (first (treebank-parser ["This is a line ."])))
 
 )
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
