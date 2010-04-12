@@ -1,7 +1,6 @@
 ; Clojure opennlp tools
 (ns opennlp.nlp
   (:use [clojure.contrib.seq-utils :only [partition-by flatten]])
-  (:require [clojure.contrib.string :only [drop] :as ccs])
   (:import [java.io File FileNotFoundException])
   (:import [opennlp.maxent DataStream GISModel])
   (:import [opennlp.maxent.io PooledGISModelReader SuffixSensitiveGISModelReader])
@@ -191,10 +190,21 @@
     ;}
   ;}
 
+(defn- strip-parens
+  "Treebank-parser does not like parens and braces, so replace them."
+  [s]
+  (-> s
+    (.replaceAll "\\(" "-LRB-")
+    (.replaceAll "\\)" "-RRB-")
+    (.replaceAll "\\{" "-LCB-")
+    (.replaceAll "\\}" "-RCB-")))
+
 (defn- parse-line
   "Given a line and Parser object, return a list of Parses."
   [line parser]
-  (let [words (.split line " ")
+  (let [line (strip-parens line)
+        results (StringBuffer.)
+        words (.split line " ")
         p (Parse. line (Span. 0 (count line)) AbstractBottomUpParser/INC_NODE (double 1) (int 0))]
     (loop [parse-index 0 start-index 0]
       (if (> (+ parse-index 1) (count words))
@@ -208,7 +218,8 @@
                              (double 0)
                              (int parse-index)))
           (recur (inc parse-index) (+ 1 start-index (count token))))))
-    (.parse parser p)))
+    (.show (.parse parser p) results)
+    (.toString results)))
 
 
 (defn make-treebank-parser
@@ -236,66 +247,41 @@
                             (int *beam-size*)
                             (double *advance-percentage*))
             parses (map #(parse-line % parser) text)]
-        parses))))
+        (vec parses)))))
 
 
-(defstruct treebank-tree :tag :chunk)
+(defn- strip-funny-chars
+  "Strip out some characters that might cause trouble parsing the tree."
+  [s]
+  (-> s
+    (.replaceAll "'" "-SQUOTE-")
+    (.replaceAll "\"" "-DQUOTE-")
+    (.replaceAll "#" "-HASH-")))
 
-;(defn- parse-tree
-  ;"Takes something like (TOP (S (NP (PRP I)) (VP (VB mind) etc...
-  ;and generates a struct tree out of it using treebank-tree structs."
-  ;[text]
-  ;(let [tokens (.split text " ")]
-    ;(loop [i 0]
-      ;(let [tok (get tokens i)]
-        ;(if (= (get tok 0) "(")
-          ;(let [t (struct treebank-tree (ccs/drop 1 tok) (recur (inc i)))]
-            ;t)
-          ;bleh... this is heading to a bad place
-          ;)))))
 
+; Credit for this function goes to carkh in #clojure
+(defn- tr
+  [to-parse]
+  (cond (symbol? to-parse) to-parse
+        (seq to-parse) (let [[tag & body] to-parse]
+                         `(:tag ~tag :chunk ~(if (> (count body) 1)
+                                               (map tr body)
+                                               (tr (first body)))))))
+
+
+(defn make-tree
+  "Make a tree from the output of a treebank-parser."
+  [tree]
+  (let [text (strip-funny-chars tree)]
+    (tr (read-string text))))
 
 ;testing
 
 (comment
 
+(use 'opennlp.nlp)
+
 (def treebank-parser (make-treebank-parser "parser-models/build.bin.gz" "parser-models/check.bin.gz" "parser-models/tag.bin.gz" "parser-models/chunk.bin.gz" "parser-models/head_rules"))
-
-(.show (first (treebank-parser ["This is a line ."])))
-
-user=>  (.show (first (treebank-parser ["I mind their smoking cigars in my car ."])))
-(TOP (S (NP (PRP I)) (VP (VB mind) (NP (PRP$ their) (NN smoking) (NNS cigars)) (PP (IN in) (NP (PRP$ my) (NN car)))) (. .)))
-
-(TOP
-  (S
-    (NP
-      (PRP I))
-    (VP
-      (VB mind)
-      (NP
-        (PRP$ their)
-        (NN smoking)
-        (NNS cigars))
-      (PP
-        (IN in)
-        (NP (PRP$ my)
-        (NN car))))
-    (. .)))
-
-
-Henshin! -->
-
-(:tag TOP :chunk
-  (:tag S :chunk
-    [(:tag NP :chunk (:tag PRP :chunk I))
-     (:tag VP :chunk [(:tag VB :chunk mind)
-                      (:tag NP :chunk [(:tag PRP$ :chunk their)
-                                       (:tag NN :chunk smoking)
-                                       (:tag NNS :chunk cigars)])
-                      (:tag PP :chunk [(:tag IN :chunk in)
-                                       (:tag NP :chunk (:tag PRP$ :chunk my))
-                                       (:tag NN :chunk car)])])
-     (:tag . :chunk .)]))
 
 )
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
