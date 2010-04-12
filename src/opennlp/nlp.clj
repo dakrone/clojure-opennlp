@@ -162,33 +162,6 @@
 ; Default advance percentage as defined by AbstractBottomUpParser.defaultAdvancePercentage
 (def *advance-percentage* 0.95)
 
-  ;public void show(StringBuffer sb) {
-    ;int start;
-    ;start = span.getStart();
-    ;if (!type.equals(AbstractBottomUpParser.TOK_NODE)) {
-      ;sb.append("(");
-      ;sb.append(type +" ");
-      ;//System.out.print(label+" ");
-      ;//System.out.print(head+" ");
-      ;//System.out.print(df.format(prob)+" ");
-    ;}
-    ;for (Iterator i = parts.iterator(); i.hasNext();) {
-      ;Parse c = (Parse) i.next();
-      ;Span s = c.span;
-      ;if (start < s.getStart()) {
-        ;//System.out.println("pre "+start+" "+s.getStart());
-        ;sb.append(text.substring(start, s.getStart()));
-      ;}
-      ;c.show(sb);
-      ;start = s.getEnd();
-    ;}
-    ;if (start < span.getEnd()) {
-      ;sb.append(text.substring(start, span.getEnd()));
-    ;}
-    ;if (!type.equals(AbstractBottomUpParser.TOK_NODE)) {
-      ;sb.append(")");
-    ;}
-  ;}
 
 (defn- strip-parens
   "Treebank-parser does not like parens and braces, so replace them."
@@ -198,6 +171,7 @@
     (.replaceAll "\\)" "-RRB-")
     (.replaceAll "\\{" "-LCB-")
     (.replaceAll "\\}" "-RCB-")))
+
 
 (defn- parse-line
   "Given a line and Parser object, return a list of Parses."
@@ -256,32 +230,43 @@
   (-> s
     (.replaceAll "'" "-SQUOTE-")
     (.replaceAll "\"" "-DQUOTE-")
+    (.replaceAll "\\" "-BSLASH-")
+    (.replaceAll "\/" "-FSLASH-")
     (.replaceAll "#" "-HASH-")))
 
 
 ; Credit for this function goes to carkh in #clojure
 (defn- tr
+  "Generate a tree from the string output of a treebank-parser."
   [to-parse]
-  (cond (symbol? to-parse) to-parse
+  (cond (symbol? to-parse) (str to-parse)
         (seq to-parse) (let [[tag & body] to-parse]
-                         `(:tag ~tag :chunk ~(if (> (count body) 1)
+                         `{:tag ~tag :chunk ~(if (> (count body) 1)
                                                (map tr body)
-                                               (tr (first body)))))))
+                                               (tr (first body)))})))
 
 
 (defn make-tree
-  "Make a tree from the output of a treebank-parser."
+  "Make a tree from the string output of a treebank-parser."
   [tree]
   (let [text (strip-funny-chars tree)]
     (tr (read-string text))))
 
-;testing
 
+;testing
 (comment
 
 (use 'opennlp.nlp)
 
 (def treebank-parser (make-treebank-parser "parser-models/build.bin.gz" "parser-models/check.bin.gz" "parser-models/tag.bin.gz" "parser-models/chunk.bin.gz" "parser-models/head_rules"))
+
+; String output
+(first (treebank-parser ["This is a sentence ."]))
+; => "(TOP (S (NP (DT This)) (VP (VBZ is) (NP (DT a) (NN sentence))) (. .)))"
+
+; Tree output
+(make-tree (first (treebank-parser ["This is a sentence ."])))
+; => {:chunk {:chunk ({:chunk {:chunk "This", :tag DT}, :tag NP} {:chunk ({:chunk "is", :tag VBZ} {:chunk ({:chunk "a", :tag DT} {:chunk "sentence", :tag NN}), :tag NP}), :tag VP} {:chunk ".", :tag .}), :tag S}, :tag TOP} 
 
 )
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
