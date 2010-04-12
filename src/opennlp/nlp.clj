@@ -199,7 +199,7 @@
 (defn make-treebank-parser
   "Return a function for treebank parsing a sequence of sentences, based on
   given build, check, tag, chunk models and a set of head rules."
-  [buildmodel checkmodel tagmodel chunkmodel headrules]
+  [buildmodel checkmodel tagmodel chunkmodel headrules & opts]
   (if-not (and (file-exist? buildmodel)
                (file-exist? checkmodel)
                (file-exist? tagmodel)
@@ -210,7 +210,11 @@
       [text]
       (let [builder (-> (File. buildmodel) SuffixSensitiveGISModelReader. .getModel)
             checker (-> (File. checkmodel) SuffixSensitiveGISModelReader. .getModel)
-            parsetagger (ParserTagger. tagmodel nil)
+            parsetagger (if (:tagdict opts)
+                          (if (:case-sensitive opts)
+                            (ParserTagger. tagmodel (:tagdict opts) true)
+                            (ParserTagger. tagmodel (:tagdict opts) false))
+                          (ParserTagger. tagmodel nil))
             parsechunker (ParserChunker. chunkmodel)
             headrules (HeadRules. headrules)
             parser (Parser. builder
@@ -230,8 +234,8 @@
   (-> s
     (.replaceAll "'" "-SQUOTE-")
     (.replaceAll "\"" "-DQUOTE-")
-    (.replaceAll "\\" "-BSLASH-")
-    (.replaceAll "\/" "-FSLASH-")
+    ;(.replaceAll "\\" "-BSLASH-")
+    ;(.replaceAll "\\/" "-FSLASH-")
     (.replaceAll "#" "-HASH-")))
 
 
@@ -248,8 +252,8 @@
 
 (defn make-tree
   "Make a tree from the string output of a treebank-parser."
-  [tree]
-  (let [text (strip-funny-chars tree)]
+  [tree-text]
+  (let [text (strip-funny-chars tree-text)]
     (tr (read-string text))))
 
 
