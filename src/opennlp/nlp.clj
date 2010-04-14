@@ -210,7 +210,7 @@
       [text]
       (let [builder (-> (File. buildmodel) SuffixSensitiveGISModelReader. .getModel)
             checker (-> (File. checkmodel) SuffixSensitiveGISModelReader. .getModel)
-            parsetagger (if (:tagdict opts)
+            parsetagger (if (and (:tagdict opts) (file-exist? (:tagdict opts)))
                           (if (:case-sensitive opts)
                             (ParserTagger. tagmodel (:tagdict opts) true)
                             (ParserTagger. tagmodel (:tagdict opts) false))
@@ -234,8 +234,13 @@
   (-> s
     (.replaceAll "'" "-SQUOTE-")
     (.replaceAll "\"" "-DQUOTE-")
-    ;(.replaceAll "\\" "-BSLASH-")
-    ;(.replaceAll "\\/" "-FSLASH-")
+    (.replaceAll "~" "-TILDE-")
+    (.replaceAll "`" "-BACKTICK-")
+    (.replaceAll "," "-COMMA-")
+    (.replaceAll "\\\\" "-BSLASH-")
+    (.replaceAll "\\/" "-FSLASH-")
+    (.replaceAll "\\^" "-CARROT-")
+    (.replaceAll "@" "-ATSIGN-")
     (.replaceAll "#" "-HASH-")))
 
 
