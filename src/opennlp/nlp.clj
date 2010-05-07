@@ -1,6 +1,5 @@
 ; Clojure opennlp tools
 (ns opennlp.nlp
-  (:use [clojure.contrib.seq-utils :only [partition-by flatten]])
   (:import [java.io File FileNotFoundException])
   (:import [opennlp.maxent DataStream GISModel])
   (:import [opennlp.maxent.io PooledGISModelReader SuffixSensitiveGISModelReader])
@@ -14,6 +13,12 @@
   (:import [opennlp.tools.parser.chunking Parser])
   (:import [opennlp.tools.parser AbstractBottomUpParser Parse])
   (:import [opennlp.tools.postag POSTaggerME DefaultPOSContextGenerator POSContextGenerator]))
+
+; These are in core in clojure 1.2, so only require them if below 2
+(if (< (:minor *clojure-version*) 2)
+  (use '[clojure.contrib.seq-utils :only [partition-by flatten]])
+  nil)
+
 
 ; OpenNLP property for pos-tagging
 (def *beam-size* 3)
