@@ -1,5 +1,6 @@
 (ns opennlp.test
   (:use [opennlp.nlp])
+  (:use [opennlp.tools.lazy])
   (:use [clojure.test])
   (:import [java.io File FileNotFoundException]))
 
@@ -55,4 +56,20 @@
          (is (thrown? FileNotFoundException (make-name-finder "nonexistantfile" "anotherfilethatdoesnotexist")))
          (is (thrown? FileNotFoundException (make-treebank-chunker "nonexistantfile")))
          (is (thrown? FileNotFoundException (make-treebank-parser "nonexistantfile" "asdf" "fdsa" "qwer" "rewq"))))
+
+(deftest laziness-test
+         (let [s (get-sentences "First sentence. Second sentence?")]
+           (is (= (type (lazy-tokenize s tokenize))
+                  clojure.lang.LazySeq))
+           (is (= (first (lazy-tokenize s tokenize))
+                  ["First" "sentence" "."]))
+           (is (= (type (lazy-tag s tokenize pos-tag))
+                  clojure.lang.LazySeq))
+           (is (= (first (lazy-tag s tokenize pos-tag))
+                  '(["First" "RB"] ["sentence" "NN"] ["." "."])))
+           (is (= (type (lazy-chunk s tokenize pos-tag chunker))
+                  clojure.lang.LazySeq))
+           (is (= (first (lazy-chunk s tokenize pos-tag chunker))
+                  '({:phrase ["First"], :tag "ADVP"} {:phrase ["sentence"], :tag "NP"})))))
+
 

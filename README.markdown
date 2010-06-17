@@ -203,6 +203,7 @@ TODO
 ----
 - <del>Treebank chunker</del> (done!)
 - <del>Treebank parser</del> (done!)
+- Laziness (in progress)
 - Filters for treebank-parser
 - Return multiple probability results for treebank-parser
 - Model training/trainer
