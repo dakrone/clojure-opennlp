@@ -1,4 +1,14 @@
-(ns opennlp.tools.lazy "Tools for lazily tokenizing and tagging sentences.")
+(ns opennlp.tools.lazy
+  "Tools for lazily separating, tokenizing and tagging sentences.")
+
+
+(defn lazy-get-sentences
+  "Given a sequence of texts and a sentence-finder, return a lazy sequence of
+  sentences for each text."
+  [text sentence-finder]
+  (lazy-seq
+    (when-let [s (seq text)]
+      (cons (sentence-finder (first text)) (lazy-get-sentences (rest s) sentence-finder)))))
 
 
 (defn lazy-tokenize

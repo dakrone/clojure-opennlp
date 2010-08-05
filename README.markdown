@@ -195,9 +195,50 @@ You can also create treebank-chunk filters using (chunk-filter ...)
       Given a list of treebank-chunked elements, return only the fragments in a list.
     nil
 
+
+Being Lazy
+==========
+
+There are some methods to help you be lazy when tagging methods, depending on the operation desired,
+use the corresponding method:
+
+    #'opennlp.tools.lazy/lazy-get-sentences
+    #'opennlp.tools.lazy/lazy-tokenize
+    #'opennlp.tools.lazy/lazy-tag
+    #'opennlp.tools.lazy/lazy-chunk
+
+Here's how to use them:
+
+    (use 'opennlp.nlp)
+    (use 'opennlp.tools.lazy)
+
+    (def get-sentences (make-sentence-detector "models/EnglishSD.bin.gz"))
+    (def tokenize (make-tokenizer "models/EnglishTok.bin.gz"))
+    (def pos-tag (make-pos-tagger "models/tag.bin.gz"))
+    (def chunker (make-treebank-chunker "models/EnglishChunk.bin.gz"))
+
+    (lazy-get-sentences ["This body of text has three sentences. This is the first. This is the third." "This body has only two. Here's the last one."] get-sentences)
+    ; will lazily return:
+    (["This body of text has three sentences. " "This is the first. " "This is the third."] ["This body has only two. " "Here's the last one."])
+
+    (lazy-tokenize ["This is a sentence." "This is another sentence." "This is the third."] tokenize)
+    ; will lazily return:
+    (["This" "is" "a" "sentence" "."] ["This" "is" "another" "sentence" "."] ["This" "is" "the" "third" "."])
+
+    (lazy-tag ["This is a sentence." "This is another sentence."] tokenize pos-tag)
+    ; will lazily return:
+    ((["This" "DT"] ["is" "VBZ"] ["a" "DT"] ["sentence" "NN"] ["." "."]) (["This" "DT"] ["is" "VBZ"] ["another" "DT"] ["sentence" "NN"] ["." "."]))
+
+    (lazy-chunk ["This is a sentence." "This is another sentence."] tokenize pos-tag chunker)
+    ; will lazily return:
+    (({:phrase ["This"], :tag "NP"} {:phrase ["is"], :tag "VP"} {:phrase ["a" "sentence"], :tag "NP"}) ({:phrase ["This"], :tag "NP"} {:phrase ["is"], :tag "VP"} {:phrase ["another" "sentence"], :tag "NP"}))
+
+Feel free to use the lazy functions, but I'm still not 100% set on the layout, so they may change in the future. (Maybe chaining them so instead of a sequence of sentences it looks like (lazy-chunk (lazy-tag (lazy-tokenize (lazy-get-sentences ...))))).
+
+
 Known Issues
 ------------
-- When using the treebank-chunker on a sentence, please ensure you have a period at the end of the sentence, if you do not have a period, the chunker gets confused and drops the last word.
+- When using the treebank-chunker on a sentence, please ensure you have a period at the end of the sentence, if you do not have a period, the chunker gets confused and drops the last word. Besides, your sentences should all be grammactially correct anyway right?
 
 TODO
 ----
