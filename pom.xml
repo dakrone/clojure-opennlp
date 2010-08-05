@@ -3,15 +3,19 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.clojars.thnetos</groupId>
   <artifactId>opennlp</artifactId>
-  <version>0.0.4</version>
+  <version>0.0.6</version>
   <name>opennlp</name>
   <description>Natural Language Processing with Clojure, library for opennlp. http://github.com/dakrone/clojure-opennlp</description>
   <scm>
     <connection>scm:git:git://github.com/dakrone/clojure-opennlp.git</connection>
     <developerConnection>scm:git:ssh://git@github.com/dakrone/clojure-opennlp.git</developerConnection>
-    <tag>764ac028e39a5b60da7c4e246b3a7eef54c17408</tag>
+    <tag>e52080d492a747b96f99f9f841bb317ccd0c08fc</tag>
     <url>http://github.com/dakrone/clojure-opennlp</url>
   </scm>
+  <build>
+    <sourceDirectory>src</sourceDirectory>
+    <testSourceDirectory>test</testSourceDirectory>
+  </build>
   <repositories>
     <repository>
       <id>central</id>
@@ -34,12 +38,12 @@
     <dependency>
       <groupId>org.clojure</groupId>
       <artifactId>clojure</artifactId>
-      <version>1.1.0</version>
+      <version>1.2.0-RC1</version>
     </dependency>
     <dependency>
       <groupId>org.clojure</groupId>
       <artifactId>clojure-contrib</artifactId>
-      <version>1.0-SNAPSHOT</version>
+      <version>1.2.0-RC1</version>
     </dependency>
     <dependency>
       <groupId>org.clojars.thnetos</groupId>

@@ -203,6 +203,7 @@ TODO
 ----
 - <del>Treebank chunker</del> (done!)
 - <del>Treebank parser</del> (done!)
+- Figure out what license to use.
 - Laziness (in progress)
 - Filters for treebank-parser
 - Return multiple probability results for treebank-parser
