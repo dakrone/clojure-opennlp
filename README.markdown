@@ -244,6 +244,7 @@ TODO
 ----
 - <del>Treebank chunker</del> (done!)
 - <del>Treebank parser</del> (done!)
+- Treebank linker (WIP)
 - Figure out what license to use.
 - Laziness (in progress)
 - Filters for treebank-parser

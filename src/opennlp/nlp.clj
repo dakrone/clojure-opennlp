@@ -1,5 +1,6 @@
 ; Clojure opennlp tools
 (ns opennlp.nlp
+  (:use [clojure.contrib.seq-utils :only [indexed]])
   (:import [java.io File FileNotFoundException])
   (:import [opennlp.maxent DataStream GISModel])
   (:import [opennlp.maxent.io PooledGISModelReader SuffixSensitiveGISModelReader])
@@ -9,7 +10,9 @@
   (:import [opennlp.tools.sentdetect SentenceDetectorME])
   (:import [opennlp.tools.namefind NameFinderME])
   (:import [opennlp.tools.chunker ChunkerME])
-  (:import [opennlp.tools.lang.english ParserTagger ParserChunker HeadRules])
+  (:import [opennlp.tools.coref LinkerMode])
+  (:import [opennlp.tools.coref.mention Mention DefaultParse])
+  (:import [opennlp.tools.lang.english ParserTagger ParserChunker HeadRules TreebankLinker CorefParse])
   (:import [opennlp.tools.parser.chunking Parser])
   (:import [opennlp.tools.parser AbstractBottomUpParser Parse])
   (:import [opennlp.tools.postag POSTaggerME DefaultPOSContextGenerator POSContextGenerator]))
@@ -265,6 +268,193 @@
   [tree-text]
   (let [text (strip-funny-chars tree-text)]
     (tr (read-string text))))
+
+
+
+;------------------------------------------------------------------------
+;------------------------------------------------------------------------
+; Treebank Linking
+; WIP, do not use.
+
+(defn coref-extent
+  [extent p index]
+  (if (nil? extent)
+    (let [snp (Parse. (.getText p) (.getSpan extent) "NML" 1.0 0)]
+      (.insert p snp) ; FIXME
+      (.setParse extent (DefaultParse. snp index)))
+    nil))
+
+
+(defn coref-sentence
+  [sentence parses index tblinker]
+  (let [p (Parse/parseParse sentence)
+        extents (.getMentions (.getMentionFinder tblinker) (DefaultParse. p index))]
+    (swap! parses #(assoc % (count %) p))
+    (map #(coref-extent % p index) extents)
+    extents))
+
+
+  ;class CorefParse {                                                                                                                                             
+    
+          ;private Map parseMap;
+          ;private List parses;
+    
+          ;public CorefParse(List parses, DiscourseEntity[] entities) {
+                ;this.parses = parses;
+                ;parseMap = new HashMap();
+                ;for (int ei=0,en=entities.length;ei<en;ei++) {
+                      ;if (entities[ei].getNumMentions() > 1) {
+                            ;for (Iterator mi=entities[ei].getMentions();mi.hasNext();) {
+                                  ;MentionContext mc = (MentionContext) mi.next();
+                                  ;Parse mentionParse = ((DefaultParse) mc.getParse()).getParse();
+                                  ;parseMap.put(mentionParse,new Integer(ei+1));
+                                  ;//System.err.println("CorefParse: "+mc.getParse().hashCode()+" -> "+ (ei+1));
+                            ;}   
+                      ;}   
+                ;}   
+          ;}   
+    
+          ;public void show() {
+                ;for (int pi=0,pn=parses.size();pi<pn;pi++) {
+                      ;Parse p = (Parse) parses.get(pi);
+                      ;show(p);
+                      ;System.out.println();
+                ;}   
+          ;}   
+    
+          ;private void show(Parse p) {
+                ;int start;
+                ;start = p.getSpan().getStart();
+                ;if (!p.getType().equals(Parser.TOK_NODE)) {
+                      ;System.out.print("(");
+                      ;System.out.print(p.getType());
+                      ;if (parseMap.containsKey(p)) {
+                            ;System.out.print("#"+parseMap.get(p));
+                      ;}   
+                      ;//System.out.print(p.hashCode()+"-"+parseMap.containsKey(p));
+                      ;System.out.print(" ");
+                ;}   
+                ;Parse[] children = p.getChildren();
+                ;for (int pi=0,pn=children.length;pi<pn;pi++) {
+                      ;Parse c = children[pi];
+                      ;Span s = c.getSpan();
+                      ;if (start < s.getStart()) {
+                            ;System.out.print(p.getText().substring(start, s.getStart()));
+                      ;}   
+                      ;show(c);
+                      ;start = s.getEnd();
+                ;}   
+                ;System.out.print(p.getText().substring(start, p.getSpan().getEnd()));
+                ;if (!p.getType().equals(Parser.TOK_NODE)) {
+                      ;System.out.print(")");
+                ;}   
+          ;}   
+    ;}
+
+(defn get-parse-str
+  [c start]
+  (let [s (.getSpan c)]
+    (if (< start (.getStart s))
+      (println (.substring (.getText c) start (.getEnd (.getSpan c))))
+      nil)))
+
+ 
+(defn get-parse
+  [parse]
+  (let [start (.getStart (.getSpan parse))
+        children (.getChildren parse)]
+    (map #(get-parse-str % start) children)))
+
+
+
+(defn get-parses
+  [parses entities]
+  (map get-parse parses))
+
+
+; Second Attempt
+(defn make-treebank-linker
+  [modeldir]
+  (let [tblinker (TreebankLinker. modeldir LinkerMode/TEST)
+        document (atom [])
+        parses   (atom [])]
+    (fn treebank-linker
+      [sentences]
+      (let [indexed-sentences (indexed sentences)
+            extents (doall (map #(coref-sentence (second %) parses (first %) tblinker) indexed-sentences))]
+        (println extents)
+        (swap! document (partial concat extents))
+        (println @document)
+        (println @parses)
+        (let [mention-array (into-array Mention (first @document))
+              entities (.getEntities tblinker mention-array)
+              coref-parses (CorefParse. @parses entities)]
+          (.show coref-parses))))))
+
+
+(comment
+
+  (def tbl (make-treebank-linker "coref"))
+  (tbl ["This is a sentence."])
+
+  (tbl ["This is a sentence." "This is also a sentence."])
+
+)  
+
+; First (dumb) Attempt
+#_(defn make-treebank-linker
+  [modeldir]
+  (let [tblinker (TreebankLinker. modeldir LinkerMode/TEST)
+        document (ArrayList.) ; do this without an arraylist
+        parses   (ArrayList.)
+        sentencenum (atom 0)]
+    (fn treebank-linker
+      [sentences]
+      (for [sentence sentences]
+        (let [p (Parse/parseParse sentence)
+              extents (.getMentions (.getMentionFinder tblinker) (DefaultParse. p sentencenum))]
+          (.add parses p)
+          (for [extent extents]
+            (if (nil? extent)
+              (let [snp (Parse. (.getText p) (.getSpan extent) "NML" 1.0 0)]
+                (.insert p snp)
+                (.setParse extent (DefaultParse. snp sentencenum)))
+              nil))
+          (.addAll document (Arrays/asList extents))
+          (swap! sentencenum inc))))))
+
+    ;for (String line=in.readLine();null != line;line = in.readLine()) {
+      ;if (line.equals("")) {
+        ;DiscourseEntity[] entities = treebankLinker.getEntities((Mention[]) document.toArray(new Mention[document.size()]));
+        ;//showEntities(entities);
+        ;new CorefParse(parses,entities).show();
+        ;sentenceNumber=0;
+        ;document.clear();
+        ;parses.clear();
+      ;}
+      ;else {
+        ;Parse p = Parse.parseParse(line);
+        ;parses.add(p);
+        ;Mention[] extents = treebankLinker.getMentionFinder().getMentions(new DefaultParse(p,sentenceNumber));
+        ;//construct new parses for mentions which don't have constituents.
+        ;for (int ei=0,en=extents.length;ei<en;ei++) {
+          ;if (extents[ei].getParse() == null) {
+            ;//not sure how to get head index, but its not used at this point.
+            ;Parse snp = new Parse(p.getText(),extents[ei].getSpan(),"NML",1.0,0);
+            ;p.insert(snp);
+            ;extents[ei].setParse(new DefaultParse(snp,sentenceNumber));
+          ;}
+          
+        ;}
+        ;document.addAll(Arrays.asList(extents));
+        ;sentenceNumber++;
+      ;}
+    ;}
+    ;if (document.size() > 0) {
+      ;DiscourseEntity[] entities = treebankLinker.getEntities((Mention[]) document.toArray(new Mention[document.size()]));
+      ;//showEntities(entities);
+      ;(new CorefParse(parses,entities)).show();
+    ;}
 
 
 ;testing
