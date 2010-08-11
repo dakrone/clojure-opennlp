@@ -244,9 +244,9 @@ TODO
 ----
 - <del>Treebank chunker</del> (done!)
 - <del>Treebank parser</del> (done!)
+- <del>Laziness </del> (done! for now.)
 - Treebank linker (WIP)
 - Figure out what license to use.
-- Laziness (in progress)
 - Filters for treebank-parser
 - Return multiple probability results for treebank-parser
 - Model training/trainer
