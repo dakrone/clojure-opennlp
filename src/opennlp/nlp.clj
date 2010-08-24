@@ -357,30 +357,30 @@
 (defn make-treebank-linker
   "Make a TreebankLinker, given a model directory."
   [modeldir]
-  (let [tblinker (TreebankLinker. modeldir LinkerMode/TEST)
-        document (atom [])
-        parses   (atom [])]
+  (let [tblinker (TreebankLinker. modeldir LinkerMode/TEST)]
     (fn treebank-linker
       [sentences]
-      (let [indexed-sentences (indexed sentences)
+      (let [parses (atom [])
+            indexed-sentences (indexed sentences)
             extents (doall (map #(coref-sentence (second %) parses (first %) tblinker) indexed-sentences))]
-        ;(println extents)
-        (swap! document (partial concat extents))
-        ;(println @document)
-        ;(println @parses)
-        (let [mention-array (into-array Mention (first @document))
+        (println extents (str (count (first extents))))
+        (println @parses)
+        (let [mention-array (into-array Mention (first extents))
+              foo (println "mentions:" mention-array)
               entities (.getEntities tblinker mention-array)]
+          (println "mentions:" mention-array)
+          (println "entities:" entities)
           (show-parses @parses entities))))))
 
 
 (comment
 
   (def tbl (make-treebank-linker "coref"))
-  (tbl ["This is a sentence."])
+  (def treebank-parser (make-treebank-parser "parser-models/build.bin.gz" "parser-models/check.bin.gz" "parser-models/tag.bin.gz" "parser-models/chunk.bin.gz" "parser-models/head_rules"))
+  (def s (treebank-parser ["This is a sentence ."]))
+  (tbl s)
 
-  (tbl ["This is a sentence." "This is also a sentence."])
-
-)  
+)
 
 ; First (dumb) Attempt
 #_(defn make-treebank-linker
