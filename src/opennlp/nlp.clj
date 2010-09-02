@@ -31,6 +31,11 @@
   (.exists (File. filename)))
 
 
+(defn files-exist?
+  [filenames]
+  (reduce 'and (map file-exist? filenames)))
+
+
 (defn make-sentence-detector
   "Return a function for detecting sentences based on a given model file."
   [modelfile]
@@ -75,7 +80,7 @@
 (defn make-name-finder
   "Return a function for finding names from tokens based on given model file(s)."
   [& modelfiles]
-  (if-not (reduce 'and (map file-exist? modelfiles))
+  (if-not (files-exist? modelfiles)
     (throw (FileNotFoundException. "Not all model files exist."))
     (fn name-finder
       [tokens]
@@ -208,11 +213,7 @@
   "Return a function for treebank parsing a sequence of sentences, based on
   given build, check, tag, chunk models and a set of head rules."
   [buildmodel checkmodel tagmodel chunkmodel headrules & opts]
-  (if-not (and (file-exist? buildmodel)
-               (file-exist? checkmodel)
-               (file-exist? tagmodel)
-               (file-exist? chunkmodel)
-               (file-exist? headrules))
+  (if-not (files-exist? [buildmodel checkmodel tagmodel chunkmodel headrules])
     (throw (FileNotFoundException. "One or more of the model or rule files does not exist"))
     (fn treebank-parser
       [text]
