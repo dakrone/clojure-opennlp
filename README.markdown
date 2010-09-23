@@ -69,6 +69,16 @@ A notable difference is that it returns a list of structs with the
      {:phrase ["is" "pressed"], :tag "VP"})
     nil
 
+For just the phrases:
+
+    user=> (phrases (chunker (pos-tag (tokenize "The override system is meant to deactivate the accelerator when the brake pedal is pressed."))))
+    (["The" "override" "system"] ["is" "meant" "to" "deactivate"] ["the" "accelerator"] ["when"] ["the" "brake" "pedal"] ["is" "pressed"])
+
+And with just strings:
+
+    user=> (phrase-strings (chunker (pos-tag (tokenize "The override system is meant to deactivate the accelerator when the brake pedal is pressed."))))
+    ("The override system" "is meant to deactivate" "the accelerator" "when" "the brake pedal" "is pressed")
+
 
 Treebank-parsing
 ----------------
@@ -246,6 +256,7 @@ TODO
 - <del>Treebank parser</del> (done!)
 - <del>Laziness </del> (done! for now.)
 - Treebank linker (WIP)
+- <del>Phrase helpers for chunker</del> (done!)
 - Figure out what license to use.
 - Filters for treebank-parser
 - Return multiple probability results for treebank-parser

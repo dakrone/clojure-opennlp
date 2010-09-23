@@ -152,6 +152,16 @@
              (partition 2 (interleave types token-chunks)))))))
 
 
+(defn phrases
+  "Given the chunks from a treebank-chunker, return just a list of phrase word-lists."
+  [phrases]
+  (map :phrase phrases))
+
+(defn phrase-strings
+  "Given the chunks from a treebank-chunker, return a list of phrase strings."
+  [phrases]
+  (map #(apply str (interpose " " %)) (chunks phrases)))
+
 ; Docs for treebank chunking:
 
 ;(def chunker (make-treebank-chunker "models/EnglishChunk.bin.gz"))
