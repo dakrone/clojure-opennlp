@@ -159,8 +159,8 @@
 
 (defn phrase-strings
   "Given the chunks from a treebank-chunker, return a list of phrase strings."
-  [phrases]
-  (map #(apply str (interpose " " %)) (chunks phrases)))
+  [phrase-chunks]
+  (map #(apply str (interpose " " %)) (phrases phrase-chunks)))
 
 ; Docs for treebank chunking:
 
