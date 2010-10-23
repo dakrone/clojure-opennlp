@@ -1,6 +1,7 @@
 ; Clojure opennlp tools
 (ns opennlp.nlp
   (:use [clojure.contrib.seq-utils :only [indexed]])
+  (:use [clojure.contrib.pprint :only [pprint]])
   (:import [java.io File FileNotFoundException])
   (:import [opennlp.maxent DataStream GISModel])
   (:import [opennlp.maxent.io PooledGISModelReader SuffixSensitiveGISModelReader])
@@ -326,7 +327,7 @@
 (defn add-mentions!
   "Add mentions to the parse map."
   [entity index parse-map]
-  (map #(add-mention! % index parse-map) (.getMentions entity)))
+  (dorun (map #(add-mention! % index parse-map) (iterator-seq (.getMentions entity)))))
 
 
 (defn add-entities
@@ -334,7 +335,7 @@
   [entities]
   (let [parse-map (atom {})
         i-entities (indexed entities)]
-    (map #(add-mentions! (second %) (first %) parse-map) entities)
+    (dorun (map (fn [[index entity]] (add-mentions! entity index parse-map)) i-entities))
     @parse-map))
 
 
@@ -343,6 +344,8 @@
   "Given a list of parses and entities, print them out."
   [parses entities]
   (let [parse-map (add-entities entities)]
+    (println "parse-map:" parse-map)
+    (println "parses:" parses)
     (map #(print-parse % parse-map) parses)))
 
 
@@ -374,13 +377,10 @@
       (let [parses (atom [])
             indexed-sentences (indexed sentences)
             extents (doall (map #(coref-sentence (second %) parses (first %) tblinker) indexed-sentences))]
-        (println extents (str (count (first extents))))
-        (println @parses)
         (let [mention-array (into-array Mention (first extents))
-              foo (println "mentions:" mention-array)
               entities (.getEntities tblinker mention-array)]
-          (println "mentions:" mention-array)
-          (println "entities:" entities)
+          (println "mentions:" (seq mention-array))
+          (println "entities:" (seq entities))
           (show-parses @parses entities))))))
 
 
@@ -388,7 +388,7 @@
 
   (def tbl (make-treebank-linker "coref"))
   (def treebank-parser (make-treebank-parser "parser-models/build.bin.gz" "parser-models/check.bin.gz" "parser-models/tag.bin.gz" "parser-models/chunk.bin.gz" "parser-models/head_rules"))
-  (def s (treebank-parser ["This is a sentence ."]))
+  (def s (treebank-parser ["Mary said she would help me ."]))
   (tbl s)
 
 )
