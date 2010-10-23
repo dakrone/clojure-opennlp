@@ -299,7 +299,7 @@
     (print-parse c)
     (reset! start (.getEnd s))))
 
-
+;;; This is broken, don't use this.
 (defn print-parse
   "Given a parse and the EntityMentions-to-parse map, print out the parse."
   [p parse-map]
@@ -377,6 +377,7 @@
       (let [parses (atom [])
             indexed-sentences (indexed sentences)
             extents (doall (map #(coref-sentence (second %) parses (first %) tblinker) indexed-sentences))]
+        ;; FIXME: don't use the first extent, map over all of them. This is for testing/debug
         (let [mention-array (into-array Mention (first extents))
               entities (.getEntities tblinker mention-array)]
           (println "mentions:" (seq mention-array))
@@ -388,9 +389,18 @@
 
   (def tbl (make-treebank-linker "coref"))
   (def treebank-parser (make-treebank-parser "parser-models/build.bin.gz" "parser-models/check.bin.gz" "parser-models/tag.bin.gz" "parser-models/chunk.bin.gz" "parser-models/head_rules"))
-  (def s (treebank-parser ["Mary said she would help me ."]))
+  (def s (treebank-parser ["Mary said she would help me ." "I told her I didn't need her help."]))
   (tbl s)
 
+
+;;;  This is currently what I get back:
+  
+;;;  mentions: (#<Mention mention(span=0..4,hs=0..4, type=null, id=-1 Mary )> #<Mention mention(span=10..13,hs=10..13, type=null, id=-1 she )> #<Mention mention(span=25..27,hs=25..27, type=null, id=-1 me )>)
+;;;  entities: (#<DiscourseEntity [ me ]> #<DiscourseEntity [ Mary, she ]>)
+;;;  parse-map: {#<Parse she> 2, #<Parse Mary> 2, #<Parse me> 1}
+;;;  parses: [#<Parse Mary said she would help me . > #<Parse I told her I didn't need her help. >]
+
+;;;  What I really need is a good way to express this in Clojure's datastructures.
 )
 
 ; First (dumb) Attempt
