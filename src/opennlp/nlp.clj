@@ -24,8 +24,9 @@
   nil)
 
 
-; OpenNLP property for pos-tagging
-(def *beam-size* 3)
+;;; OpenNLP property for pos-tagging. Meant to be rebound before
+;;; calling the tagging creators
+(def #^{:dynamic true} *beam-size* 3)
 
 (defn- file-exist?
   [filename]
