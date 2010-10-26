@@ -80,6 +80,16 @@ And with just strings:
     ("The override system" "is meant to deactivate" "the accelerator" "when" "the brake pedal" "is pressed")
 
 
+Beam Size
+---------
+
+You can rebind ```opennlp.nlp/*beam-size*``` (the default is 3) for
+the pos-tagger and treebank-parser with:
+
+    (binding [*beam-size* 1]
+      (def pos-tag (make-pos-tagger "models/tag.bin.gz")))
+
+
 Treebank-parsing
 ----------------
 

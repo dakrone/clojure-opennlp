@@ -18,11 +18,6 @@
   (:import [opennlp.tools.parser AbstractBottomUpParser Parse])
   (:import [opennlp.tools.postag POSTaggerME DefaultPOSContextGenerator POSContextGenerator]))
 
-; These are in core in clojure 1.2, so only require them if below 2
-(if (< (:minor *clojure-version*) 2)
-  (use '[clojure.contrib.seq-utils :only [partition-by flatten]])
-  nil)
-
 
 ;;; OpenNLP property for pos-tagging. Meant to be rebound before
 ;;; calling the tagging creators
