@@ -99,11 +99,11 @@ Regular:
 
 A parser with a tag dictionary file:
 
-    user=> (def treebank-parser (make-treebank-parser "parser-models/build.bin.gz" "parser-models/check.bin.gz" "parser-models/tag.bin.gz" "parser-models/chunk.bin.gz" "parser-models/head_rules" {:tagdict "parser-models/tagdict"}))
+    user=> (def treebank-parser (make-treebank-parser "parser-models/build.bin.gz" "parser-models/check.bin.gz" "parser-models/tag.bin.gz" "parser-models/chunk.bin.gz" "parser-models/head_rules" :tagdict "parser-models/tagdict"))
 
 A parser with case-sensitive tag dictionary file (default is false):
 
-    user=> (def treebank-parser (make-treebank-parser "parser-models/build.bin.gz" "parser-models/check.bin.gz" "parser-models/tag.bin.gz" "parser-models/chunk.bin.gz" "parser-models/head_rules" {:tagdict "parser-models/tagdict" :case-sensitive true}))
+    user=> (def treebank-parser (make-treebank-parser "parser-models/build.bin.gz" "parser-models/check.bin.gz" "parser-models/tag.bin.gz" "parser-models/chunk.bin.gz" "parser-models/head_rules" :tagdict "parser-models/tagdict" :case-sensitive true))
 
 To use the treebank-parser, pass an array of sentences with their tokens
 separated by whitespace (preferably using tokenize)
