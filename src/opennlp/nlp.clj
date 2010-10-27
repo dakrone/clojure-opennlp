@@ -7,7 +7,7 @@
   #_(:import [opennlp.maxent.io PooledGISModelReader SuffixSensitiveGISModelReader])
   #_(:import [opennlp.tools.util Span])
   #_(:import [opennlp.tools.dictionary Dictionary])
-  #_(:import [opennlp.tools.tokenize TokenizerME])
+  (:import [opennlp.tools.tokenize TokenizerModel TokenizerME])
   (:import [opennlp.tools.sentdetect SentenceModel SentenceDetectorME])
   #_(:import [opennlp.tools.namefind NameFinderME])
   #_(:import [opennlp.tools.chunker ChunkerME])
@@ -32,30 +32,30 @@
   (reduce 'and (map file-exist? filenames)))
 
 (defn make-sentence-detector
+  "Return a function for splitting sentences given a model file."
   [modelfile]
   (if-not (file-exist? modelfile)
     (throw (FileNotFoundException.))
-    (fn sentencizer
+    (fn sentence-detector
       [text]
-      (let [model-stream (FileInputStream. modelfile)
-            model (SentenceModel. model-stream)
-            detector (SentenceDetectorME. model)
-            sentences (.sentDetect detector text)]
-        (into [] sentences)))))
+      (with-open [model-stream (FileInputStream. modelfile)]
+        (let [model (SentenceModel. model-stream)
+              detector (SentenceDetectorME. model)
+              sentences (.sentDetect detector text)]
+          (into [] sentences))))))
 
-
-#_(defn make-tokenizer
+(defn make-tokenizer
   "Return a function for tokenizing a sentence based on a given model file."
   [modelfile]
   (if-not (file-exist? modelfile)
-    (throw (FileNotFoundException. "Model file does not exist."))
+    (throw (FileNotFoundException.))
     (fn tokenizer
       [sentence]
-      (let [model     (.getModel (SuffixSensitiveGISModelReader. (File. modelfile)))
-            tokenizer (TokenizerME. model)
-            tokens    (.tokenize tokenizer sentence)]
-        (into [] tokens)))))
-
+      (with-open [model-stream (FileInputStream. modelfile)]
+        (let [model (TokenizerModel. model-stream)
+              tokenizer (TokenizerME. model)
+              tokens (.tokenize tokenizer sentence)]
+          (into [] tokens))))))
 
 #_(defn make-pos-tagger
   "Return a function for tagging tokens based on a given model file."

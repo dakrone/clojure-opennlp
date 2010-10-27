@@ -5,7 +5,7 @@
   (:import [java.io File FileNotFoundException]))
 
 (def get-sentences (make-sentence-detector "models/en-sent.bin"))
-#_(def tokenize (make-tokenizer "models/EnglishTok.bin.gz"))
+(def tokenize (make-tokenizer "models/en-token.bin"))
 #_(def pos-tag (make-pos-tagger "models/tag.bin.gz"))
 #_(def name-find (make-name-finder "models/namefind/person.bin.gz"))
 #_(def chunker (make-treebank-chunker "models/EnglishChunk.bin.gz"))
@@ -17,13 +17,13 @@
          (is (= (get-sentences "'Hmmm.... now what?' Mr. Green said to H.A.L.")
                 ["'Hmmm.... now what?'" "Mr. Green said to H.A.L."])))
 
-(comment
+
   (deftest tokenizer-test
     (is (= (tokenize "First sentence.")
            ["First" "sentence" "."]))
     (is (= (tokenize "Mr. Smith gave a car to his son on Friday.")
            ["Mr." "Smith" "gave" "a" "car" "to" "his" "son" "on" "Friday" "."])))
-
+(comment
   (deftest pos-tag-test
     (is (= (pos-tag (tokenize "Mr. Smith gave a car to his son on Friday."))
            '(["Mr." "NNP"] ["Smith" "NNP"] ["gave" "VBD"] ["a" "DT"] ["car" "NN"] ["to" "TO"] ["his" "PRP$"] ["son" "NN"] ["on" "IN"] ["Friday" "NNP"] ["." "."]))))
