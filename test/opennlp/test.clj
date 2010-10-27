@@ -6,7 +6,7 @@
 
 (def get-sentences (make-sentence-detector "models/en-sent.bin"))
 (def tokenize (make-tokenizer "models/en-token.bin"))
-#_(def pos-tag (make-pos-tagger "models/tag.bin.gz"))
+(def pos-tag (make-pos-tagger "models/en-pos-maxent.bin"))
 #_(def name-find (make-name-finder "models/namefind/person.bin.gz"))
 #_(def chunker (make-treebank-chunker "models/EnglishChunk.bin.gz"))
 
@@ -23,11 +23,12 @@
            ["First" "sentence" "."]))
     (is (= (tokenize "Mr. Smith gave a car to his son on Friday.")
            ["Mr." "Smith" "gave" "a" "car" "to" "his" "son" "on" "Friday" "."])))
-(comment
+
   (deftest pos-tag-test
     (is (= (pos-tag (tokenize "Mr. Smith gave a car to his son on Friday."))
            '(["Mr." "NNP"] ["Smith" "NNP"] ["gave" "VBD"] ["a" "DT"] ["car" "NN"] ["to" "TO"] ["his" "PRP$"] ["son" "NN"] ["on" "IN"] ["Friday" "NNP"] ["." "."]))))
 
+(comment
   (deftest name-finder-test
     (is (= (name-find (tokenize "My name is Lee, not John"))
            '("Lee" "John"))))

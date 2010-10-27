@@ -16,12 +16,15 @@
   #_(:import [opennlp.tools.lang.english ParserTagger ParserChunker HeadRules TreebankLinker CorefParse])
   #_(:import [opennlp.tools.parser.chunking Parser])
   #_(:import [opennlp.tools.parser AbstractBottomUpParser Parse])
-  #_(:import [opennlp.tools.postag POSTaggerME DefaultPOSContextGenerator POSContextGenerator]))
+  (:import [opennlp.tools.postag POSModel POSTaggerME]))
 
 
 ;;; OpenNLP property for pos-tagging. Meant to be rebound before
 ;;; calling the tagging creators
 (def #^{:dynamic true} *beam-size* 3)
+
+;;; Caching to use for pos-tagging
+(def #^{:dynamic true} *cache-size* 1024)
 
 (defn- file-exist?
   [filename]
@@ -35,7 +38,7 @@
   "Return a function for splitting sentences given a model file."
   [modelfile]
   (if-not (file-exist? modelfile)
-    (throw (FileNotFoundException.))
+    (throw (FileNotFoundException. "Model file does not exist."))
     (fn sentence-detector
       [text]
       (with-open [model-stream (FileInputStream. modelfile)]
@@ -48,7 +51,7 @@
   "Return a function for tokenizing a sentence based on a given model file."
   [modelfile]
   (if-not (file-exist? modelfile)
-    (throw (FileNotFoundException.))
+    (throw (FileNotFoundException. "Model file does not exist."))
     (fn tokenizer
       [sentence]
       (with-open [model-stream (FileInputStream. modelfile)]
@@ -57,20 +60,20 @@
               tokens (.tokenize tokenizer sentence)]
           (into [] tokens))))))
 
-#_(defn make-pos-tagger
-  "Return a function for tagging tokens based on a given model file."
+(defn make-pos-tagger
+  "Return a function for tagging tokens based on a givel model file."
   [modelfile]
   (if-not (file-exist? modelfile)
     (throw (FileNotFoundException. "Model file does not exist."))
     (fn pos-tagger
       [tokens]
-      (let [token-array (if (vector? tokens) (into-array tokens) tokens)
-            #^POSContextGenerator cg (DefaultPOSContextGenerator. nil)
-            model  (.getModel (SuffixSensitiveGISModelReader. (File. modelfile)))
-            tagger (POSTaggerME. *beam-size* model cg nil)
-            tags   (.tag tagger 1 token-array)]
-        (map #(vector %1 %2) tokens (first tags))))))
-
+      {:pre [(vector? tokens)]}
+      (with-open [model-stream (FileInputStream. modelfile)]
+        (let [token-array (into-array tokens)
+              model (POSModel. model-stream)
+              tagger (POSTaggerME. model *beam-size* *cache-size*)
+              tags (.tag tagger token-array)]
+          (partition 2 (interleave tokens tags)))))))
 
 #_(defn make-name-finder
   "Return a function for finding names from tokens based on given model file(s)."
