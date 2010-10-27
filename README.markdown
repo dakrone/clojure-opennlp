@@ -94,7 +94,7 @@ Treebank-parsing
 ----------------
 
 <b>Note: Treebank parsing is very memory intensive, make sure your JVM has
-a sufficient amount of memory available (using something like -Xmx1024m)
+a sufficient amount of memory available (using something like -Xmx512m)
 or you will run out of heap space when using a treebank parser.</b>
 
 Treebank parsing gets its own section due to how complex it is. One difference
