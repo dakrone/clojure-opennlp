@@ -41,6 +41,7 @@
     (throw (FileNotFoundException. "Model file does not exist."))
     (fn sentence-detector
       [text]
+      {:pre [(string? text)]}
       (with-open [model-stream (FileInputStream. modelfile)]
         (let [model (SentenceModel. model-stream)
               detector (SentenceDetectorME. model)
@@ -54,6 +55,7 @@
     (throw (FileNotFoundException. "Model file does not exist."))
     (fn tokenizer
       [sentence]
+      {:pre [(string? sentence)]}
       (with-open [model-stream (FileInputStream. modelfile)]
         (let [model (TokenizerModel. model-stream)
               tokenizer (TokenizerME. model)
