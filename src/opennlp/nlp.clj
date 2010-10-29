@@ -9,7 +9,7 @@
   #_(:import [opennlp.tools.dictionary Dictionary])
   (:import [opennlp.tools.tokenize TokenizerModel TokenizerME])
   (:import [opennlp.tools.sentdetect SentenceModel SentenceDetectorME])
-  #_(:import [opennlp.tools.namefind NameFinderME])
+  (:import [opennlp.tools.namefind TokenNameFinderModel NameFinderME])
   #_(:import [opennlp.tools.chunker ChunkerME])
   #_(:import [opennlp.tools.coref LinkerMode])
   #_(:import [opennlp.tools.coref.mention Mention DefaultParse])
@@ -73,7 +73,25 @@
               model (POSModel. model-stream)
               tagger (POSTaggerME. model *beam-size* *cache-size*)
               tags (.tag tagger token-array)]
-          (partition 2 (interleave tokens tags)))))))
+          (map vector tokens tags))))))
+
+(defn make-name-finder
+  "Return a fucntion for finding names from tokens based on a given
+   model file."
+  [modelfile]
+  (if-not (file-exist? modelfile)
+    (throw (FileNotFoundException. "Model file does not exist."))
+    (fn name-finder
+      [tokens & contexts]
+      {:pre [(seq tokens)]}
+      (distinct
+       (with-open [model-stream (FileInputStream. modelfile)]
+         (let [model (TokenNameFinderModel. model-stream)
+               finder (NameFinderME. model *beam-size*)
+               matches (if (seq contexts)
+                         (.find finder tokens)
+                         (.find finder contexts))]
+           matches))))))
 
 #_(defn make-name-finder
   "Return a function for finding names from tokens based on given model file(s)."

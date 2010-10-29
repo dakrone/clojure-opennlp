@@ -7,7 +7,7 @@
 (def get-sentences (make-sentence-detector "models/en-sent.bin"))
 (def tokenize (make-tokenizer "models/en-token.bin"))
 (def pos-tag (make-pos-tagger "models/en-pos-maxent.bin"))
-#_(def name-find (make-name-finder "models/namefind/person.bin.gz"))
+(def name-find (make-name-finder "models/namefind/person.bin.gz"))
 #_(def chunker (make-treebank-chunker "models/EnglishChunk.bin.gz"))
 
 
@@ -18,21 +18,26 @@
                 ["'Hmmm.... now what?'" "Mr. Green said to H.A.L."])))
 
 
-  (deftest tokenizer-test
+(deftest tokenizer-test
     (is (= (tokenize "First sentence.")
            ["First" "sentence" "."]))
     (is (= (tokenize "Mr. Smith gave a car to his son on Friday.")
            ["Mr." "Smith" "gave" "a" "car" "to" "his" "son" "on" "Friday" "."])))
 
-  (deftest pos-tag-test
+(deftest pos-tag-test
     (is (= (pos-tag (tokenize "Mr. Smith gave a car to his son on Friday."))
            '(["Mr." "NNP"] ["Smith" "NNP"] ["gave" "VBD"] ["a" "DT"] ["car" "NN"] ["to" "TO"] ["his" "PRP$"] ["son" "NN"] ["on" "IN"] ["Friday" "NNP"] ["." "."]))))
 
 (comment
   (deftest name-finder-test
+
+(deftest name-finder-test
     (is (= (name-find (tokenize "My name is Lee, not John"))
            '("Lee" "John"))))
 
+
+(comment
+  
   (deftest chunker-test
     (is (= (chunker (pos-tag (tokenize "The override system is meant to deactivate the accelerator when the brake pedal is pressed.")))
            '({:phrase ["The" "override" "system"] :tag "NP"}
