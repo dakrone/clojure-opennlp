@@ -7,7 +7,7 @@
 (def get-sentences (make-sentence-detector "models/en-sent.bin"))
 (def tokenize (make-tokenizer "models/en-token.bin"))
 (def pos-tag (make-pos-tagger "models/en-pos-maxent.bin"))
-(def name-find (make-name-finder "models/namefind/person.bin.gz"))
+(def name-find (make-name-finder "models/namefind/en-ner-person.bin"))
 #_(def chunker (make-treebank-chunker "models/EnglishChunk.bin.gz"))
 
 

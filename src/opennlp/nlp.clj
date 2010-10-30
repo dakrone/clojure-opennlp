@@ -85,15 +85,17 @@
     (throw (FileNotFoundException. "Model file does not exist."))
     (fn name-finder
       [tokens & contexts]
-      {:pre [(seq tokens)]}
+      {:pre [(seq tokens)
+             (every? #(= (class %) String) tokens)]}
       (distinct
        (with-open [model-stream (FileInputStream. modelfile)]
          (let [model (TokenNameFinderModel. model-stream)
-               finder (NameFinderME. model *beam-size*)
-               matches (if (seq contexts)
-                         (.find finder tokens)
-                         (.find finder contexts))]
-           matches))))))
+               finder (NameFinderME. model)
+               matches (.find finder (into-array String tokens))]
+           (if-not (seq matches)
+             '()
+             (map #(get tokens %)
+                  (map #(.getStart %) matches)))))))))
 
 #_(defn make-name-finder
   "Return a function for finding names from tokens based on given model file(s)."
