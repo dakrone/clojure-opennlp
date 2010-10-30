@@ -92,27 +92,7 @@
          (let [model (TokenNameFinderModel. model-stream)
                finder (NameFinderME. model)
                matches (.find finder (into-array String tokens))]
-           (if-not (seq matches)
-             '()
-             (map #(get tokens %)
-                  (map #(.getStart %) matches)))))))))
-
-#_(defn make-name-finder
-  "Return a function for finding names from tokens based on given model file(s)."
-  [& modelfiles]
-  (if-not (files-exist? modelfiles)
-    (throw (FileNotFoundException. "Not all model files exist."))
-    (fn name-finder
-      [tokens]
-      (distinct
-        (flatten
-          (for [modelfile modelfiles]
-            (let [token-array (if (vector? tokens) (into-array tokens) tokens)
-                  model   (.getModel (PooledGISModelReader. (File. modelfile)))
-                  finder  (NameFinderME. model)
-                  matches (.find finder token-array)]
-              (map #(nth tokens (.getStart %)) matches))))))))
-
+           (map #(get tokens (.getStart %)) matches)))))))
 
 (defn- split-chunks
   "Partition a sequence of treebank chunks by their phrases."

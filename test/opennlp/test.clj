@@ -28,14 +28,17 @@
     (is (= (pos-tag (tokenize "Mr. Smith gave a car to his son on Friday."))
            '(["Mr." "NNP"] ["Smith" "NNP"] ["gave" "VBD"] ["a" "DT"] ["car" "NN"] ["to" "TO"] ["his" "PRP$"] ["son" "NN"] ["on" "IN"] ["Friday" "NNP"] ["." "."]))))
 
+(deftest name-finder-test
+    (is (= (name-find (tokenize "My name is Lee, not John"))
+           '("Lee" "John")))
+    (is (= (name-find ["adsf"])
+           '())))
+
 (deftest precondition-test
   (is (thrown? java.lang.AssertionError (get-sentences 1)))
   (is (thrown? java.lang.AssertionError (tokenize 1)))
-  (is (thrown? java.lang.AssertionError (pos-tag "foooo"))))
-
-(deftest name-finder-test
-    (is (= (name-find (tokenize "My name is Lee, not John"))
-           '("Lee" "John"))))
+  (is (thrown? java.lang.AssertionError (pos-tag "foooo")))
+  (is (thrown? java.lang.AssertionError (name-find "asdf"))))
 
 
 (comment
