@@ -4,5 +4,6 @@
                  [org.clojure/clojure-contrib "1.2.0"]
                  [org.clojars.thnetos/opennlp-tools "1.4.3"]
                  [org.clojars.pjt/jwnl "1.3.3"]]
-  :dev-dependencies [[lein-clojars "0.5.0-SNAPSHOT"]])
+  :dev-dependencies [[swank-clojure "1.2.1"]
+                     [lein-clojars "0.5.0-SNAPSHOT"]])
 

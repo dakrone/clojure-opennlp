@@ -32,7 +32,6 @@
   [filenames]
   (reduce 'and (map file-exist? filenames)))
 
-
 (defn make-sentence-detector
   "Return a function for detecting sentences based on a given model file."
   [modelfile]
@@ -53,7 +52,9 @@
     (throw (FileNotFoundException. "Model file does not exist."))
     (fn tokenizer
       [sentence]
-      (let [model     (.getModel (SuffixSensitiveGISModelReader. (File. modelfile)))
+      (let [model     (if (instance? GISModel modelfile)
+			modelfile
+			(.getModel (SuffixSensitiveGISModelReader. (File. modelfile))))
             tokenizer (TokenizerME. model)
             tokens    (.tokenize tokenizer sentence)]
         (into [] tokens)))))
@@ -68,7 +69,9 @@
       [tokens]
       (let [token-array (if (vector? tokens) (into-array tokens) tokens)
             #^POSContextGenerator cg (DefaultPOSContextGenerator. nil)
-            model  (.getModel (SuffixSensitiveGISModelReader. (File. modelfile)))
+            model  (if (instance? GISModel modelfile)
+		     modelfile
+		     (.getModel (SuffixSensitiveGISModelReader. (File. modelfile))))
             tagger (POSTaggerME. *beam-size* model cg nil)
             tags   (.tag tagger 1 token-array)]
         (map #(vector %1 %2) tokens (first tags))))))
@@ -85,7 +88,9 @@
         (flatten
           (for [modelfile modelfiles]
             (let [token-array (if (vector? tokens) (into-array tokens) tokens)
-                  model   (.getModel (PooledGISModelReader. (File. modelfile)))
+                  model   (if (instance? GISModel modelfile)
+			    modelfile
+			    (.getModel (PooledGISModelReader. (File. modelfile))))
                   finder  (NameFinderME. model)
                   matches (.find finder token-array)]
               (map #(nth tokens (.getStart %)) matches))))))))
@@ -138,7 +143,9 @@
     (throw (FileNotFoundException. "Model file does not exist."))
     (fn treebank-chunker
       [pos-tagged-tokens]
-      (let [model         (.getModel (SuffixSensitiveGISModelReader. (File. modelfile)))
+      (let [model         (if (instance? GISModel modelfile)
+			    modelfile
+			    (.getModel (SuffixSensitiveGISModelReader. (File. modelfile))))
             chunker       (ChunkerME. model)
             [tokens tags] (de-interleave pos-tagged-tokens)
             chunks        (into [] (seq (.chunk chunker tokens tags)))
@@ -224,8 +231,12 @@
     (throw (FileNotFoundException. "One or more of the model or rule files does not exist"))
     (fn treebank-parser
       [text]
-      (let [builder (-> (File. buildmodel) SuffixSensitiveGISModelReader. .getModel)
-            checker (-> (File. checkmodel) SuffixSensitiveGISModelReader. .getModel)
+      (let [builder (if (instance? GISModel modelfile)
+		      modelfile
+		      (-> (File. buildmodel) SuffixSensitiveGISModelReader. .getModel))
+            checker (if (instance? GISModel modelfile)
+		      modelfile
+		      (-> (File. checkmodel) SuffixSensitiveGISModelReader. .getModel))
             opt-map (apply hash-map opts)
             parsetagger (if (and (:tagdict opt-map) (file-exist? (:tagdict opt-map)))
                           (if (:case-sensitive opt-map)
