@@ -231,11 +231,11 @@
     (throw (FileNotFoundException. "One or more of the model or rule files does not exist"))
     (fn treebank-parser
       [text]
-      (let [builder (if (instance? GISModel modelfile)
-		      modelfile
+      (let [builder (if (instance? GISModel buildmodel)
+		      buildmodel
 		      (-> (File. buildmodel) SuffixSensitiveGISModelReader. .getModel))
-            checker (if (instance? GISModel modelfile)
-		      modelfile
+            checker (if (instance? GISModel checkmodel)
+		      checkmodel
 		      (-> (File. checkmodel) SuffixSensitiveGISModelReader. .getModel))
             opt-map (apply hash-map opts)
             parsetagger (if (and (:tagdict opt-map) (file-exist? (:tagdict opt-map)))
