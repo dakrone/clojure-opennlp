@@ -8,7 +8,7 @@
 (def tokenize (make-tokenizer "models/en-token.bin"))
 (def pos-tag (make-pos-tagger "models/en-pos-maxent.bin"))
 (def name-find (make-name-finder "models/namefind/en-ner-person.bin"))
-#_(def chunker (make-treebank-chunker "models/EnglishChunk.bin.gz"))
+(def chunker (make-treebank-chunker "models/en-chunker.bin"))
 
 
 (deftest sentence-split-test
@@ -41,8 +41,6 @@
   (is (thrown? java.lang.AssertionError (name-find "asdf"))))
 
 
-(comment
-  
   (deftest chunker-test
     (is (= (chunker (pos-tag (tokenize "The override system is meant to deactivate the accelerator when the brake pedal is pressed.")))
            '({:phrase ["The" "override" "system"] :tag "NP"}
@@ -52,6 +50,8 @@
              {:phrase ["the" "brake" "pedal"] :tag "NP"}
              {:phrase ["is" "pressed"] :tag "VP"}))))
 
+(comment
+  
   (try
     (do
       (def parser (make-treebank-parser "parser-models/build.bin.gz" "parser-models/check.bin.gz" "parser-models/tag.bin.gz" "parser-models/chunk.bin.gz" "parser-models/head_rules"))
@@ -82,8 +82,8 @@
       (is (= (type (lazy-chunk s tokenize pos-tag chunker))
              clojure.lang.LazySeq))
       (is (= (first (lazy-chunk s tokenize pos-tag chunker))
-             '({:phrase ["First"], :tag "ADVP"} {:phrase ["sentence"], :tag "NP"})))))
+             '({:phrase ["First"], :tag "ADVP"} {:phrase ["sentence"], :tag "NP"}))))))
 
-  )
+  
 
 

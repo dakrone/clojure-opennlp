@@ -10,7 +10,7 @@
   (:import [opennlp.tools.tokenize TokenizerModel TokenizerME])
   (:import [opennlp.tools.sentdetect SentenceModel SentenceDetectorME])
   (:import [opennlp.tools.namefind TokenNameFinderModel NameFinderME])
-  #_(:import [opennlp.tools.chunker ChunkerME])
+  (:import [opennlp.tools.chunker ChunkerModel ChunkerME])
   #_(:import [opennlp.tools.coref LinkerMode])
   #_(:import [opennlp.tools.coref.mention Mention DefaultParse])
   #_(:import [opennlp.tools.lang.english ParserTagger ParserChunker HeadRules TreebankLinker CorefParse])
@@ -133,7 +133,7 @@
 
 (defstruct treebank-phrase :phrase :tag)
 
-#_(defn make-treebank-chunker
+(defn make-treebank-chunker
   "Return a function for chunking phrases from pos-tagged tokens based on
   a given model file."
   [modelfile]
@@ -141,15 +141,16 @@
     (throw (FileNotFoundException. "Model file does not exist."))
     (fn treebank-chunker
       [pos-tagged-tokens]
-      (let [model         (.getModel (SuffixSensitiveGISModelReader. (File. modelfile)))
-            chunker       (ChunkerME. model)
-            [tokens tags] (de-interleave pos-tagged-tokens)
-            chunks        (into [] (seq (.chunk chunker tokens tags)))
-            sized-chunks  (map size-chunk (split-chunks chunks))
-            [types sizes] (de-interleave sized-chunks)
-            token-chunks  (split-with-size sizes tokens)]
-        (map #(struct treebank-phrase (into [] (last %)) (first %))
-             (partition 2 (interleave types token-chunks)))))))
+      (with-open [modelstream (FileInputStream. modelfile)]
+        (let [model   (ChunkerModel. modelstream)
+              chunker (ChunkerME. model *beam-size*)
+              [tokens tags] (de-interleave pos-tagged-tokens)
+              chunks  (into [] (seq (.chunk chunker tokens tags)))
+              sized-chunks (map size-chunk (split-chunks chunks))
+              [types sizes] (de-interleave sized-chunks)
+              token-chunks (split-with-size sizes tokens)]
+          (map #(struct treebank-phrase (into [] (last %)) (first %))
+               (partition 2 (interleave types token-chunks))))))))
 
 
 (defn phrases
