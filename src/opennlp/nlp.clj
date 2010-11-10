@@ -3,9 +3,7 @@
   (:use [clojure.contrib.seq-utils :only [indexed]])
   (:use [clojure.contrib.pprint :only [pprint]])
   (:import [java.io File FileNotFoundException FileInputStream])
-  #_(:import [opennlp.maxent DataStream GISModel])
-  #_(:import [opennlp.maxent.io PooledGISModelReader SuffixSensitiveGISModelReader])
-  #_(:import [opennlp.tools.util Span])
+  (:import [opennlp.tools.util Span])
   #_(:import [opennlp.tools.dictionary Dictionary])
   (:import [opennlp.tools.tokenize TokenizerModel TokenizerME])
   (:import [opennlp.tools.sentdetect SentenceModel SentenceDetectorME])
@@ -15,7 +13,8 @@
   #_(:import [opennlp.tools.coref.mention Mention DefaultParse])
   #_(:import [opennlp.tools.lang.english ParserTagger ParserChunker HeadRules TreebankLinker CorefParse])
   #_(:import [opennlp.tools.parser.chunking Parser])
-  #_(:import [opennlp.tools.parser AbstractBottomUpParser Parse])
+  (:import [opennlp.tools.parser Parse ParserModel ParserFactory AbstractBottomUpParser])
+  (:import [opennlp.tools.cmdline.parser ParserTool])
   (:import [opennlp.tools.postag POSModel POSTaggerME]))
 
 
@@ -197,56 +196,29 @@
     (.replaceAll "\\}" "-RCB-")))
 
 
-#_(defn- parse-line
+(defn- parse-line
   "Given a line and Parser object, return a list of Parses."
   [line parser]
   (let [line (strip-parens line)
         results (StringBuffer.)
-        words (.split line " ")
-        p (Parse. line (Span. 0 (count line)) AbstractBottomUpParser/INC_NODE (double 1) (int 0))]
-    (loop [parse-index 0 start-index 0]
-      (if (> (+ parse-index 1) (count words))
-        nil
-        (let [token (get words parse-index)]
-          ;(println "inserting " token " at " i " pidx " parse-index " sidx " start-index)
-          ; Mutable state, but contained only in the parse-line function
-          (.insert p (Parse. line
-                             (Span. start-index (+ start-index (count token)))
-                             AbstractBottomUpParser/TOK_NODE
-                             (double 0)
-                             (int parse-index)))
-          (recur (inc parse-index) (+ 1 start-index (count token))))))
-    (.show (.parse parser p) results)
+        parse-num 1]
+    (.show (first (ParserTool/parseLine line parser parse-num)) results)
     (.toString results)))
 
 
-#_(defn make-treebank-parser
+(defn make-treebank-parser
   "Return a function for treebank parsing a sequence of sentences, based on
-  given build, check, tag, chunk models and a set of head rules."
-  [buildmodel checkmodel tagmodel chunkmodel headrules & opts]
-  (if-not (files-exist? [buildmodel checkmodel tagmodel chunkmodel headrules])
-    (throw (FileNotFoundException. "One or more of the model or rule files does not exist"))
+  a given model file."
+  [modelfile]
+  (if-not (file-exist? modelfile)
+    (throw (FileNotFoundException. "The model file does not exist."))
     (fn treebank-parser
       [text]
-      (let [builder (-> (File. buildmodel) SuffixSensitiveGISModelReader. .getModel)
-            checker (-> (File. checkmodel) SuffixSensitiveGISModelReader. .getModel)
-            opt-map (apply hash-map opts)
-            parsetagger (if (and (:tagdict opt-map) (file-exist? (:tagdict opt-map)))
-                          (if (:case-sensitive opt-map)
-                            (ParserTagger. tagmodel (:tagdict opt-map) true)
-                            (ParserTagger. tagmodel (:tagdict opt-map) false))
-                          (ParserTagger. tagmodel nil))
-            parsechunker (ParserChunker. chunkmodel)
-            headrules (HeadRules. headrules)
-            parser (Parser. builder
-                            checker
-                            parsetagger
-                            parsechunker
-                            headrules
-                            (int *beam-size*)
-                            (double *advance-percentage*))
-            parses (map #(parse-line % parser) text)]
-        (vec parses)))))
+      (with-open [modelstream (FileInputStream. modelfile)]
+        (let [model (ParserModel. modelstream)
+              parser (ParserFactory/create model)
+              parses (map #(parse-line % parser) text)]
+          (vec parses))))))
 
 
 (defn- strip-funny-chars
