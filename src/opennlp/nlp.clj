@@ -272,7 +272,7 @@
     (reset! start (.getEnd s))))
 
 ;;; This is broken, don't use this.
-#_(defn print-parse
+(defn print-parse
   "Given a parse and the EntityMentions-to-parse map, print out the parse."
   [p parse-map]
   (let [start (atom (.getStart (.getSpan p)))
@@ -321,7 +321,7 @@
     (map #(print-parse % parse-map) parses)))
 
 
-#_(defn coref-extent
+(defn coref-extent
   [extent p index]
   (if (nil? extent)
     (let [snp (Parse. (.getText p) (.getSpan extent) "NML" 1.0 0)]
@@ -330,7 +330,7 @@
     nil))
 
 
-#_(defn coref-sentence
+(defn coref-sentence
   [sentence parses index tblinker]
   (let [p (Parse/parseParse sentence)
         extents (.getMentions (.getMentionFinder tblinker) (DefaultParse. p index))]
@@ -338,12 +338,11 @@
     (map #(coref-extent % p index) extents)
     extents))
 
-
-; Second Attempt
-#_(defn make-treebank-linker
+;;; Second Attempt
+(defn make-treebank-linker
   "Make a TreebankLinker, given a model directory."
   [modeldir]
-  (let [tblinker (TreebankLinker. modeldir LinkerMode/TEST)]
+  (let [tblinker (DefaultLinker. modeldir LinkerMode/TEST)]
     (fn treebank-linker
       [sentences]
       (let [parses (atom [])
@@ -360,8 +359,9 @@
 (comment
 
   (def tbl (make-treebank-linker "coref"))
-  (def treebank-parser (make-treebank-parser "parser-models/build.bin.gz" "parser-models/check.bin.gz" "parser-models/tag.bin.gz" "parser-models/chunk.bin.gz" "parser-models/head_rules"))
+  (def treebank-parser (make-treebank-parser "parser-model/en-parser-chunking.bin"))
   (def s (treebank-parser ["Mary said she would help me ." "I told her I didn't need her help."]))
+
   (tbl s)
 
 
