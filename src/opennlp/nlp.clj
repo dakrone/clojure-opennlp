@@ -22,6 +22,10 @@
 ;;; calling the tagging creators
 (def #^{:dynamic true} *beam-size* 3)
 
+;;; Default advance percentage as defined by
+;;; AbstractBottomUpParser.defaultAdvancePercentage
+(def #^{:dynamic true} *advance-percentage* 0.95)
+
 ;;; Caching to use for pos-tagging
 (def #^{:dynamic true} *cache-size* 1024)
 
@@ -182,9 +186,6 @@
 
 ; Treebank parsing
 
-; Default advance percentage as defined by AbstractBottomUpParser.defaultAdvancePercentage
-(def *advance-percentage* 0.95)
-
 
 (defn- strip-parens
   "Treebank-parser does not like parens and braces, so replace them."
@@ -216,7 +217,7 @@
       [text]
       (with-open [modelstream (FileInputStream. modelfile)]
         (let [model (ParserModel. modelstream)
-              parser (ParserFactory/create model)
+              parser (ParserFactory/create model *beam-size* *advance-percentage*)
               parses (map #(parse-line % parser) text)]
           (vec parses))))))
 

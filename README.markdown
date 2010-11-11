@@ -19,14 +19,15 @@ You will need to make the processing functions using the model files. These
 assume you're running from the root project directory. You can also download
 the model files from the opennlp project at [http://opennlp.sourceforge.net/models/](http://opennlp.sourceforge.net/models-1.5)
 
-    user=> (def get-sentences (make-sentence-detector "models/EnglishSD.bin.gz"))
-    user=> (def tokenize (make-tokenizer "models/EnglishTok.bin.gz"))
-    user=> (def pos-tag (make-pos-tagger "models/tag.bin.gz"))
-    user=> (def chunker (make-treebank-chunker "models/EnglishChunk.bin.gz"))
+    user=> (def get-sentences (make-sentence-detector "models/en-sent.bin"))
+    user=> (def tokenize (make-tokenizer "models/en-token.bin"))
+    user=> (def pos-tag (make-pos-tagger "models/en-pos-maxent.bin"))
+    user=> (def chunker (make-treebank-chunker "models/en-chunker.bin"))
 
 For name-finders in particular, it's possible to have multiple model files:
 
-    user=> (def name-find (make-name-finder "models/namefind/person.bin.gz" "models/namefind/organization.bin.gz"))
+    user=> (def name-find (make-name-finder "models/namefind/en-ner-person.bin"))
+    user=> (def name-find (make-name-finder "models/namefind/en-ner-person.bin" "models/namefind/en-ner-date.bin"))
     
 Then, use the functions you've created to perform operations on text:
 
@@ -97,23 +98,14 @@ Treebank-parsing
 a sufficient amount of memory available (using something like -Xmx512m)
 or you will run out of heap space when using a treebank parser.</b>
 
-Treebank parsing gets its own section due to how complex it is. One difference
-is in creating a treebank-parser, a map of options is allowed.
+Treebank parsing gets its own section due to how complex it is.
 
-Note none of the treebank-parser models are included in the git repo, you will
-have to download them separately from the opennlp project.
+Note none of the treebank-parser model is not included in the git repo, you will
+have to download it separately from the opennlp project.
 
-Regular:
+Creating it:
 
-    user=> (def treebank-parser (make-treebank-parser "parser-models/build.bin.gz" "parser-models/check.bin.gz" "parser-models/tag.bin.gz" "parser-models/chunk.bin.gz" "parser-models/head_rules"))
-
-A parser with a tag dictionary file:
-
-    user=> (def treebank-parser (make-treebank-parser "parser-models/build.bin.gz" "parser-models/check.bin.gz" "parser-models/tag.bin.gz" "parser-models/chunk.bin.gz" "parser-models/head_rules" :tagdict "parser-models/tagdict"))
-
-A parser with case-sensitive tag dictionary file (default is false):
-
-    user=> (def treebank-parser (make-treebank-parser "parser-models/build.bin.gz" "parser-models/check.bin.gz" "parser-models/tag.bin.gz" "parser-models/chunk.bin.gz" "parser-models/head_rules" :tagdict "parser-models/tagdict" :case-sensitive true))
+    user=> (def treebank-parser (make-treebank-parser "parser-model/en-parser-chunking.bin"))
 
 To use the treebank-parser, pass an array of sentences with their tokens
 separated by whitespace (preferably using tokenize)
@@ -262,6 +254,7 @@ Known Issues
 
 TODO
 ----
+- Do something with parse-num for treebank parsing
 - <del>Treebank chunker</del> (done!)
 - <del>Treebank parser</del> (done!)
 - <del>Laziness </del> (done! for now.)
