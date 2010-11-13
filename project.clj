@@ -1,9 +1,7 @@
-(defproject org.clojars.thnetos/opennlp "0.0.6"
+(defproject org.clojars.thnetos/opennlp "0.1.0"
   :description "Natural Language Processing with Clojure, library for opennlp. http://github.com/dakrone/clojure-opennlp"
   :dependencies [[org.clojure/clojure "1.2.0"]
                  [org.clojure/clojure-contrib "1.2.0"]
-                 ;; [org.clojars.thnetos/opennlp-tools "1.4.3"]
                  [opennlp/tools "1.5.0"]]
-  :dev-dependencies [[lein-clojars "0.5.0-SNAPSHOT"]]
   :repositories {"opennlp.sf.net" "http://opennlp.sourceforge.net/maven2"})
 

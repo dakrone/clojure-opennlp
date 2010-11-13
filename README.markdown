@@ -9,6 +9,15 @@ Additional information/documentation:
 - [Natural Language Processing in Clojure with clojure-opennlp](http://writequit.org/blog/?p=365)
 - [Context searching using Clojure-OpenNLP](http://writequit.org/blog/?p=351)
 
+Usage from Leiningen:
+--------------------
+
+    [org.clojars.thnetos/opennlp "0.1.0"]
+
+You will need to specify the opennlp maven repo in your project.clj also:
+
+    :repositories {"opennlp.sf.net" "http://opennlp.sourceforge.net/maven2"}
+
 Basic Example usage (from a REPL):
 ----------------------------------
 
@@ -88,7 +97,7 @@ You can rebind ```opennlp.nlp/*beam-size*``` (the default is 3) for
 the pos-tagger and treebank-parser with:
 
     (binding [*beam-size* 1]
-      (def pos-tag (make-pos-tagger "models/tag.bin.gz")))
+      (def pos-tag (make-pos-tagger "models/en-pos-maxent.bin")))
 
 
 Treebank-parsing
@@ -224,10 +233,10 @@ Here's how to use them:
     (use 'opennlp.nlp)
     (use 'opennlp.tools.lazy)
 
-    (def get-sentences (make-sentence-detector "models/EnglishSD.bin.gz"))
-    (def tokenize (make-tokenizer "models/EnglishTok.bin.gz"))
-    (def pos-tag (make-pos-tagger "models/tag.bin.gz"))
-    (def chunker (make-treebank-chunker "models/EnglishChunk.bin.gz"))
+    (def get-sentences (make-sentence-detector "models/en-sent.bin"))
+    (def tokenize (make-tokenizer "models/en-token.bin"))
+    (def pos-tag (make-pos-tagger "models/en-pos-maxent.bin"))
+    (def chunker (make-treebank-chunker "models/en-chunker.bin"))
 
     (lazy-get-sentences ["This body of text has three sentences. This is the first. This is the third." "This body has only two. Here's the last one."] get-sentences)
     ; will lazily return:
@@ -265,6 +274,6 @@ TODO
 - Return multiple probability results for treebank-parser
 - Model training/trainer
 - Revisit datastructure format for tagged sentences
-- Document *beam-size* functionality
+- <del>Document *beam-size* functionality</del>
 - Document *advance-percentage* functionality
 - Build a full test suite (in progress)
