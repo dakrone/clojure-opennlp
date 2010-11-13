@@ -21,7 +21,7 @@ You will need to specify the opennlp maven repo in your project.clj also:
 Basic Example usage (from a REPL):
 ----------------------------------
 
-    (use 'clojure.contrib.pprint) ; just for this documentation
+    (use 'clojure.pprint) ; just for this documentation
     (use 'opennlp.nlp)
 
 You will need to make the processing functions using the model files. These
