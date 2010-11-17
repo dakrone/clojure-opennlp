@@ -347,13 +347,13 @@
       [sentences]
       (let [parses (atom [])
             indexed-sentences (indexed sentences)
-            extents (doall (map #(coref-sentence (second %) parses (first %) tblinker) indexed-sentences))]
-        ;; FIXME: don't use the first extent, map over all of them. This is for testing/debug
-        (let [mention-array (into-array Mention (first extents))
-              entities (.getEntities tblinker mention-array)]
-          (println "mentions:" (seq mention-array))
-          (println "entities:" (seq entities))
-          (show-parses @parses entities))))))
+            extents (doall (map #(coref-sentence (second %) parses (first %) tblinker)
+                                indexed-sentences))]
+        (map #(let [mention-array (into-array Mention %)
+                    entities (.getEntities tblinker mention-array)]
+                (println "mentions:" (seq mention-array))
+                (println "entities:" (seq entities))
+                (show-parses @parses entities)) extents)))))
 
 
 (comment
