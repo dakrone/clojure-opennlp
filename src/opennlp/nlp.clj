@@ -11,7 +11,8 @@
   (:import [opennlp.tools.coref LinkerMode DefaultLinker])
   (:import [opennlp.tools.coref.mention Mention DefaultParse])
   (:import [opennlp.tools.parser.chunking Parser])
-  (:import [opennlp.tools.parser Parse ParserModel ParserFactory AbstractBottomUpParser])
+  (:import [opennlp.tools.parser Parse ParserModel
+            ParserFactory AbstractBottomUpParser])
   (:import [opennlp.tools.cmdline.parser ParserTool])
   (:import [opennlp.tools.postag POSModel POSTaggerME]))
 
@@ -215,7 +216,9 @@
       [text]
       (with-open [modelstream (FileInputStream. modelfile)]
         (let [model (ParserModel. modelstream)
-              parser (ParserFactory/create model *beam-size* *advance-percentage*)
+              parser (ParserFactory/create model
+                                           *beam-size*
+                                           *advance-percentage*)
               parses (map #(parse-line % parser) text)]
           (vec parses))))))
 
@@ -284,7 +287,8 @@
           (print (str "#" (get parse-map p))))
         (print " ")))
     (map #(print-child % p start) children)
-    (print (.substring (.getText p) @start (.getEnd (.getSpan p)))) ; FIXME: don't use substring
+    ;; FIXME: don't use substring
+    (print (.substring (.getText p) @start (.getEnd (.getSpan p))))
     (if-not (= Parser/TOK_NODE (.getType p))
       (print ")"))))
 
@@ -299,7 +303,8 @@
 (defn add-mentions!
   "Add mentions to the parse map."
   [entity index parse-map]
-  (dorun (map #(add-mention! % index parse-map) (iterator-seq (.getMentions entity)))))
+  (dorun (map #(add-mention! % index parse-map)
+              (iterator-seq (.getMentions entity)))))
 
 
 (defn add-entities
@@ -307,7 +312,8 @@
   [entities]
   (let [parse-map (atom {})
         i-entities (indexed entities)]
-    (dorun (map (fn [[index entity]] (add-mentions! entity index parse-map)) i-entities))
+    (dorun (map (fn [[index entity]] (add-mentions! entity index parse-map))
+                i-entities))
     @parse-map))
 
 
@@ -333,7 +339,8 @@
 (defn coref-sentence
   [sentence parses index tblinker]
   (let [p (Parse/parseParse sentence)
-        extents (.getMentions (.getMentionFinder tblinker) (DefaultParse. p index))]
+        extents (.getMentions (.getMentionFinder tblinker)
+                              (DefaultParse. p index))]
     (swap! parses #(assoc % (count %) p))
     (map #(coref-extent % p index) extents)
     extents))
@@ -347,7 +354,8 @@
       [sentences]
       (let [parses (atom [])
             indexed-sentences (indexed sentences)
-            extents (doall (map #(coref-sentence (second %) parses (first %) tblinker)
+            extents (doall (map #(coref-sentence (second %) parses
+                                                 (first %) tblinker)
                                 indexed-sentences))]
         (map #(let [mention-array (into-array Mention %)
                     entities (.getEntities tblinker mention-array)]
@@ -359,8 +367,10 @@
 (comment
 
   (def tbl (make-treebank-linker "coref"))
-  (def treebank-parser (make-treebank-parser "parser-model/en-parser-chunking.bin"))
-  (def s (treebank-parser ["Mary said she would help me ." "I told her I didn't need her help."]))
+  (def treebank-parser
+    (make-treebank-parser "parser-model/en-parser-chunking.bin"))
+  (def s (treebank-parser ["Mary said she would help me ."
+                           "I told her I didn't need her help."]))
 
   (tbl s)
 
