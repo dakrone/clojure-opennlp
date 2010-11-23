@@ -65,7 +65,7 @@
   (if-not (file-exist? modelfile)
     (throw (FileNotFoundException. "Model file does not exist."))
     (with-open [model-stream (FileInputStream. modelfile)]
-      (make-tokenizer (TokenizerModel. modelstream)))))
+      (make-tokenizer (TokenizerModel. model-stream)))))
 
 (defmethod make-tokenizer TokenizerModel
   [model]
