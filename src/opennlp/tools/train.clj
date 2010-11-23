@@ -26,8 +26,8 @@
 
 (defn write-model
   "Write a model to disk"
-  [mod out]
-  (.serialize mod (output-stream out)))
+  [model out-stream]
+  (.serialize mod (output-stream out-stream)))
 
 (defn build-dictionary
   "Build a Dictionary based on file in appropriate format"
