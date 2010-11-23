@@ -36,65 +36,89 @@
   [filenames]
   (reduce 'and (map file-exist? filenames)))
 
-(defn make-sentence-detector
+(defmulti make-sentence-detector
   "Return a function for splitting sentences given a model file."
+  class)
+
+(defmethod make-sentence-detector String
   [modelfile]
   (if-not (file-exist? modelfile)
     (throw (FileNotFoundException. "Model file does not exist."))
-    (fn sentence-detector
+    (with-open [model-stream (FileInputStream. modelfile)]
+      (make-sentence-detector (SentenceModel. model-stream)))))
+
+(defmethod make-sentence-detector SentenceModel
+  [model]
+  (fn sentence-detector
       [text]
       {:pre [(string? text)]}
-      (with-open [model-stream (FileInputStream. modelfile)]
-        (let [model (SentenceModel. model-stream)
-              detector (SentenceDetectorME. model)
+        (let [detector (SentenceDetectorME. model)
               sentences (.sentDetect detector text)]
-          (into [] sentences))))))
+          (into [] sentences))))
 
-(defn make-tokenizer
+(defmulti make-tokenizer
   "Return a function for tokenizing a sentence based on a given model file."
+  class)
+
+(defmethod make-tokenizer String
   [modelfile]
   (if-not (file-exist? modelfile)
     (throw (FileNotFoundException. "Model file does not exist."))
-    (fn tokenizer
-      [sentence]
-      {:pre [(string? sentence)]}
-      (with-open [model-stream (FileInputStream. modelfile)]
-        (let [model (TokenizerModel. model-stream)
-              tokenizer (TokenizerME. model)
-              tokens (.tokenize tokenizer sentence)]
-          (into [] tokens))))))
+    (with-open [model-stream (FileInputStream. modelfile)]
+      (make-tokenizer (TokenizerModel. modelstream)))))
 
-(defn make-pos-tagger
+(defmethod make-tokenizer TokenizerModel
+  [model]
+  (fn tokenizer
+    [sentence]
+    {:pre [(string? sentence)]}
+    (let [tokenizer (TokenizerME. model)
+	  tokens (.tokenize tokenizer sentence)]
+      (into [] tokens))))
+
+(defmulti make-pos-tagger
   "Return a function for tagging tokens based on a givel model file."
+  class)
+
+(defmethod make-pos-tagger String
   [modelfile]
   (if-not (file-exist? modelfile)
     (throw (FileNotFoundException. "Model file does not exist."))
-    (fn pos-tagger
-      [tokens]
-      {:pre [(vector? tokens)]}
-      (with-open [model-stream (FileInputStream. modelfile)]
-        (let [token-array (into-array tokens)
-              model (POSModel. model-stream)
-              tagger (POSTaggerME. model *beam-size* *cache-size*)
-              tags (.tag tagger token-array)]
-          (map vector tokens tags))))))
+    (with-open [model-stream (FileInputStream. modelfile)]
+      (make-pos-tagger (POSModel. model-stream)))))
 
-(defn make-name-finder
+(defmethod make-pos-tagger POSModel
+  [model]
+  (fn pos-tagger
+    [tokens]
+    {:pre [(vector? tokens)]}
+    (let [token-array (into-array tokens)
+	  tagger (POSTaggerME. model *beam-size* *cache-size*)
+	  tags (.tag tagger token-array)]
+      (map vector tokens tags))))
+
+(defmulti make-name-finder
   "Return a fucntion for finding names from tokens based on a given
    model file."
+  class)
+
+(defmethod make-name-finder String
   [modelfile]
   (if-not (file-exist? modelfile)
     (throw (FileNotFoundException. "Model file does not exist."))
-    (fn name-finder
-      [tokens & contexts]
-      {:pre [(seq tokens)
-             (every? #(= (class %) String) tokens)]}
-      (distinct
-       (with-open [model-stream (FileInputStream. modelfile)]
-         (let [model (TokenNameFinderModel. model-stream)
-               finder (NameFinderME. model)
-               matches (.find finder (into-array String tokens))]
-           (map #(get tokens (.getStart %)) matches)))))))
+    (with-open [model-stream (FileInputStream. modelfile)]
+      (make-name-finder (TokenNameFinderModel. model-stream)))))
+
+(defmethod make-name-finder TokenNameFinderModel
+  [model]
+  (fn name-finder
+    [tokens & contexts]
+    {:pre [(seq tokens)
+	   (every? #(= (class %) String) tokens)]}
+    (distinct
+     (let [finder (NameFinderME. model)
+	   matches (.find finder (into-array String tokens))]
+       (map #(get tokens (.getStart %)) matches)))))
 
 (defn- split-chunks
   "Partition a sequence of treebank chunks by their phrases."
@@ -135,24 +159,30 @@
 
 (defstruct treebank-phrase :phrase :tag)
 
-(defn make-treebank-chunker
+(defmulti make-treebank-chunker
   "Return a function for chunking phrases from pos-tagged tokens based on
   a given model file."
+  class)
+
+(defmethod make-treebank-chunker String
   [modelfile]
   (if-not (file-exist? modelfile)
     (throw (FileNotFoundException. "Model file does not exist."))
-    (fn treebank-chunker
-      [pos-tagged-tokens]
-      (with-open [modelstream (FileInputStream. modelfile)]
-        (let [model   (ChunkerModel. modelstream)
-              chunker (ChunkerME. model *beam-size*)
-              [tokens tags] (de-interleave pos-tagged-tokens)
-              chunks  (into [] (seq (.chunk chunker tokens tags)))
-              sized-chunks (map size-chunk (split-chunks chunks))
-              [types sizes] (de-interleave sized-chunks)
-              token-chunks (split-with-size sizes tokens)]
-          (map #(struct treebank-phrase (into [] (last %)) (first %))
-               (partition 2 (interleave types token-chunks))))))))
+    (with-open [modelstream (FileInputStream. modelfile)]
+      (make-treebank-chunker (ChunkerModel. modelstream)))))
+
+(defmethod make-treebank-chunker ChunkerModel
+  [model]
+  (fn treebank-chunker
+    [pos-tagged-tokens]
+    (let [chunker (ChunkerME. model *beam-size*)
+	  [tokens tags] (de-interleave pos-tagged-tokens)
+	  chunks  (into [] (seq (.chunk chunker tokens tags)))
+	  sized-chunks (map size-chunk (split-chunks chunks))
+	  [types sizes] (de-interleave sized-chunks)
+	  token-chunks (split-with-size sizes tokens)]
+      (map #(struct treebank-phrase (into [] (last %)) (first %))
+	   (partition 2 (interleave types token-chunks))))))
 
 
 (defn phrases
@@ -206,21 +236,27 @@
     (.toString results)))
 
 
-(defn make-treebank-parser
+(defmulti make-treebank-parser
   "Return a function for treebank parsing a sequence of sentences, based on
   a given model file."
+  class)
+
+(defmethod make-treebank-parser String
   [modelfile]
   (if-not (file-exist? modelfile)
     (throw (FileNotFoundException. "The model file does not exist."))
-    (fn treebank-parser
-      [text]
-      (with-open [modelstream (FileInputStream. modelfile)]
-        (let [model (ParserModel. modelstream)
-              parser (ParserFactory/create model
-                                           *beam-size*
-                                           *advance-percentage*)
-              parses (map #(parse-line % parser) text)]
-          (vec parses))))))
+    (with-open [modelstream (FileInputStream. modelfile)]
+      (make-treebank-parser (ParserModel. modelstream)))))
+
+(defmethod make-treebank-parser ParserModel
+  [model]
+  (fn treebank-parser
+    [text]
+    (let [parser (ParserFactory/create model
+				       *beam-size*
+				       *advance-percentage*)
+	  parses (map #(parse-line % parser) text)]
+      (vec parses))))
 
 
 (defn- strip-funny-chars
