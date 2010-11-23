@@ -98,7 +98,7 @@
       (map vector tokens tags))))
 
 (defmulti make-name-finder
-  "Return a fucntion for finding names from tokens based on a given
+  "Return a function for finding names from tokens based on a given
    model file."
   class)
 

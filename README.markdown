@@ -26,17 +26,20 @@ Basic Example usage (from a REPL):
 
 You will need to make the processing functions using the model files. These
 assume you're running from the root project directory. You can also download
-the model files from the opennlp project at [http://opennlp.sourceforge.net/models/](http://opennlp.sourceforge.net/models-1.5)
+the model files from the opennlp project at
+[http://opennlp.sourceforge.net/models/](http://opennlp.sourceforge.net/models-1.5)
 
     user=> (def get-sentences (make-sentence-detector "models/en-sent.bin"))
     user=> (def tokenize (make-tokenizer "models/en-token.bin"))
     user=> (def pos-tag (make-pos-tagger "models/en-pos-maxent.bin"))
     user=> (def chunker (make-treebank-chunker "models/en-chunker.bin"))
-
-For name-finders in particular, it's possible to have multiple model files:
-
     user=> (def name-find (make-name-finder "models/namefind/en-ner-person.bin"))
-    user=> (def name-find (make-name-finder "models/namefind/en-ner-person.bin" "models/namefind/en-ner-date.bin"))
+
+The tool-creators are multimethods, so you can also create any of the
+tools using a model instead of a filename (you can create a model with
+the training tools in src/opennlp/tools/train.clj):
+
+    user=> (def tokenize (make-tokenizer my-tokenizer-model)) ;; etc, etc
     
 Then, use the functions you've created to perform operations on text:
 
@@ -254,12 +257,26 @@ Here's how to use them:
     ; will lazily return:
     (({:phrase ["This"], :tag "NP"} {:phrase ["is"], :tag "VP"} {:phrase ["a" "sentence"], :tag "NP"}) ({:phrase ["This"], :tag "NP"} {:phrase ["is"], :tag "VP"} {:phrase ["another" "sentence"], :tag "NP"}))
 
-Feel free to use the lazy functions, but I'm still not 100% set on the layout, so they may change in the future. (Maybe chaining them so instead of a sequence of sentences it looks like (lazy-chunk (lazy-tag (lazy-tokenize (lazy-get-sentences ...))))).
+Feel free to use the lazy functions, but I'm still not 100% set on the
+layout, so they may change in the future. (Maybe chaining them so
+instead of a sequence of sentences it looks like (lazy-chunk (lazy-tag
+(lazy-tokenize (lazy-get-sentences ...))))).
+
+
+Training
+--------
+There is code to allow for training models for each of the
+tools. Please see the code in src/opennlp/tools/train.clj
+
+Documentation and tests coming in the future.
 
 
 Known Issues
 ------------
-- When using the treebank-chunker on a sentence, please ensure you have a period at the end of the sentence, if you do not have a period, the chunker gets confused and drops the last word. Besides, your sentences should all be grammactially correct anyway right?
+- When using the treebank-chunker on a sentence, please ensure you
+have a period at the end of the sentence, if you do not have a period,
+the chunker gets confused and drops the last word. Besides, your
+sentences should all be grammactially correct anyway right?
 
 
 License
@@ -280,8 +297,12 @@ TODO
 - <del>Figure out what license to use.</del> (done!)
 - Filters for treebank-parser
 - Return multiple probability results for treebank-parser
-- Model training/trainer
+- Model training/trainer (in progress)
 - Revisit datastructure format for tagged sentences
 - <del>Document *beam-size* functionality</del>
 - Document *advance-percentage* functionality
-- Build a full test suite (in progress)
+- Build a full test suite:
+-- <del>core tools</del> (done)
+-- <del>filters</del> (done)
+-- <del>laziness</del> (done)
+-- training
