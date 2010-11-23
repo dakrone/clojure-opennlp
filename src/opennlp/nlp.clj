@@ -2,99 +2,123 @@
 (ns opennlp.nlp
   (:use [clojure.contrib.seq-utils :only [indexed]])
   (:use [clojure.contrib.pprint :only [pprint]])
-  (:import [java.io File FileNotFoundException])
-  (:import [opennlp.maxent DataStream GISModel])
-  (:import [opennlp.maxent.io PooledGISModelReader SuffixSensitiveGISModelReader])
+  (:import [java.io File FileNotFoundException FileInputStream])
   (:import [opennlp.tools.util Span])
-  (:import [opennlp.tools.dictionary Dictionary])
-  (:import [opennlp.tools.tokenize TokenizerME])
-  (:import [opennlp.tools.sentdetect SentenceDetectorME])
-  (:import [opennlp.tools.namefind NameFinderME])
-  (:import [opennlp.tools.chunker ChunkerME])
-  (:import [opennlp.tools.coref LinkerMode])
+  (:import [opennlp.tools.tokenize TokenizerModel TokenizerME])
+  (:import [opennlp.tools.sentdetect SentenceModel SentenceDetectorME])
+  (:import [opennlp.tools.namefind TokenNameFinderModel NameFinderME])
+  (:import [opennlp.tools.chunker ChunkerModel ChunkerME])
+  (:import [opennlp.tools.coref LinkerMode DefaultLinker])
   (:import [opennlp.tools.coref.mention Mention DefaultParse])
-  (:import [opennlp.tools.lang.english ParserTagger ParserChunker HeadRules TreebankLinker CorefParse])
   (:import [opennlp.tools.parser.chunking Parser])
-  (:import [opennlp.tools.parser AbstractBottomUpParser Parse])
-  (:import [opennlp.tools.postag POSTaggerME DefaultPOSContextGenerator POSContextGenerator]))
+  (:import [opennlp.tools.parser Parse ParserModel
+            ParserFactory AbstractBottomUpParser])
+  (:import [opennlp.tools.cmdline.parser ParserTool])
+  (:import [opennlp.tools.postag POSModel POSTaggerME]))
 
 
 ;;; OpenNLP property for pos-tagging. Meant to be rebound before
 ;;; calling the tagging creators
 (def #^{:dynamic true} *beam-size* 3)
 
+;;; Default advance percentage as defined by
+;;; AbstractBottomUpParser.defaultAdvancePercentage
+(def #^{:dynamic true} *advance-percentage* 0.95)
+
+;;; Caching to use for pos-tagging
+(def #^{:dynamic true} *cache-size* 1024)
+
 (defn- file-exist?
   [filename]
   (.exists (File. filename)))
 
-
-(defn files-exist?
+(defn- files-exist?
   [filenames]
   (reduce 'and (map file-exist? filenames)))
 
-(defn make-sentence-detector
-  "Return a function for detecting sentences based on a given model file."
+(defmulti make-sentence-detector
+  "Return a function for splitting sentences given a model file."
+  class)
+
+(defmethod make-sentence-detector String
   [modelfile]
   (if-not (file-exist? modelfile)
     (throw (FileNotFoundException. "Model file does not exist."))
-    (fn sentenizer
+    (with-open [model-stream (FileInputStream. modelfile)]
+      (make-sentence-detector (SentenceModel. model-stream)))))
+
+(defmethod make-sentence-detector SentenceModel
+  [model]
+  (fn sentence-detector
       [text]
-      (let [model     (.getModel (SuffixSensitiveGISModelReader. (File. modelfile)))
-            detector  (SentenceDetectorME. model)
-            sentences (.sentDetect detector text)]
-        (into [] sentences)))))
+      {:pre [(string? text)]}
+        (let [detector (SentenceDetectorME. model)
+              sentences (.sentDetect detector text)]
+          (into [] sentences))))
 
-
-(defn make-tokenizer
+(defmulti make-tokenizer
   "Return a function for tokenizing a sentence based on a given model file."
+  class)
+
+(defmethod make-tokenizer String
   [modelfile]
   (if-not (file-exist? modelfile)
     (throw (FileNotFoundException. "Model file does not exist."))
-    (fn tokenizer
-      [sentence]
-      (let [model     (if (instance? GISModel modelfile)
-			modelfile
-			(.getModel (SuffixSensitiveGISModelReader. (File. modelfile))))
-            tokenizer (TokenizerME. model)
-            tokens    (.tokenize tokenizer sentence)]
-        (into [] tokens)))))
+    (with-open [model-stream (FileInputStream. modelfile)]
+      (make-tokenizer (TokenizerModel. modelstream)))))
 
+(defmethod make-tokenizer TokenizerModel
+  [model]
+  (fn tokenizer
+    [sentence]
+    {:pre [(string? sentence)]}
+    (let [tokenizer (TokenizerME. model)
+	  tokens (.tokenize tokenizer sentence)]
+      (into [] tokens))))
 
-(defn make-pos-tagger
-  "Return a function for tagging tokens based on a given model file."
+(defmulti make-pos-tagger
+  "Return a function for tagging tokens based on a givel model file."
+  class)
+
+(defmethod make-pos-tagger String
   [modelfile]
   (if-not (file-exist? modelfile)
     (throw (FileNotFoundException. "Model file does not exist."))
-    (fn pos-tagger
-      [tokens]
-      (let [token-array (if (vector? tokens) (into-array tokens) tokens)
-            #^POSContextGenerator cg (DefaultPOSContextGenerator. nil)
-            model  (if (instance? GISModel modelfile)
-		     modelfile
-		     (.getModel (SuffixSensitiveGISModelReader. (File. modelfile))))
-            tagger (POSTaggerME. *beam-size* model cg nil)
-            tags   (.tag tagger 1 token-array)]
-        (map #(vector %1 %2) tokens (first tags))))))
+    (with-open [model-stream (FileInputStream. modelfile)]
+      (make-pos-tagger (POSModel. model-stream)))))
 
+(defmethod make-pos-tagger POSModel
+  [model]
+  (fn pos-tagger
+    [tokens]
+    {:pre [(vector? tokens)]}
+    (let [token-array (into-array tokens)
+	  tagger (POSTaggerME. model *beam-size* *cache-size*)
+	  tags (.tag tagger token-array)]
+      (map vector tokens tags))))
 
-(defn make-name-finder
-  "Return a function for finding names from tokens based on given model file(s)."
-  [& modelfiles]
-  (if-not (files-exist? modelfiles)
-    (throw (FileNotFoundException. "Not all model files exist."))
-    (fn name-finder
-      [tokens]
-      (distinct
-        (flatten
-          (for [modelfile modelfiles]
-            (let [token-array (if (vector? tokens) (into-array tokens) tokens)
-                  model   (if (instance? GISModel modelfile)
-			    modelfile
-			    (.getModel (PooledGISModelReader. (File. modelfile))))
-                  finder  (NameFinderME. model)
-                  matches (.find finder token-array)]
-              (map #(nth tokens (.getStart %)) matches))))))))
+(defmulti make-name-finder
+  "Return a fucntion for finding names from tokens based on a given
+   model file."
+  class)
 
+(defmethod make-name-finder String
+  [modelfile]
+  (if-not (file-exist? modelfile)
+    (throw (FileNotFoundException. "Model file does not exist."))
+    (with-open [model-stream (FileInputStream. modelfile)]
+      (make-name-finder (TokenNameFinderModel. model-stream)))))
+
+(defmethod make-name-finder TokenNameFinderModel
+  [model]
+  (fn name-finder
+    [tokens & contexts]
+    {:pre [(seq tokens)
+	   (every? #(= (class %) String) tokens)]}
+    (distinct
+     (let [finder (NameFinderME. model)
+	   matches (.find finder (into-array String tokens))]
+       (map #(get tokens (.getStart %)) matches)))))
 
 (defn- split-chunks
   "Partition a sequence of treebank chunks by their phrases."
@@ -135,25 +159,30 @@
 
 (defstruct treebank-phrase :phrase :tag)
 
-(defn make-treebank-chunker
+(defmulti make-treebank-chunker
   "Return a function for chunking phrases from pos-tagged tokens based on
   a given model file."
+  class)
+
+(defmethod make-treebank-chunker String
   [modelfile]
   (if-not (file-exist? modelfile)
     (throw (FileNotFoundException. "Model file does not exist."))
-    (fn treebank-chunker
-      [pos-tagged-tokens]
-      (let [model         (if (instance? GISModel modelfile)
-			    modelfile
-			    (.getModel (SuffixSensitiveGISModelReader. (File. modelfile))))
-            chunker       (ChunkerME. model)
-            [tokens tags] (de-interleave pos-tagged-tokens)
-            chunks        (into [] (seq (.chunk chunker tokens tags)))
-            sized-chunks  (map size-chunk (split-chunks chunks))
-            [types sizes] (de-interleave sized-chunks)
-            token-chunks  (split-with-size sizes tokens)]
-        (map #(struct treebank-phrase (into [] (last %)) (first %))
-             (partition 2 (interleave types token-chunks)))))))
+    (with-open [modelstream (FileInputStream. modelfile)]
+      (make-treebank-chunker (ChunkerModel. modelstream)))))
+
+(defmethod make-treebank-chunker ChunkerModel
+  [model]
+  (fn treebank-chunker
+    [pos-tagged-tokens]
+    (let [chunker (ChunkerME. model *beam-size*)
+	  [tokens tags] (de-interleave pos-tagged-tokens)
+	  chunks  (into [] (seq (.chunk chunker tokens tags)))
+	  sized-chunks (map size-chunk (split-chunks chunks))
+	  [types sizes] (de-interleave sized-chunks)
+	  token-chunks (split-with-size sizes tokens)]
+      (map #(struct treebank-phrase (into [] (last %)) (first %))
+	   (partition 2 (interleave types token-chunks))))))
 
 
 (defn phrases
@@ -186,9 +215,6 @@
 
 ; Treebank parsing
 
-; Default advance percentage as defined by AbstractBottomUpParser.defaultAdvancePercentage
-(def *advance-percentage* 0.95)
-
 
 (defn- strip-parens
   "Treebank-parser does not like parens and braces, so replace them."
@@ -205,55 +231,32 @@
   [line parser]
   (let [line (strip-parens line)
         results (StringBuffer.)
-        words (.split line " ")
-        p (Parse. line (Span. 0 (count line)) AbstractBottomUpParser/INC_NODE (double 1) (int 0))]
-    (loop [parse-index 0 start-index 0]
-      (if (> (+ parse-index 1) (count words))
-        nil
-        (let [token (get words parse-index)]
-          ;(println "inserting " token " at " i " pidx " parse-index " sidx " start-index)
-          ; Mutable state, but contained only in the parse-line function
-          (.insert p (Parse. line
-                             (Span. start-index (+ start-index (count token)))
-                             AbstractBottomUpParser/TOK_NODE
-                             (double 0)
-                             (int parse-index)))
-          (recur (inc parse-index) (+ 1 start-index (count token))))))
-    (.show (.parse parser p) results)
+        parse-num 1]
+    (.show (first (ParserTool/parseLine line parser parse-num)) results)
     (.toString results)))
 
 
-(defn make-treebank-parser
+(defmulti make-treebank-parser
   "Return a function for treebank parsing a sequence of sentences, based on
-  given build, check, tag, chunk models and a set of head rules."
-  [buildmodel checkmodel tagmodel chunkmodel headrules & opts]
-  (if-not (files-exist? [buildmodel checkmodel tagmodel chunkmodel headrules])
-    (throw (FileNotFoundException. "One or more of the model or rule files does not exist"))
-    (fn treebank-parser
-      [text]
-      (let [builder (if (instance? GISModel buildmodel)
-		      buildmodel
-		      (-> (File. buildmodel) SuffixSensitiveGISModelReader. .getModel))
-            checker (if (instance? GISModel checkmodel)
-		      checkmodel
-		      (-> (File. checkmodel) SuffixSensitiveGISModelReader. .getModel))
-            opt-map (apply hash-map opts)
-            parsetagger (if (and (:tagdict opt-map) (file-exist? (:tagdict opt-map)))
-                          (if (:case-sensitive opt-map)
-                            (ParserTagger. tagmodel (:tagdict opt-map) true)
-                            (ParserTagger. tagmodel (:tagdict opt-map) false))
-                          (ParserTagger. tagmodel nil))
-            parsechunker (ParserChunker. chunkmodel)
-            headrules (HeadRules. headrules)
-            parser (Parser. builder
-                            checker
-                            parsetagger
-                            parsechunker
-                            headrules
-                            (int *beam-size*)
-                            (double *advance-percentage*))
-            parses (map #(parse-line % parser) text)]
-        (vec parses)))))
+  a given model file."
+  class)
+
+(defmethod make-treebank-parser String
+  [modelfile]
+  (if-not (file-exist? modelfile)
+    (throw (FileNotFoundException. "The model file does not exist."))
+    (with-open [modelstream (FileInputStream. modelfile)]
+      (make-treebank-parser (ParserModel. modelstream)))))
+
+(defmethod make-treebank-parser ParserModel
+  [model]
+  (fn treebank-parser
+    [text]
+    (let [parser (ParserFactory/create model
+				       *beam-size*
+				       *advance-percentage*)
+	  parses (map #(parse-line % parser) text)]
+      (vec parses))))
 
 
 (defn- strip-funny-chars
@@ -320,7 +323,8 @@
           (print (str "#" (get parse-map p))))
         (print " ")))
     (map #(print-child % p start) children)
-    (print (.substring (.getText p) @start (.getEnd (.getSpan p)))) ; FIXME: don't use substring
+    ;; FIXME: don't use substring
+    (print (.substring (.getText p) @start (.getEnd (.getSpan p))))
     (if-not (= Parser/TOK_NODE (.getType p))
       (print ")"))))
 
@@ -335,7 +339,8 @@
 (defn add-mentions!
   "Add mentions to the parse map."
   [entity index parse-map]
-  (dorun (map #(add-mention! % index parse-map) (iterator-seq (.getMentions entity)))))
+  (dorun (map #(add-mention! % index parse-map)
+              (iterator-seq (.getMentions entity)))))
 
 
 (defn add-entities
@@ -343,7 +348,8 @@
   [entities]
   (let [parse-map (atom {})
         i-entities (indexed entities)]
-    (dorun (map (fn [[index entity]] (add-mentions! entity index parse-map)) i-entities))
+    (dorun (map (fn [[index entity]] (add-mentions! entity index parse-map))
+                i-entities))
     @parse-map))
 
 
@@ -369,35 +375,39 @@
 (defn coref-sentence
   [sentence parses index tblinker]
   (let [p (Parse/parseParse sentence)
-        extents (.getMentions (.getMentionFinder tblinker) (DefaultParse. p index))]
+        extents (.getMentions (.getMentionFinder tblinker)
+                              (DefaultParse. p index))]
     (swap! parses #(assoc % (count %) p))
     (map #(coref-extent % p index) extents)
     extents))
 
-
-; Second Attempt
+;;; Second Attempt
 (defn make-treebank-linker
   "Make a TreebankLinker, given a model directory."
   [modeldir]
-  (let [tblinker (TreebankLinker. modeldir LinkerMode/TEST)]
+  (let [tblinker (DefaultLinker. modeldir LinkerMode/TEST)]
     (fn treebank-linker
       [sentences]
       (let [parses (atom [])
             indexed-sentences (indexed sentences)
-            extents (doall (map #(coref-sentence (second %) parses (first %) tblinker) indexed-sentences))]
-        ;; FIXME: don't use the first extent, map over all of them. This is for testing/debug
-        (let [mention-array (into-array Mention (first extents))
-              entities (.getEntities tblinker mention-array)]
-          (println "mentions:" (seq mention-array))
-          (println "entities:" (seq entities))
-          (show-parses @parses entities))))))
+            extents (doall (map #(coref-sentence (second %) parses
+                                                 (first %) tblinker)
+                                indexed-sentences))]
+        (map #(let [mention-array (into-array Mention %)
+                    entities (.getEntities tblinker mention-array)]
+                (println "mentions:" (seq mention-array))
+                (println "entities:" (seq entities))
+                (show-parses @parses entities)) extents)))))
 
 
 (comment
 
   (def tbl (make-treebank-linker "coref"))
-  (def treebank-parser (make-treebank-parser "parser-models/build.bin.gz" "parser-models/check.bin.gz" "parser-models/tag.bin.gz" "parser-models/chunk.bin.gz" "parser-models/head_rules"))
-  (def s (treebank-parser ["Mary said she would help me ." "I told her I didn't need her help."]))
+  (def treebank-parser
+    (make-treebank-parser "parser-model/en-parser-chunking.bin"))
+  (def s (treebank-parser ["Mary said she would help me ."
+                           "I told her I didn't need her help."]))
+
   (tbl s)
 
 
@@ -434,71 +444,4 @@
           (swap! sentencenum inc))))))
 
 
-;testing
-(comment
-
-(use 'opennlp.nlp)
-
-(def treebank-parser (make-treebank-parser "parser-models/build.bin.gz" "parser-models/check.bin.gz" "parser-models/tag.bin.gz" "parser-models/chunk.bin.gz" "parser-models/head_rules"))
-
-; String output
-(first (treebank-parser ["This is a sentence ."]))
-; => "(TOP (S (NP (DT This)) (VP (VBZ is) (NP (DT a) (NN sentence))) (. .)))"
-
-; Tree output
-(make-tree (first (treebank-parser ["This is a sentence ."])))
-; => {:chunk {:chunk ({:chunk {:chunk "This", :tag DT}, :tag NP} {:chunk ({:chunk "is", :tag VBZ} {:chunk ({:chunk "a", :tag DT} {:chunk "sentence", :tag NN}), :tag NP}), :tag VP} {:chunk ".", :tag .}), :tag S}, :tag TOP} 
-
-)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(comment
-
-(use 'clojure.contrib.pprint)
-
-; Make our functions with the model file. These assume you're running
-; from the root project directory.
-(def get-sentences (make-sentence-detector "models/EnglishSD.bin.gz"))
-(def tokenize (make-tokenizer "models/EnglishTok.bin.gz"))
-(def pos-tag (make-pos-tagger "models/tag.bin.gz"))
-(def name-find (make-name-finder "models/namefind/person.bin.gz" "models/namefind/organization.bin.gz"))
-(def chunker (make-treebank-chunker "models/EnglishChunk.bin.gz"))
-
-(pprint (get-sentences "First sentence. Second sentence? Here is another one. And so on and so forth - you get the idea..."))
-
-;opennlp.nlp=> (pprint (get-sentences "First sentence. Second sentence? Here is another one. And so on and so forth - you get the idea..."))
-;["First sentence. ", "Second sentence? ", "Here is another one. ",
-; "And so on and so forth - you get the idea..."]
-;nil
-
-(pprint (tokenize "Mr. Smith gave a car to his son on Friday"))
-
-;opennlp.nlp=> (pprint (tokenize "Mr. Smith gave a car to his son on Friday"))
-;["Mr.", "Smith", "gave", "a", "car", "to", "his", "son", "on",
-; "Friday"]
-;nil
-
-(pprint (pos-tag (tokenize "Mr. Smith gave a car to his son on Friday.")))
-
-;opennlp.nlp=> (pprint (pos-tag (tokenize "Mr. Smith gave a car to his son on Friday.")))
-;(["Mr." "NNP"]
-; ["Smith" "NNP"]
-; ["gave" "VBD"]
-; ["a" "DT"]
-; ["car" "NN"]
-; ["to" "TO"]
-; ["his" "PRP$"]
-; ["son" "NN"]
-; ["on" "IN"]
-; ["Friday." "NNP"])
-;nil
- 
-(name-find (tokenize "My name is Lee, not John."))
-
-;opennlp.nlp=> (name-find (tokenize "My name is Lee, not John."))
-;("Lee" "John")
-
-
-)
 
