@@ -261,6 +261,14 @@ Known Issues
 ------------
 - When using the treebank-chunker on a sentence, please ensure you have a period at the end of the sentence, if you do not have a period, the chunker gets confused and drops the last word. Besides, your sentences should all be grammactially correct anyway right?
 
+
+License
+-------
+Copyright (C) 2010 Matthew Lee Hinman
+
+Distributed under the Eclipse Public License, the same as Clojure uses. See the file COPYING.
+
+
 TODO
 ----
 - Do something with parse-num for treebank parsing
@@ -269,7 +277,7 @@ TODO
 - <del>Laziness </del> (done! for now.)
 - Treebank linker (WIP)
 - <del>Phrase helpers for chunker</del> (done!)
-- Figure out what license to use.
+- <del>Figure out what license to use.</del> (done!)
 - Filters for treebank-parser
 - Return multiple probability results for treebank-parser
 - Model training/trainer

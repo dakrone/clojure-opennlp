@@ -10,7 +10,6 @@
 (def name-find (make-name-finder "models/namefind/en-ner-person.bin"))
 (def chunker (make-treebank-chunker "models/en-chunker.bin"))
 
-
 (deftest sentence-split-test
          (is (= (get-sentences "First sentence. Second sentence? Here is another one. And so on and so forth - you get the idea...")
                 ["First sentence." "Second sentence?" "Here is another one." "And so on and so forth - you get the idea..."]))
