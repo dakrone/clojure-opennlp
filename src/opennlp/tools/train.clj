@@ -60,7 +60,9 @@
   ([lang in headrules iter cut]
      (Parser/train lang
 		   (new ParseSampleStream
-			(new PlainTextByLineStream (reader in)))
+			(new PlainTextByLineStream (.getChannel
+						    (java.io.FileInputStream. in))
+			     "UTF-8"))
 		   (new HeadRules (reader headrules))
 		   iter
 		   cut)))
