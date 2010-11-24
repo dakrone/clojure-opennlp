@@ -266,9 +266,7 @@ instead of a sequence of sentences it looks like (lazy-chunk (lazy-tag
 Training
 --------
 There is code to allow for training models for each of the
-tools. Please see the code in src/opennlp/tools/train.clj
-
-Documentation and tests coming in the future.
+tools. Please see the documentation in TRAINING.markdown
 
 
 Known Issues
@@ -297,7 +295,7 @@ TODO
 - <del>Figure out what license to use.</del> (done!)
 - Filters for treebank-parser
 - Return multiple probability results for treebank-parser
-- Model training/trainer (in progress)
+- <del>Model training/trainer</del> (done!)
 - Revisit datastructure format for tagged sentences
 - <del>Document *beam-size* functionality</del>
 - Document *advance-percentage* functionality

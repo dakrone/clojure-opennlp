@@ -1,4 +1,4 @@
-(ns opennlp.test
+(ns opennlp.test.nlp
   (:use [opennlp.nlp])
   (:use [opennlp.tools.lazy])
   (:use [clojure.test])

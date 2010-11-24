@@ -1,6 +1,6 @@
 ; Clojure opennlp training functions
 (ns opennlp.tools.train
-  (:use [clojure.contrib.io])
+  (:use [clojure.contrib.io :only [output-stream reader]])
   (:import [opennlp.tools.util PlainTextByLineStream])
   (:import [opennlp.tools.util.model ModelType])
   (:import [opennlp.tools.dictionary Dictionary])
@@ -89,7 +89,7 @@
   ([lang in iter cut]   
      (TokenizerME/train
       lang
-      (->> (input-stream in)
+      (->> (reader in)
 	   (new PlainTextByLineStream)
 	   (new TokenSampleStream))
       false
