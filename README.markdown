@@ -284,6 +284,11 @@ Copyright (C) 2010 Matthew Lee Hinman
 Distributed under the Eclipse Public License, the same as Clojure uses. See the file COPYING.
 
 
+Contributors
+------------
+Rob Zinkov - zaxtax
+
+
 TODO
 ----
 - Do something with parse-num for treebank parsing
