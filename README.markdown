@@ -12,7 +12,7 @@ Additional information/documentation:
 Usage from Leiningen:
 --------------------
 
-    [clojure-opennlp "0.1.0"]
+    [clojure-opennlp "0.1.1"]
 
 You will need to specify the opennlp maven repo in your project.clj also:
 
