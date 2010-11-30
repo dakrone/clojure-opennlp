@@ -2,7 +2,7 @@
 (ns opennlp.tools.train
   (:use [clojure.contrib.io :only [output-stream reader]])
   (:import [opennlp.tools.util PlainTextByLineStream])
-  (:import [opennlp.tools.util.model ModelType])
+  (:import [opennlp.tools.util.model BaseModel ModelType])
   (:import [opennlp.tools.dictionary Dictionary])
   (:import [opennlp.tools.tokenize TokenizerME
 	                           TokenizerModel
@@ -26,8 +26,8 @@
 
 (defn write-model
   "Write a model to disk"
-  [model out-stream]
-  (.serialize mod (output-stream out-stream)))
+  [#^BaseModel model out-stream]
+  (.serialize model (output-stream out-stream)))
 
 (defn build-dictionary
   "Build a Dictionary based on file in appropriate format"

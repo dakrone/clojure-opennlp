@@ -308,4 +308,4 @@ TODO
 -- <del>core tools</del> (done)
 -- <del>filters</del> (done)
 -- <del>laziness</del> (done)
--- training
+-- training (pretty much done except for tagging)

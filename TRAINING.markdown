@@ -86,7 +86,7 @@ Chunking uses the training format specified in the [CONLL 2000](http://www.cnts.
 shared task. 
 
 Training the chunker requires placing each word on a separate line.
-Each line should have three whitespace-delimited columns. The first 
+Each line should have three space-delimited columns. The first 
 for the ```word```, the second for the part-of-speech ```tag```, and 
 lastly a column for ```chunk_tag```. 
 
@@ -99,22 +99,22 @@ A blank line should exist between sentences. As an example:
 
 chunker.train
 
-     He        PRP  B-NP
-     reckons   VBZ  B-VP
-     the       DT   B-NP
-     current   JJ   I-NP
-     account   NN   I-NP
-     deficit   NN   I-NP
-     will      MD   B-VP
-     narrow    VB   I-VP
-     to        TO   B-PP
-     only      RB   B-NP
-     #         #    I-NP
-     1.8       CD   I-NP
-     billion   CD   I-NP
-     in        IN   B-PP
-     September NNP  B-NP
-     .         .    O
+     He PRP B-NP
+     reckons VBZ B-VP
+     the DT B-NP
+     current JJ I-NP
+     account NN I-NP
+     deficit NN I-NP
+     will MD B-VP
+     narrow VB I-VP
+     to TO B-PP
+     only RB B-NP
+     # # I-NP
+     1.8 CD I-NP
+     billion CD I-NP
+     in IN B-PP
+     September NNP B-NP
+     . . O
 
      Chancellor NNP O
      of IN B-PP
@@ -242,3 +242,4 @@ to ```train-pos-tagger```
 Notes
 -----
 If you get an Exception, you might just not have enough data.
+
