@@ -134,6 +134,17 @@ the pos-tagger and treebank-parser with:
       (def pos-tag (make-pos-tagger "models/en-pos-maxent.bin")))
 
 
+Advance Percentage
+---------
+
+You can rebind ```opennlp.nlp/*advance-percentage*``` (the default is 0.95) for
+the treebank-parser with:
+
+    (binding [*advance-percentage* 0.80]
+      (def parser (make-treebank-parser "parser-model/en-parser-chunking.bin")))
+
+
+
 Treebank-parsing
 ----------------
 
@@ -335,7 +346,7 @@ TODO
 - <del>Model training/trainer</del> (done!)
 - Revisit datastructure format for tagged sentences
 - <del>Document *beam-size* functionality</del>
-- Document *advance-percentage* functionality
+- <del>Document *advance-percentage* functionality</del>
 - Build a full test suite:
 -- <del>core tools</del> (done)
 -- <del>filters</del> (done)
