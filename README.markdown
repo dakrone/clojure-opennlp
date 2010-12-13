@@ -43,16 +43,30 @@ the training tools in src/opennlp/tools/train.clj):
     
 Then, use the functions you've created to perform operations on text:
 
+Detecting sentences:
+
     user=> (pprint (get-sentences "First sentence. Second sentence? Here is another one. And so on and so forth - you get the idea..."))
     ["First sentence. ", "Second sentence? ", "Here is another one. ",
      "And so on and so forth - you get the idea..."]
     nil
+
+Sentence detectors also return the probabilities that a sentence was
+detected, as metadata for the sentence:
+
+    user=> (get-sentences "This is a sentence. This is also one.")
+    ["This is a sentence." "This is also one."]
+    user=> (meta (get-sentences "This is a sentence. "This is also one.")
+    {:probabilities (0.9999054310803004 0.9941126097177366)}
+
+Tokenizing:
     
     user=> (pprint (tokenize "Mr. Smith gave a car to his son on Friday"))
     ["Mr.", "Smith", "gave", "a", "car", "to", "his", "son", "on",
      "Friday"]
     nil
-    
+
+Part-of-speech tagging
+
     user=> (pprint (pos-tag (tokenize "Mr. Smith gave a car to his son on Friday.")))
     (["Mr." "NNP"]
      ["Smith" "NNP"]
@@ -65,6 +79,8 @@ Then, use the functions you've created to perform operations on text:
      ["on" "IN"]
      ["Friday." "NNP"])
     nil
+
+Name finding:
 
     user=> (name-find (tokenize "My name is Lee, not John."))
     ("Lee" "John")
@@ -300,6 +316,7 @@ TODO
 - <del>Figure out what license to use.</del> (done!)
 - Filters for treebank-parser
 - Return multiple probability results for treebank-parser
+- Explore including probability numbers
 - <del>Model training/trainer</del> (done!)
 - Revisit datastructure format for tagged sentences
 - <del>Document *beam-size* functionality</del>

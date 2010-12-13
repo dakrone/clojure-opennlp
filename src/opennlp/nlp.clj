@@ -53,8 +53,11 @@
       [text]
       {:pre [(string? text)]}
         (let [detector (SentenceDetectorME. model)
-              sentences (.sentDetect detector text)]
-          (into [] sentences))))
+              sentences (.sentDetect detector text)
+              probs (seq (.getSentenceProbabilities detector))]
+          (with-meta
+            (into [] sentences)
+            {:probabilities probs}))))
 
 (defmulti make-tokenizer
   "Return a function for tokenizing a sentence based on a given model file."
@@ -358,9 +361,10 @@
   "Given a list of parses and entities, print them out."
   [parses entities]
   (let [parse-map (add-entities entities)]
-    (println "parse-map:" parse-map)
-    (println "parses:" parses)
-    (map #(print-parse % parse-map) parses)))
+    #_(println "parse-map:" parse-map)
+    #_(println "parses:" parses)
+    #_(map #(print-parse % parse-map) parses)
+    parse-map))
 
 
 (defn coref-extent
@@ -381,6 +385,14 @@
     (map #(coref-extent % p index) extents)
     extents))
 
+(defn parse-extent
+  [extent tblinker parses]
+  (let [mention-array (into-array Mention extent)
+        entities (.getEntities tblinker mention-array)]
+    #_(println :mentions (seq mention-array) (bean (first mention-array)))
+    #_(println :entities (seq entities) (bean (first entities)))
+    (show-parses @parses entities)))
+
 ;;; Second Attempt
 (defn make-treebank-linker
   "Make a TreebankLinker, given a model directory."
@@ -393,11 +405,7 @@
             extents (doall (map #(coref-sentence (second %) parses
                                                  (first %) tblinker)
                                 indexed-sentences))]
-        (map #(let [mention-array (into-array Mention %)
-                    entities (.getEntities tblinker mention-array)]
-                (println "mentions:" (seq mention-array))
-                (println "entities:" (seq entities))
-                (show-parses @parses entities)) extents)))))
+        (map #(parse-extent % tblinker parses) extents)))))
 
 
 (comment
