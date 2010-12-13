@@ -50,14 +50,6 @@ Detecting sentences:
      "And so on and so forth - you get the idea..."]
     nil
 
-Sentence detectors also return the probabilities that a sentence was
-detected, as metadata for the sentence:
-
-    user=> (get-sentences "This is a sentence. This is also one.")
-    ["This is a sentence." "This is also one."]
-    user=> (meta (get-sentences "This is a sentence. "This is also one.")
-    {:probabilities (0.9999054310803004 0.9941126097177366)}
-
 Tokenizing:
     
     user=> (pprint (tokenize "Mr. Smith gave a car to his son on Friday"))
@@ -65,7 +57,7 @@ Tokenizing:
      "Friday"]
     nil
 
-Part-of-speech tagging
+Part-of-speech tagging:
 
     user=> (pprint (pos-tag (tokenize "Mr. Smith gave a car to his son on Friday.")))
     (["Mr." "NNP"]
@@ -107,6 +99,29 @@ And with just strings:
 
     user=> (phrase-strings (chunker (pos-tag (tokenize "The override system is meant to deactivate the accelerator when the brake pedal is pressed."))))
     ("The override system" "is meant to deactivate" "the accelerator" "when" "the brake pedal" "is pressed")
+
+
+Probabilities of confidence
+---------------------------
+
+The probabilities OpenNLP supplies for a given operation are available
+as metadata on the result, where applicable:
+
+    user=> (meta (get-sentences "This is a sentence. "This is also one.")
+    {:probabilities (0.9999054310803004 0.9941126097177366)}
+
+    user=> (meta (tokenizer "This is a sentence."))
+    {:probabilities (1.0 1.0 1.0 0.9956236737394807 1.0)}
+
+    user=> (meta (pos-tagger ["This" "is" "a" "sentence" "."]))
+    {:probabilities (0.9649410482478001 0.9982592902509803 0.9967282012835504 0.9952498677248117 0.9862225658078769)}
+
+    user=> (meta (chunker (pos-tagger ["This" "is" "a" "sentence" "."])))
+    {:probabilities (0.9941248001899835 0.9878092935921453 0.9986106511439116 0.9972975733070356 0.9906377695586069)}
+
+    user=> (meta (name-find ["My" "name" "is" "John"]))
+    {:probabilities (0.9996272005494383 0.999999997485361 0.9999948113868132 0.9982291838206192)}
+
 
 
 Beam Size
@@ -316,7 +331,7 @@ TODO
 - <del>Figure out what license to use.</del> (done!)
 - Filters for treebank-parser
 - Return multiple probability results for treebank-parser
-- Explore including probability numbers
+- <del>Explore including probability numbers</del> (probability numbers added as metadata)
 - <del>Model training/trainer</del> (done!)
 - Revisit datastructure format for tagged sentences
 - <del>Document *beam-size* functionality</del>

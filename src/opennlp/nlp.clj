@@ -76,8 +76,11 @@
     [sentence]
     {:pre [(string? sentence)]}
     (let [tokenizer (TokenizerME. model)
-	  tokens (.tokenize tokenizer sentence)]
-      (into [] tokens))))
+	  tokens (.tokenize tokenizer sentence)
+          probs (seq (.getTokenProbabilities tokenizer))]
+      (with-meta
+        (into [] tokens)
+        {:probabilities probs}))))
 
 (defmulti make-pos-tagger
   "Return a function for tagging tokens based on a givel model file."
@@ -97,8 +100,11 @@
     {:pre [(vector? tokens)]}
     (let [token-array (into-array tokens)
 	  tagger (POSTaggerME. model *beam-size* *cache-size*)
-	  tags (.tag tagger token-array)]
-      (map vector tokens tags))))
+	  tags (.tag tagger token-array)
+          probs (seq (.probs tagger))]
+      (with-meta
+        (map vector tokens tags)
+        {:probabilities probs}))))
 
 (defmulti make-name-finder
   "Return a function for finding names from tokens based on a given
@@ -118,10 +124,12 @@
     [tokens & contexts]
     {:pre [(seq tokens)
 	   (every? #(= (class %) String) tokens)]}
-    (distinct
-     (let [finder (NameFinderME. model)
-	   matches (.find finder (into-array String tokens))]
-       (map #(get tokens (.getStart %)) matches)))))
+    (let [finder (NameFinderME. model)
+          matches (.find finder (into-array String tokens))
+          probs (seq (.probs finder))]
+      (with-meta
+        (distinct (map #(get tokens (.getStart %)) matches))
+        {:probabilities probs}))))
 
 (defn- split-chunks
   "Partition a sequence of treebank chunks by their phrases."
@@ -183,10 +191,12 @@
 	  chunks  (into [] (seq (.chunk chunker tokens tags)))
 	  sized-chunks (map size-chunk (split-chunks chunks))
 	  [types sizes] (de-interleave sized-chunks)
-	  token-chunks (split-with-size sizes tokens)]
-      (map #(struct treebank-phrase (into [] (last %)) (first %))
-	   (partition 2 (interleave types token-chunks))))))
-
+	  token-chunks (split-with-size sizes tokens)
+          probs (seq (.probs chunker))]
+      (with-meta
+        (map #(struct treebank-phrase (into [] (last %)) (first %))
+             (partition 2 (interleave types token-chunks)))
+        {:probabilities probs}))))
 
 (defn phrases
   "Given the chunks from a treebank-chunker, return just a list of phrase word-lists."
@@ -216,8 +226,11 @@
 ; So, B-* starts a sequence, I-* continues it. New phrase starts when B-* is encountered
 ; -------------------------------------------
 
-; Treebank parsing
 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Treebank parsing
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn- strip-parens
   "Treebank-parser does not like parens and braces, so replace them."
