@@ -9,6 +9,10 @@ Additional information/documentation:
 - [Natural Language Processing in Clojure with clojure-opennlp](http://writequit.org/blog/?p=365)
 - [Context searching using Clojure-OpenNLP](http://writequit.org/blog/?p=351)
 
+Read the source from Marginalia
+
+- [http://dakrone.github.com/clojure-opennlp/](http://dakrone.github.com/clojure-opennlp/)
+
 Usage from Leiningen:
 --------------------
 
