@@ -1,5 +1,7 @@
-; Clojure opennlp tools
-(ns opennlp.nlp
+(ns #^{:doc "The main namespace for the clojure-opennlp project. Functions for
+  creating NLP performers can be created with the tools in this namespace."
+       :author "Lee Hinman"}
+  opennlp.nlp
   (:use [clojure.contrib.seq-utils :only [indexed]])
   (:use [clojure.contrib.pprint :only [pprint]])
   (:import [java.io File FileNotFoundException FileInputStream])
@@ -17,15 +19,15 @@
   (:import [opennlp.tools.postag POSModel POSTaggerME]))
 
 
-;;; OpenNLP property for pos-tagging. Meant to be rebound before
-;;; calling the tagging creators
+;; OpenNLP property for pos-tagging. Meant to be rebound before
+;; calling the tagging creators
 (def #^{:dynamic true} *beam-size* 3)
 
-;;; Default advance percentage as defined by
-;;; AbstractBottomUpParser.defaultAdvancePercentage
+;; Default advance percentage as defined by
+;; AbstractBottomUpParser.defaultAdvancePercentage
 (def #^{:dynamic true} *advance-percentage* 0.95)
 
-;;; Caching to use for pos-tagging
+;; Caching to use for pos-tagging
 (def #^{:dynamic true} *cache-size* 1024)
 
 (defn- file-exist?
@@ -153,7 +155,7 @@
     [chunk-type chunk-count]))
 
 
-; Thanks chouser
+;; Thanks chouser
 (defn- split-with-size
   [[v & vs] s]
   (if-not v
@@ -208,23 +210,23 @@
   [phrase-chunks]
   (map #(apply str (interpose " " %)) (phrases phrase-chunks)))
 
-; Docs for treebank chunking:
+;; Docs for treebank chunking:
 
-;(def chunker (make-treebank-chunker "models/EnglishChunk.bin.gz"))
-;(pprint (chunker (pos-tag (tokenize "The override system is meant to deactivate the accelerator when the brake pedal is pressed."))))
+;;(def chunker (make-treebank-chunker "models/EnglishChunk.bin.gz"))
+;;(pprint (chunker (pos-tag (tokenize "The override system is meant to deactivate the accelerator when the brake pedal is pressed."))))
 
-;(map size-chunk (split-chunks (chunker (pos-tag (tokenize "The override system is meant to deactivate the accelerator when the brake pedal is pressed.")))))
+;;(map size-chunk (split-chunks (chunker (pos-tag (tokenize "The override system is meant to deactivate the accelerator when the brake pedal is pressed.")))))
 
-;opennlp.nlp=> (split-with-size (sizes (map size-chunk (split-chunks (chunker (pos-tag (tokenize "The override system is meant to deactivate the accelerator when the brake pedal is pressed.")))))) (tokenize "The override system is meant to deactivate the accelerator when the brake pedal is pressed."))
-;(("The" "override" "system") ("is" "meant" "to" "deactivate") ("the" "accelerator") ("when") ("the" "brake" "pedal") ("is" "pressed") ("."))
+;;opennlp.nlp=> (split-with-size (sizes (map size-chunk (split-chunks (chunker (pos-tag (tokenize "The override system is meant to deactivate the accelerator when the brake pedal is pressed.")))))) (tokenize "The override system is meant to deactivate the accelerator when the brake pedal is pressed."))
+;;(("The" "override" "system") ("is" "meant" "to" "deactivate") ("the" "accelerator") ("when") ("the" "brake" "pedal") ("is" "pressed") ("."))
 
-;(["NP" 3] ["VP" 4] ["NP" 2] ["ADVP" 1] ["NP" 3] ["VP" 2])
+;;(["NP" 3] ["VP" 4] ["NP" 2] ["ADVP" 1] ["NP" 3] ["VP" 2])
 
-;opennlp.nlp=> (pprint (chunker (pos-tag (tokenize "The override system is meant to deactivate the accelerator when the brake pedal is pressed."))))
-;#<ArrayList [B-NP, I-NP, I-NP, B-VP, I-VP, I-VP, I-VP, B-NP, I-NP, B-ADVP, B-NP, I-NP, I-NP, B-VP, I-VP, O]>
+;;opennlp.nlp=> (pprint (chunker (pos-tag (tokenize "The override system is meant to deactivate the accelerator when the brake pedal is pressed."))))
+;;#<ArrayList [B-NP, I-NP, I-NP, B-VP, I-VP, I-VP, I-VP, B-NP, I-NP, B-ADVP, B-NP, I-NP, I-NP, B-VP, I-VP, O]>
 
-; So, B-* starts a sequence, I-* continues it. New phrase starts when B-* is encountered
-; -------------------------------------------
+;; So, B-* starts a sequence, I-* continues it. New phrase starts when B-* is encountered
+;; -------------------------------------------
 
 
 
@@ -310,10 +312,10 @@
 
 
 
-;------------------------------------------------------------------------
-;------------------------------------------------------------------------
-; Treebank Linking
-; WIP, do not use yet.
+;;------------------------------------------------------------------------
+;;------------------------------------------------------------------------
+;; Treebank Linking
+;; WIP, do not use yet.
 
 (declare print-parse)
 
@@ -326,7 +328,7 @@
     (print-parse c)
     (reset! start (.getEnd s))))
 
-;;; This is broken, don't use this.
+;; This is broken, don't use this.
 (defn print-parse
   "Given a parse and the EntityMentions-to-parse map, print out the parse."
   [p parse-map]
@@ -369,7 +371,7 @@
     @parse-map))
 
 
-; This is intended to actually be called.
+;; This is intended to actually be called.
 (defn show-parses
   "Given a list of parses and entities, print them out."
   [parses entities]
@@ -406,7 +408,7 @@
     #_(println :entities (seq entities) (bean (first entities)))
     (show-parses @parses entities)))
 
-;;; Second Attempt
+;; Second Attempt
 (defn make-treebank-linker
   "Make a TreebankLinker, given a model directory."
   [modeldir]
@@ -432,17 +434,17 @@
   (tbl s)
 
 
-;;;  This is currently what I get back:
+;;  This is currently what I get back:
   
-;;;  mentions: (#<Mention mention(span=0..4,hs=0..4, type=null, id=-1 Mary )> #<Mention mention(span=10..13,hs=10..13, type=null, id=-1 she )> #<Mention mention(span=25..27,hs=25..27, type=null, id=-1 me )>)
-;;;  entities: (#<DiscourseEntity [ me ]> #<DiscourseEntity [ Mary, she ]>)
-;;;  parse-map: {#<Parse she> 2, #<Parse Mary> 2, #<Parse me> 1}
-;;;  parses: [#<Parse Mary said she would help me . > #<Parse I told her I didn't need her help. >]
+;;  mentions: (#<Mention mention(span=0..4,hs=0..4, type=null, id=-1 Mary )> #<Mention mention(span=10..13,hs=10..13, type=null, id=-1 she )> #<Mention mention(span=25..27,hs=25..27, type=null, id=-1 me )>)
+;;  entities: (#<DiscourseEntity [ me ]> #<DiscourseEntity [ Mary, she ]>)
+;;  parse-map: {#<Parse she> 2, #<Parse Mary> 2, #<Parse me> 1}
+;;  parses: [#<Parse Mary said she would help me . > #<Parse I told her I didn't need her help. >]
 
-;;;  What I really need is a good way to express this in Clojure's datastructures.
+;;  What I really need is a good way to express this in Clojure's datastructures.
 )
 
-; First (dumb) Attempt
+;; First (dumb) Attempt
 #_(defn make-treebank-linker
   [modeldir]
   (let [tblinker (TreebankLinker. modeldir LinkerMode/TEST)
