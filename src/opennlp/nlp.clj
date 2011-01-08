@@ -3,7 +3,7 @@
        :author "Lee Hinman"}
   opennlp.nlp
   (:use [clojure.contrib.seq-utils :only [indexed]])
-  (:use [clojure.contrib.pprint :only [pprint]])
+  (:use [clojure.pprint :only [pprint]])
   (:import [java.io File FileNotFoundException FileInputStream])
   (:import [opennlp.tools.util Span])
   (:import [opennlp.tools.tokenize TokenizerModel TokenizerME])
@@ -402,11 +402,10 @@
 
 (defn parse-extent
   [extent tblinker parses]
-  (let [mention-array (into-array Mention extent)
+  (let [e (filter #(not (nil? (:parse (bean %)))) extent)
+        mention-array (into-array Mention e)
         entities (.getEntities tblinker mention-array)]
-    #_(println :mentions (seq mention-array) (bean (first mention-array)))
-    #_(println :entities (seq entities) (bean (first entities)))
-    (show-parses @parses entities)))
+    (println :entities (seq entities) (bean (first entities)))))
 
 ;; Second Attempt
 (defn make-treebank-linker
@@ -422,6 +421,12 @@
                                 indexed-sentences))]
         (map #(parse-extent % tblinker parses) extents)))))
 
+;; this is used for the treebank linking, it is a system property for
+;; the location of the wordnet installation 'dict' directory
+;; see: http://wordnet.princeton.edu/wordnet/
+(defn set-wordnet-location!
+  [location]
+  (System/setProperty "WNSEARCHDIR" location))
 
 (comment
 
@@ -429,7 +434,7 @@
   (def treebank-parser
     (make-treebank-parser "parser-model/en-parser-chunking.bin"))
   (def s (treebank-parser ["Mary said she would help me ."
-                           "I told her I didn't need her help."]))
+                           "I told her I didn't need her help ."]))
 
   (tbl s)
 
