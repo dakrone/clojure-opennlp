@@ -27,6 +27,7 @@ Basic Example usage (from a REPL):
 
     (use 'clojure.pprint) ; just for this documentation
     (use 'opennlp.nlp)
+    (use 'opennlp.treebank) ; treebank chunking, parsing and linking lives here
 
 You will need to make the processing functions using the model files. These
 assume you're running from the root project directory. You can also download
@@ -36,8 +37,8 @@ the model files from the opennlp project at
     user=> (def get-sentences (make-sentence-detector "models/en-sent.bin"))
     user=> (def tokenize (make-tokenizer "models/en-token.bin"))
     user=> (def pos-tag (make-pos-tagger "models/en-pos-maxent.bin"))
-    user=> (def chunker (make-treebank-chunker "models/en-chunker.bin"))
     user=> (def name-find (make-name-finder "models/namefind/en-ner-person.bin"))
+    user=> (def chunker (make-treebank-chunker "models/en-chunker.bin"))
 
 The tool-creators are multimethods, so you can also create any of the
 tools using a model instead of a filename (you can create a model with
@@ -141,7 +142,7 @@ the pos-tagger and treebank-parser with:
 Advance Percentage
 ---------
 
-You can rebind ```opennlp.nlp/*advance-percentage*``` (the default is 0.95) for
+You can rebind ```opennlp.treebank/*advance-percentage*``` (the default is 0.95) for
 the treebank-parser with:
 
     (binding [*advance-percentage* 0.80]
@@ -205,7 +206,7 @@ supported, they will automatically be replaced:
     ( ) \ / # ~ ` ' " ^ @ ,
 
 For a full reference of replaced chars, you can always look at strip-funny-chars
-in src/opennlp/nlp.clj
+in src/opennlp/treebank.clj
 
 Treebank parsing is considered beta at this point.
 
@@ -280,6 +281,7 @@ use the corresponding method:
 Here's how to use them:
 
     (use 'opennlp.nlp)
+    (use 'opennlp.treebank)
     (use 'opennlp.tools.lazy)
 
     (def get-sentences (make-sentence-detector "models/en-sent.bin"))
@@ -338,6 +340,7 @@ Rob Zinkov - zaxtax
 TODO
 ----
 - Do something with parse-num for treebank parsing
+- <del>Split up treebank stuff into its own namespace</del> (done!)
 - <del>Treebank chunker</del> (done!)
 - <del>Treebank parser</del> (done!)
 - <del>Laziness </del> (done! for now.)

@@ -2,6 +2,7 @@
   "Tests training models for the OpenNLP tools"
   (:use [clojure.test])
   (:require [opennlp.nlp :as nlp]
+            [opennlp.treebank :as tb]
             [opennlp.tools.train :as train])
   (:import [java.io File FileOutputStream]))
 
@@ -34,7 +35,7 @@
 
 (deftest chunker-training-test
   (let [chunk-model (train/train-treebank-chunker "training/chunker.train")
-        chunker (nlp/make-treebank-chunker chunk-model)
+        chunker (tb/make-treebank-chunker chunk-model)
         pos-tag (nlp/make-pos-tagger "models/en-pos-maxent.bin")
         tokenize (nlp/make-tokenizer "models/en-token.bin")]
     (is (= (chunker
@@ -59,7 +60,7 @@
 (deftest treebank-parser-training-test
   (let [tb-parser-model (train/train-treebank-parser "training/parser.train"
                                                      "training/head_rules")
-        parser (nlp/make-treebank-parser tb-parser-model)]
+        parser (tb/make-treebank-parser tb-parser-model)]
     (is (= (parser ["This is a sentence ."])
            ["(INC (NP (DT This)) (NP (DT is)) (NP (DT a)) (DT sentence) (. .))"]))))
 
