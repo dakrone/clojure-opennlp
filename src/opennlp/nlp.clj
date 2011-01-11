@@ -5,7 +5,9 @@
   (:use [clojure.contrib.seq-utils :only [indexed]])
   (:import [java.io File FileNotFoundException FileInputStream])
   (:import [opennlp.tools.util Span])
-  (:import [opennlp.tools.tokenize TokenizerModel TokenizerME])
+  (:import [opennlp.tools.tokenize TokenizerModel TokenizerME
+            DictionaryDetokenizer DetokenizationDictionary Detokenizer
+            Detokenizer$DetokenizationOperation])
   (:import [opennlp.tools.sentdetect SentenceModel SentenceDetectorME])
   (:import [opennlp.tools.namefind TokenNameFinderModel NameFinderME])
   (:import [opennlp.tools.postag POSModel POSTaggerME]))
@@ -120,4 +122,44 @@
       (with-meta
         (distinct (map #(get tokens (.getStart %)) matches))
         {:probabilities probs}))))
+
+(defmulti make-detokenizer
+  "Retun a functin for taking tokens and recombining them into a sentence
+  based on a given model file."
+  class)
+
+(defmethod make-detokenizer String
+  [modelfile]
+  (if-not (file-exist? modelfile)
+    (throw (FileNotFoundException. "Model file does not exist."))
+    (with-open [model-stream (FileInputStream. modelfile)]
+      (make-name-finder (DetokenizationDictionary. model-stream)))))
+
+(defn- collapse-tokens
+  [tokens detoken-ops]
+  (println :tokens tokens)
+  (println :detoken-ops detoken-ops)
+  (let [sb (StringBuilder.)]
+    (loop [s sb tokens tokens detoken-ops detoken-ops]
+      (let [op (first detoken-ops)
+            op2 (second detoken-ops)]
+        (if (and op
+                 (or op2
+                     (= op2 Detokenizer$DetokenizationOperation/MERGE_TO_LEFT)
+                     (= op Detokenizer$DetokenizationOperation/MERGE_TO_RIGHT)))
+          (.append s (first tokens))
+          (.append s (str (first tokens) " ")))
+        (when op2
+          (recur s (next tokens) (next detoken-ops)))))
+    (.toString sb)))
+
+(defmethod make-detokenizer DetokenizationDictionary
+  [model]
+  (fn detokenizer
+    [tokens]
+    {:pre [(seq tokens)
+           (every? #(= (class %) String) tokens)]}
+    (let [detoken (DictionaryDetokenizer. model)
+          ops (.detokenize detoken (into-array String tokens))]
+      (collapse-tokens tokens ops))))
 

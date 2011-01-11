@@ -8,6 +8,7 @@
 (def tokenize (make-tokenizer "models/en-token.bin"))
 (def pos-tag (make-pos-tagger "models/en-pos-maxent.bin"))
 (def name-find (make-name-finder "models/namefind/en-ner-person.bin"))
+#_(def detakenize (make-detokenizer "models/en-???.bin"))
 
 (deftest sentence-split-test
   (is (= (get-sentences "First sentence. Second sentence? Here is another one. And so on and so forth - you get the idea...")
@@ -31,6 +32,9 @@
          '("Lee" "John")))
   (is (= (name-find ["adsf"])
          '())))
+
+#_(deftest detakenizer-test
+  (is (= 0 0)))
 
 (deftest precondition-test
   (is (thrown? java.lang.AssertionError (get-sentences 1)))

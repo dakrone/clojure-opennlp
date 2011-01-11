@@ -339,6 +339,7 @@ Rob Zinkov - zaxtax
 
 TODO
 ----
+- Detokenizer (in progress)
 - Do something with parse-num for treebank parsing
 - <del>Split up treebank stuff into its own namespace</del> (done!)
 - <del>Treebank chunker</del> (done!)
