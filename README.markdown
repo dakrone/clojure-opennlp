@@ -16,7 +16,7 @@ Read the source from Marginalia
 Usage from Leiningen:
 --------------------
 
-    [clojure-opennlp "0.1.1"]
+    [clojure-opennlp "0.1.2"]
 
 You will need to specify the opennlp maven repo in your project.clj also:
 
