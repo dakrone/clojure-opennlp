@@ -133,24 +133,24 @@
   (if-not (file-exist? modelfile)
     (throw (FileNotFoundException. "Model file does not exist."))
     (with-open [model-stream (FileInputStream. modelfile)]
-      (make-name-finder (DetokenizationDictionary. model-stream)))))
+      (make-detokenizer (DetokenizationDictionary. model-stream)))))
 
 (defn- collapse-tokens
   [tokens detoken-ops]
   (println :tokens tokens)
   (println :detoken-ops detoken-ops)
   (let [sb (StringBuilder.)]
-    (loop [s sb tokens tokens detoken-ops detoken-ops]
-      (let [op (first detoken-ops)
-            op2 (second detoken-ops)]
+    (loop [ts tokens dt-ops detoken-ops]
+      (let [op (first dt-ops)
+            op2 (second dt-ops)]
         (if (and op
                  (or op2
                      (= op2 Detokenizer$DetokenizationOperation/MERGE_TO_LEFT)
                      (= op Detokenizer$DetokenizationOperation/MERGE_TO_RIGHT)))
-          (.append s (first tokens))
-          (.append s (str (first tokens) " ")))
+          (.append sb (first ts))
+          (.append sb (str (first ts) " ")))
         (when op2
-          (recur s (next tokens) (next detoken-ops)))))
+          (recur (next ts) (next dt-ops)))))
     (.toString sb)))
 
 (defmethod make-detokenizer DetokenizationDictionary
