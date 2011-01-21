@@ -14,7 +14,8 @@
                             "church. I didn't smell a drop of liquor, and "
                             "we didn't have a bit of trouble."))
         ["Being at the polls was just like being at church."
-         "I didn't smell a drop of liquor, and we didn't have a bit of trouble."]))))
+         (str "I didn't smell a drop of liquor, and we didn't"
+              " have a bit of trouble.")]))))
 
 (deftest tokenizer-training-test
   (let [token-model (train/train-tokenizer "training/tokenizer.train")
@@ -62,7 +63,8 @@
                                                      "training/head_rules")
         parser (tb/make-treebank-parser tb-parser-model)]
     (is (= (parser ["This is a sentence ."])
-           ["(INC (NP (DT This)) (NP (DT is)) (NP (DT a)) (DT sentence) (. .))"]))))
+           [(str "(INC (NP (DT This)) (NP (DT is)) (NP (DT a))"
+                 " (DT sentence) (. .))")]))))
 
 (deftest write-out-training-model-test
   (let [token-model (train/train-tokenizer "training/tokenizer.train")
@@ -75,5 +77,4 @@
       (is (= (tokenizer "Being at the polls was just like being at church.")
            ["Being" "at" "the" "polls"
             "was" "just" "like" "being"
-            "at" "church" "."])))
-))
+            "at" "church" "."])))))

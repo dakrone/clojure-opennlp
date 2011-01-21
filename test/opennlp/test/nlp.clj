@@ -11,8 +11,11 @@
 #_(def detakenize (make-detokenizer "models/en-???.bin"))
 
 (deftest sentence-split-test
-  (is (= (get-sentences "First sentence. Second sentence? Here is another one. And so on and so forth - you get the idea...")
-         ["First sentence." "Second sentence?" "Here is another one." "And so on and so forth - you get the idea..."]))
+  (is (= (get-sentences (str "First sentence. Second sentence? Here is another"
+                             " one. And so on and so forth - you get the"
+                             " idea..."))
+         ["First sentence." "Second sentence?" "Here is another one."
+          "And so on and so forth - you get the idea..."]))
   (is (= (get-sentences "'Hmmm.... now what?' Mr. Green said to H.A.L.")
          ["'Hmmm.... now what?'" "Mr. Green said to H.A.L."])))
 
@@ -25,7 +28,9 @@
 
 (deftest pos-tag-test
   (is (= (pos-tag (tokenize "Mr. Smith gave a car to his son on Friday."))
-         '(["Mr." "NNP"] ["Smith" "NNP"] ["gave" "VBD"] ["a" "DT"] ["car" "NN"] ["to" "TO"] ["his" "PRP$"] ["son" "NN"] ["on" "IN"] ["Friday" "NNP"] ["." "."]))))
+         '(["Mr." "NNP"] ["Smith" "NNP"] ["gave" "VBD"] ["a" "DT"] ["car" "NN"]
+             ["to" "TO"] ["his" "PRP$"] ["son" "NN"] ["on" "IN"]
+               ["Friday" "NNP"] ["." "."]))))
 
 (deftest name-finder-test
   (is (= (name-find (tokenize "My name is Lee, not John"))
