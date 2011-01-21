@@ -73,11 +73,11 @@
   (fn treebank-chunker
     [pos-tagged-tokens]
     (let [chunker (ChunkerME. model *beam-size*)
-	  [tokens tags] (de-interleave pos-tagged-tokens)
-	  chunks  (into [] (seq (.chunk chunker tokens tags)))
-	  sized-chunks (map size-chunk (split-chunks chunks))
-	  [types sizes] (de-interleave sized-chunks)
-	  token-chunks (split-with-size sizes tokens)
+          [tokens tags] (de-interleave pos-tagged-tokens)
+          chunks  (into [] (seq (.chunk chunker tokens tags)))
+          sized-chunks (map size-chunk (split-chunks chunks))
+          [types sizes] (de-interleave sized-chunks)
+          token-chunks (split-with-size sizes tokens)
           probs (seq (.probs chunker))]
       (with-meta
         (map #(struct treebank-phrase (into [] (last %)) (first %))
@@ -85,7 +85,8 @@
         {:probabilities probs}))))
 
 (defn phrases
-  "Given the chunks from a treebank-chunker, return just a list of phrase word-lists."
+  "Given the chunks from a treebank-chunker, return just a list of phrase
+  word-lists."
   [phrases]
   (map :phrase phrases))
 
@@ -97,20 +98,30 @@
 ;; Docs for treebank chunking:
 
 ;;(def chunker (make-treebank-chunker "models/EnglishChunk.bin.gz"))
-;;(pprint (chunker (pos-tag (tokenize "The override system is meant to deactivate the accelerator when the brake pedal is pressed."))))
+;;(pprint (chunker (pos-tag (tokenize "The override system is meant to
+;;deactivate the accelerator when the brake pedal is pressed."))))
 
-;;(map size-chunk (split-chunks (chunker (pos-tag (tokenize "The override system is meant to deactivate the accelerator when the brake pedal is pressed.")))))
+;;(map size-chunk (split-chunks (chunker (pos-tag (tokenize "The
+;;override system is meant to deactivate the accelerator when the
+;;brake pedal is pressed.")))))
 
-;;opennlp.nlp=> (split-with-size (sizes (map size-chunk (split-chunks (chunker (pos-tag (tokenize "The override system is meant to deactivate the accelerator when the brake pedal is pressed.")))))) (tokenize "The override system is meant to deactivate the accelerator when the brake pedal is pressed."))
-;;(("The" "override" "system") ("is" "meant" "to" "deactivate") ("the" "accelerator") ("when") ("the" "brake" "pedal") ("is" "pressed") ("."))
+;;opennlp.nlp=> (split-with-size (sizes (map size-chunk (split-chunks
+;;(chunker (pos-tag (tokenize "The override system is meant to
+;;deactivate the accelerator when the brake pedal is pressed."))))))
+;;(tokenize "The override system is meant to deactivate the
+;;accelerator when the brake pedal is pressed."))  (("The" "override"
+;;"system") ("is" "meant" "to" "deactivate") ("the" "accelerator")
+;;("when") ("the" "brake" "pedal") ("is" "pressed") ("."))
 
 ;;(["NP" 3] ["VP" 4] ["NP" 2] ["ADVP" 1] ["NP" 3] ["VP" 2])
 
-;;opennlp.nlp=> (pprint (chunker (pos-tag (tokenize "The override system is meant to deactivate the accelerator when the brake pedal is pressed."))))
-;;#<ArrayList [B-NP, I-NP, I-NP, B-VP, I-VP, I-VP, I-VP, B-NP, I-NP, B-ADVP, B-NP, I-NP, I-NP, B-VP, I-VP, O]>
+;;opennlp.nlp=> (pprint (chunker (pos-tag (tokenize "The override
+;;system is meant to deactivate the accelerator when the brake pedal
+;;is pressed."))))  #<ArrayList [B-NP, I-NP, I-NP, B-VP, I-VP, I-VP,
+;;I-VP, B-NP, I-NP, B-ADVP, B-NP, I-NP, I-NP, B-VP, I-VP, O]>
 
-;; So, B-* starts a sequence, I-* continues it. New phrase starts when B-* is encountered
-;; -------------------------------------------
+;; So, B-* starts a sequence, I-* continues it. New phrase starts when
+;; B-* is encountered
 
 
 
@@ -155,9 +166,9 @@
   (fn treebank-parser
     [text]
     (let [parser (ParserFactory/create model
-				       *beam-size*
-				       *advance-percentage*)
-	  parses (map #(parse-line % parser) text)]
+                                       *beam-size*
+                                       *advance-percentage*)
+          parses (map #(parse-line % parser) text)]
       (vec parses))))
 
 
@@ -282,13 +293,17 @@
                               (DefaultParse. p index))]
     (swap! parses #(assoc % (count %) p))
     (map #(coref-extent % p index) extents)
-    extents))
+    ;;(println :es (map #(println (bean %)) extents))
+    (map bean extents)))
 
+;; TODO: fix this function, currently doesn't parse correctly
 (defn parse-extent
   "Given an coref extent, a treebank linker, a parses atom and the index of
   the extent, return a tuple of the coresponding parse and discourse entities"
   [extent tblinker parses pindex]
+  (println :ext (bean extent))
   (let [e (filter #(not (nil? (:parse (bean %)))) extent)
+        ;;_ (println :e e)
         mention-array (into-array Mention e)
         entities (.getEntities tblinker mention-array)]
     (println :entities (seq entities) (bean (first entities)))
@@ -306,7 +321,9 @@
             extents (doall (map #(coref-sentence (second %) parses
                                                  (first %) tblinker)
                                 indexed-sentences))]
-        (map #(parse-extent %1 tblinker parses %2) (indexed extents))))))
+        #_(map #(parse-extent %1 tblinker parses %2) (indexed extents))
+        (doall (map println extents))
+        extents))))
 
 ;; this is used for the treebank linking, it is a system property for
 ;; the location of the wordnet installation 'dict' directory
@@ -321,32 +338,9 @@
   (def tbl (make-treebank-linker "coref"))
   (def treebank-parser
     (make-treebank-parser "parser-model/en-parser-chunking.bin"))
-  (def s (treebank-parser ["Mary said she would help me ."
-                           "I told her I didn't need her help ."]))
-  (tbl s)o)
-
-;; First (dumb) Attempt, copied almost entirely from the java way of
-;; doing things
-#_(defn make-treebank-linker
-  [modeldir]
-  (let [tblinker (TreebankLinker. modeldir LinkerMode/TEST)
-        document (ArrayList.) ; do this without an arraylist
-        parses   (ArrayList.)
-        sentencenum (atom 0)]
-    (fn treebank-linker
-      [sentences]
-      (for [sentence sentences]
-        (let [p (Parse/parseParse sentence)
-              extents (.getMentions (.getMentionFinder tblinker) (DefaultParse. p sentencenum))]
-          (.add parses p)
-          (for [extent extents]
-            (if (nil? extent)
-              (let [snp (Parse. (.getText p) (.getSpan extent) "NML" 1.0 0)]
-                (.insert p snp)
-                (.setParse extent (DefaultParse. snp sentencenum)))
-              nil))
-          (.addAll document (Arrays/asList extents))
-          (swap! sentencenum inc))))))
+  (def s (treebank-parser ["Mary said she liked me ."]))
+  (tbl s)
+  )
 
 
 

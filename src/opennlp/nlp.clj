@@ -68,7 +68,7 @@
     [sentence]
     {:pre [(string? sentence)]}
     (let [tokenizer (TokenizerME. model)
-	  tokens (.tokenize tokenizer sentence)
+          tokens (.tokenize tokenizer sentence)
           probs (seq (.getTokenProbabilities tokenizer))]
       (with-meta
         (into [] tokens)
@@ -91,8 +91,8 @@
     [tokens]
     {:pre [(vector? tokens)]}
     (let [token-array (into-array tokens)
-	  tagger (POSTaggerME. model *beam-size* *cache-size*)
-	  tags (.tag tagger token-array)
+          tagger (POSTaggerME. model *beam-size* *cache-size*)
+          tags (.tag tagger token-array)
           probs (seq (.probs tagger))]
       (with-meta
         (map vector tokens tags)
@@ -115,7 +115,7 @@
   (fn name-finder
     [tokens & contexts]
     {:pre [(seq tokens)
-	   (every? #(= (class %) String) tokens)]}
+           (every? #(= (class %) String) tokens)]}
     (let [finder (NameFinderME. model)
           matches (.find finder (into-array String tokens))
           probs (seq (.probs finder))]
@@ -137,19 +137,23 @@
 
 (defn- collapse-tokens
   [tokens detoken-ops]
-  (println :tokens tokens)
-  (println :detoken-ops detoken-ops)
   (let [sb (StringBuilder.)]
     (loop [ts tokens dt-ops detoken-ops]
+      (println :ts ts)
+      (println :dt dt-ops)
       (let [op (first dt-ops)
             op2 (second dt-ops)]
+        (println :op op)
+        (println :op2 op2)
         (if (and op
                  (or op2
                      (= op2 Detokenizer$DetokenizationOperation/MERGE_TO_LEFT)
                      (= op Detokenizer$DetokenizationOperation/MERGE_TO_RIGHT)))
           (.append sb (first ts))
-          (.append sb (str (first ts) " ")))
-        (when op2
+          (if (> (count dt-ops) 1)
+            (.append sb (str (first ts) " "))
+            (.append sb (str (first ts)))))
+        (when (and op op2)
           (recur (next ts) (next dt-ops)))))
     (.toString sb)))
 
