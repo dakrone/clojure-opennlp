@@ -4,16 +4,17 @@
 (ns contextfinder
   (:use [opennlp.nlp])
   (:use [opennlp.tools.filters])
-  (:use [clojure.contrib.seq-utils :only [flatten indexed partition-by]])
-  (:use [clojure.contrib.pprint])
+  (:use [clojure.pprint :only [pprint]])
+  (:use [clojure.contrib.seq-utils :only [indexed]])
   (:use [clojure.contrib.math :only [abs]]))
 
 
 ; Requires you to run this from the root opennlp directory or have the
 ; models downloaded into a "models" folder
-(def get-sentences (make-sentence-detector "models/EnglishSD.bin.gz"))
-(def tokenize (make-tokenizer "models/EnglishTok.bin.gz"))
-(def pos-tag (make-pos-tagger "models/tag.bin.gz"))
+(def get-sentences (make-sentence-detector "models/en-sent.bin"))
+(def tokenize (make-tokenizer "models/en-token.bin"))
+(def pos-tag (make-pos-tagger "models/en-pos-maxent.bin"))
+
 
 
 (defn- mindist
