@@ -36,6 +36,7 @@ the model files from the opennlp project at
 
     user=> (def get-sentences (make-sentence-detector "models/en-sent.bin"))
     user=> (def tokenize (make-tokenizer "models/en-token.bin"))
+    user=> (def detokenize (make-detokenizer "models/english-detokenizer.xml"))
     user=> (def pos-tag (make-pos-tagger "models/en-pos-maxent.bin"))
     user=> (def name-find (make-name-finder "models/namefind/en-ner-person.bin"))
     user=> (def chunker (make-treebank-chunker "models/en-chunker.bin"))
@@ -61,6 +62,17 @@ Tokenizing:
     ["Mr.", "Smith", "gave", "a", "car", "to", "his", "son", "on",
      "Friday"]
     nil
+
+Detokenizing:
+    
+    user=> (detokenize ["Mr.", "Smith", "gave", "a", "car", "to", "his", "son", "on", "Friday"])
+    "Mr. Smith gave a car to his son on Friday."
+    nil
+
+Ideally, s == (detokenize (tokenize s)), the detokenization model XML
+file is a work in progress, please let me know if you run into
+something that doesn't detokenize correctly in English.
+
 
 Part-of-speech tagging:
 
@@ -339,7 +351,7 @@ Rob Zinkov - zaxtax
 
 TODO
 ----
-- Detokenizer (in progress)
+- <del>Detokenizer</del> (still more work to do, but it works for now)
 - Do something with parse-num for treebank parsing
 - <del>Split up treebank stuff into its own namespace</del> (done!)
 - <del>Treebank chunker</del> (done!)

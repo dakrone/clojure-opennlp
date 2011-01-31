@@ -135,14 +135,32 @@
     (with-open [model-stream (FileInputStream. modelfile)]
       (make-detokenizer (DetokenizationDictionary. model-stream)))))
 
+;; TODO: clean this up, recursion is a smell
 (defn- collapse-tokens
   [tokens detoken-ops]
   (let [sb (StringBuilder.)]
     (loop [ts tokens dt-ops detoken-ops]
-      (println :ts ts)
-      (println :dt dt-ops)
       (let [op (first dt-ops)
             op2 (second dt-ops)]
+        (println :ts ts)
+        (println :op op)
+        (println :op2 op2)
+        (if (or (= op2 nil)
+                (= op2 Detokenizer$DetokenizationOperation/MERGE_TO_LEFT))
+          (.append sb (first ts))
+          (.append sb (str (first ts) " ")))
+        (when (and op op2)
+          (recur (next ts) (next dt-ops)))))
+    (.toString sb)))
+
+;; older, cruddier version
+#_(defn- collapse-tokens
+  [tokens detoken-ops]
+  (let [sb (StringBuilder.)]
+    (loop [ts tokens dt-ops detoken-ops]
+      (let [op (first dt-ops)
+            op2 (second dt-ops)]
+        (println :ts ts)
         (println :op op)
         (println :op2 op2)
         (if (and op

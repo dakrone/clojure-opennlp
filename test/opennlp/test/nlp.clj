@@ -8,7 +8,7 @@
 (def tokenize (make-tokenizer "models/en-token.bin"))
 (def pos-tag (make-pos-tagger "models/en-pos-maxent.bin"))
 (def name-find (make-name-finder "models/namefind/en-ner-person.bin"))
-#_(def detakenize (make-detokenizer "models/en-???.bin"))
+(def detokenize (make-detokenizer "models/english-detokenizer.xml"))
 
 (deftest sentence-split-test
   (is (= (get-sentences (str "First sentence. Second sentence? Here is another"
@@ -38,8 +38,13 @@
   (is (= (name-find ["adsf"])
          '())))
 
-#_(deftest detakenizer-test
-  (is (= 0 0)))
+(deftest detakenizer-test
+  (is (= (detokenize (tokenize "I don't think he would've."))
+         "I don't think he would've."))
+  (is (= (detokenize (tokenize "This isn't the right thing."))
+         "This isn't the right thing."))
+  (is (= (detokenize (tokenize "Where'd you go?"))
+         "Where'd you go?")))
 
 (deftest precondition-test
   (is (thrown? java.lang.AssertionError (get-sentences 1)))
