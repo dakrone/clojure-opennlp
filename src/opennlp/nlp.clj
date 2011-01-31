@@ -142,9 +142,6 @@
     (loop [ts tokens dt-ops detoken-ops]
       (let [op (first dt-ops)
             op2 (second dt-ops)]
-        (println :ts ts)
-        (println :op op)
-        (println :op2 op2)
         (if (or (= op2 nil)
                 (= op2 Detokenizer$DetokenizationOperation/MERGE_TO_LEFT))
           (.append sb (first ts))
