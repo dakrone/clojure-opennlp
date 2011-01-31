@@ -44,7 +44,13 @@
   (is (= (detokenize (tokenize "This isn't the right thing."))
          "This isn't the right thing."))
   (is (= (detokenize (tokenize "Where'd you go?"))
-         "Where'd you go?")))
+         "Where'd you go?"))
+  (is (= (detokenize (tokenize "I'll get that tomorrow."))
+         "I'll get that tomorrow."))
+  (is (= (detokenize (tokenize "She's the best."))
+         "She's the best."))
+  (is (= (detokenize (tokenize "I'm not sure."))
+         "I'm not sure.")))
 
 (deftest precondition-test
   (is (thrown? java.lang.AssertionError (get-sentences 1)))

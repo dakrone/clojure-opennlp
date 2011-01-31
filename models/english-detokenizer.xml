@@ -80,4 +80,16 @@ under the License.
   <entry operation="MOVE_LEFT">
     <token>'d</token>
   </entry>
+  <entry operation="MOVE_LEFT">
+    <token>'ll</token>
+  </entry>
+  <entry operation="MOVE_LEFT">
+    <token>'s</token>
+  </entry>
+  <entry operation="MOVE_LEFT">
+    <token>'re</token>
+  </entry>
+  <entry operation="MOVE_LEFT">
+    <token>'m</token>
+  </entry>
 </dictionary>
