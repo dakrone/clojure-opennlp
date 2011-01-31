@@ -38,7 +38,7 @@
   (is (= (name-find ["adsf"])
          '())))
 
-(deftest detakenizer-test
+(deftest detokenizer-test
   (is (= (detokenize (tokenize "I don't think he would've."))
          "I don't think he would've."))
   (is (= (detokenize (tokenize "This isn't the right thing."))
