@@ -69,10 +69,14 @@
     {:pre [(string? sentence)]}
     (let [tokenizer (TokenizerME. model)
           tokens (.tokenize tokenizer sentence)
+          spans (map #(hash-map :start (.getStart %)
+                                :end (.getEnd %))
+                     (seq (.tokenizePos tokenizer sentence)))
           probs (seq (.getTokenProbabilities tokenizer))]
       (with-meta
         (into [] tokens)
-        {:probabilities probs}))))
+        {:probabilities probs
+         :spans spans}))))
 
 (defmulti make-pos-tagger
   "Return a function for tagging tokens based on a givel model file."
