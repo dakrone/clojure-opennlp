@@ -41,7 +41,7 @@ Tokenizer
 
 To train the tokenizer, include one sentence per line. The Tokenizer will
 split on whitespace and explictly marked <SPLIT> tags. <SPLIT> tags are
-most useful for separating words from punctuation. As an exmaple:
+most useful for separating words from punctuation. As an example:
  
 tokenizer.train
 
