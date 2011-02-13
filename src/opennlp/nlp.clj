@@ -3,7 +3,7 @@
        :author "Lee Hinman"}
   opennlp.nlp
   (:use [clojure.contrib.seq-utils :only [indexed]])
-  (:import [java.io File FileNotFoundException FileInputStream])
+  (:use [clojure.java.io :only [file input-stream]])
   (:import [opennlp.tools.util Span])
   (:import [opennlp.tools.tokenize TokenizerModel TokenizerME
             DictionaryDetokenizer DetokenizationDictionary Detokenizer
@@ -20,24 +20,14 @@
 ;; Caching to use for pos-tagging
 (def #^{:dynamic true} *cache-size* 1024)
 
-(defn file-exist?
-  [filename]
-  (.exists (File. filename)))
-
-(defn files-exist?
-  [filenames]
-  (reduce 'and (map file-exist? filenames)))
-
 (defmulti make-sentence-detector
   "Return a function for splitting sentences given a model file."
   class)
 
-(defmethod make-sentence-detector String
+(defmethod make-sentence-detector :default
   [modelfile]
-  (if-not (file-exist? modelfile)
-    (throw (FileNotFoundException. "Model file does not exist."))
-    (with-open [model-stream (FileInputStream. modelfile)]
-      (make-sentence-detector (SentenceModel. model-stream)))))
+  (with-open [model-stream (input-stream modelfile)]
+    (make-sentence-detector (SentenceModel. model-stream))))
 
 (defmethod make-sentence-detector SentenceModel
   [model]
@@ -55,12 +45,10 @@
   "Return a function for tokenizing a sentence based on a given model file."
   class)
 
-(defmethod make-tokenizer String
+(defmethod make-tokenizer :default
   [modelfile]
-  (if-not (file-exist? modelfile)
-    (throw (FileNotFoundException. "Model file does not exist."))
-    (with-open [model-stream (FileInputStream. modelfile)]
-      (make-tokenizer (TokenizerModel. model-stream)))))
+  (with-open [model-stream (input-stream modelfile)]
+    (make-tokenizer (TokenizerModel. model-stream))))
 
 (defmethod make-tokenizer TokenizerModel
   [model]
@@ -82,12 +70,10 @@
   "Return a function for tagging tokens based on a givel model file."
   class)
 
-(defmethod make-pos-tagger String
+(defmethod make-pos-tagger :default
   [modelfile]
-  (if-not (file-exist? modelfile)
-    (throw (FileNotFoundException. "Model file does not exist."))
-    (with-open [model-stream (FileInputStream. modelfile)]
-      (make-pos-tagger (POSModel. model-stream)))))
+  (with-open [model-stream (input-stream modelfile)]
+    (make-pos-tagger (POSModel. model-stream))))
 
 (defmethod make-pos-tagger POSModel
   [model]
@@ -107,12 +93,10 @@
    model file."
   class)
 
-(defmethod make-name-finder String
+(defmethod make-name-finder :default
   [modelfile]
-  (if-not (file-exist? modelfile)
-    (throw (FileNotFoundException. "Model file does not exist."))
-    (with-open [model-stream (FileInputStream. modelfile)]
-      (make-name-finder (TokenNameFinderModel. model-stream)))))
+  (with-open [model-stream (input-stream modelfile)]
+    (make-name-finder (TokenNameFinderModel. model-stream))))
 
 (defmethod make-name-finder TokenNameFinderModel
   [model]
@@ -132,12 +116,10 @@
   based on a given model file."
   class)
 
-(defmethod make-detokenizer String
+(defmethod make-detokenizer :default
   [modelfile]
-  (if-not (file-exist? modelfile)
-    (throw (FileNotFoundException. "Model file does not exist."))
-    (with-open [model-stream (FileInputStream. modelfile)]
-      (make-detokenizer (DetokenizationDictionary. model-stream)))))
+  (with-open [model-stream (input-stream modelfile)]
+    (make-detokenizer (DetokenizationDictionary. model-stream))))
 
 ;; TODO: clean this up, recursion is a smell
 (defn- collapse-tokens

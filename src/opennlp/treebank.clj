@@ -2,9 +2,9 @@
              This includes treebank chuncking, parsing and linking (coref)."
        :author "Lee Hinman"}
   opennlp.treebank
-  (:use [opennlp.nlp :only [file-exist? *beam-size*]])
+  (:use [opennlp.nlp :only [*beam-size*]])
   (:use [clojure.contrib.seq-utils :only [indexed]])
-  (:import [java.io FileNotFoundException FileInputStream])
+  (:use [clojure.java.io :only [input-stream]])
   (:import [opennlp.tools.chunker ChunkerModel ChunkerME])
   (:import [opennlp.tools.cmdline.parser ParserTool])
   (:import [opennlp.tools.parser Parse ParserModel
@@ -61,12 +61,10 @@
   a given model file."
   class)
 
-(defmethod make-treebank-chunker String
+(defmethod make-treebank-chunker :default
   [modelfile]
-  (if-not (file-exist? modelfile)
-    (throw (FileNotFoundException. "Model file does not exist."))
-    (with-open [modelstream (FileInputStream. modelfile)]
-      (make-treebank-chunker (ChunkerModel. modelstream)))))
+  (with-open [modelstream (input-stream modelfile)]
+    (make-treebank-chunker (ChunkerModel. modelstream))))
 
 (defmethod make-treebank-chunker ChunkerModel
   [model]
@@ -154,12 +152,10 @@
   a given model file."
   class)
 
-(defmethod make-treebank-parser String
+(defmethod make-treebank-parser :default
   [modelfile]
-  (if-not (file-exist? modelfile)
-    (throw (FileNotFoundException. "The model file does not exist."))
-    (with-open [modelstream (FileInputStream. modelfile)]
-      (make-treebank-parser (ParserModel. modelstream)))))
+  (with-open [modelstream (input-stream modelfile)]
+    (make-treebank-parser (ParserModel. modelstream))))
 
 (defmethod make-treebank-parser ParserModel
   [model]
