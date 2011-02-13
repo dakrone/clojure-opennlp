@@ -346,8 +346,8 @@ Distributed under the Eclipse Public License, the same as Clojure uses. See the 
 
 Contributors
 ------------
-Rob Zinkov - zaxtax
-Alexandre Patry - apatry
+- Rob Zinkov - zaxtax
+- Alexandre Patry - apatry
 
 
 TODO
