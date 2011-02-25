@@ -8,7 +8,8 @@
   [text sentence-finder]
   (lazy-seq
     (when-let [s (seq text)]
-      (cons (sentence-finder (first text)) (lazy-get-sentences (rest s) sentence-finder)))))
+      (cons (sentence-finder (first text))
+            (lazy-get-sentences (rest s) sentence-finder)))))
 
 
 (defn lazy-tokenize
@@ -26,7 +27,8 @@
   [sentences tokenizer pos-tagger]
   (lazy-seq
     (when-let [s (seq sentences)]
-      (cons (pos-tagger (tokenizer (first s))) (lazy-tag (rest s) tokenizer pos-tagger)))))
+      (cons (pos-tagger (tokenizer (first s)))
+            (lazy-tag (rest s) tokenizer pos-tagger)))))
 
 
 (defn lazy-chunk

@@ -3,7 +3,8 @@
 (defmacro pos-filter
   "Declare a filter for pos-tagged vectors with the given name and regex."
   [n r]
-  (let [docstring (str "Given a list of pos-tagged elements, return only the " n " in a list.")]
+  (let [docstring (str "Given a list of pos-tagged elements, "
+                       "return only the " n " in a list.")]
     `(defn ~n
        ~docstring
        [elements#]
@@ -13,7 +14,8 @@
 (defmacro chunk-filter
   "Declare a filter for treebank-chunked lists with the given name and regex."
   [n r]
-  (let [docstring (str "Given a list of treebank-chunked elements, return only the " n " in a list.")]
+  (let [docstring (str "Given a list of treebank-chunked elements, "
+                       "return only the " n " in a list.")]
     `(defn ~n
        ~docstring
        [elements#]
