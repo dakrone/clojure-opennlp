@@ -289,6 +289,7 @@ use the corresponding method:
     #'opennlp.tools.lazy/lazy-tokenize
     #'opennlp.tools.lazy/lazy-tag
     #'opennlp.tools.lazy/lazy-chunk
+    #'opennlp.tools.lazy/sentence-seq
 
 Here's how to use them:
 
@@ -322,6 +323,15 @@ layout, so they may change in the future. (Maybe chaining them so
 instead of a sequence of sentences it looks like (lazy-chunk (lazy-tag
 (lazy-tokenize (lazy-get-sentences ...))))).
 
+<b>Generating a lazy sequence of sentences from a file using
+opennlp.tools.lazy/sentence-seq:</b>
+
+    (with-open [rdr (clojure.java.io/reader "/tmp/bigfile")]
+      (let [sentences (sentence-seq rdr get-sentences)]
+        ;; process your lazy seq of sentences however you desire
+        (println "first 5 sentences:")
+        (clojure.pprint/pprint (take 5 sentences))))
+
 
 Training
 --------
@@ -352,6 +362,7 @@ Contributors
 
 TODO
 ----
+- <del>add method to generate lazy sequence of sentences from a file</del> (done!)
 - <del>Detokenizer</del> (still more work to do, but it works for now)
 - Do something with parse-num for treebank parsing
 - <del>Split up treebank stuff into its own namespace</del> (done!)

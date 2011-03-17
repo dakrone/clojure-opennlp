@@ -40,3 +40,20 @@
      (cons (chunker (pos-tagger (tokenizer (first s))))
            (lazy-chunk (rest s) tokenizer pos-tagger chunker)))))
 
+(defn sentence-seq
+  "lazily read sentences from rdr as a lazy sequence of strings using the
+  given sentence-finder. rdr must implement java.io.BufferedReader."
+  [^java.io.BufferedReader rdr sentence-finder]
+  (.mark rdr 0)
+  (loop [c (.read rdr) sb (StringBuilder.)]
+    (if-not (= -1 c)
+      (do (.append sb (char c))
+          (let [sents (sentence-finder (.toString sb))]
+            (if (> (count sents) 1)
+              (do (.reset rdr)
+                  (cons (first sents)
+                        (lazy-seq (sentence-seq rdr sentence-finder))))
+              (do (.mark rdr 0)
+                  (recur (.read rdr) sb)))))
+      [(.toString sb)])))
+
