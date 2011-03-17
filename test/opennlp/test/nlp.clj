@@ -73,7 +73,14 @@
     (is (= (type (lazy-tag s tokenize pos-tag))
            clojure.lang.LazySeq))
     (is (= (first (lazy-tag s tokenize pos-tag))
-           '(["First" "RB"] ["sentence" "NN"] ["." "."])))))
+           '(["First" "RB"] ["sentence" "NN"] ["." "."]))))
+  (testing "should lazily read sentences from a file"
+    (with-open [rdr (clojure.java.io/reader "test/sentence-file")]
+      (let [sentences (sentence-seq rdr get-sentences)]
+        (is (= (type sentences) clojure.lang.Cons))
+        (is (= sentences
+               ["This is a sentence." "Another sentence."
+                "My name is awesome." "Another line."]))))))
 
 
 
