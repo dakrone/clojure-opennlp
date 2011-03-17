@@ -1,4 +1,4 @@
-(ns opennlp.test.train
+(ns opennlp.test.tools.train
   "Tests training models for the OpenNLP tools"
   (:use [clojure.test])
   (:require [opennlp.nlp :as nlp]

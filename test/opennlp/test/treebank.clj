@@ -2,7 +2,6 @@
   (:use [opennlp.treebank])
   (:use [clojure.test])
   (:use [opennlp.nlp :only [make-tokenizer make-pos-tagger]])
-  (:use [opennlp.tools.lazy :only [lazy-chunk]])
   (:import [java.io File FileNotFoundException]))
 
 (def tokenize (make-tokenizer "models/en-token.bin"))
@@ -49,10 +48,3 @@
     (println "Unable to execute treebank-parser tests."
              "Download the model files to $PROJECT_ROOT/parser-models.")))
 
-(deftest laziness-test
-  (let [s ["First sentence." "Second sentence?"]]
-    (is (= (type (lazy-chunk s tokenize pos-tag chunker))
-           clojure.lang.LazySeq))
-    (is (= (first (lazy-chunk s tokenize pos-tag chunker))
-           '({:phrase ["First"], :tag "ADVP"}
-             {:phrase ["sentence"], :tag "NP"})))))
