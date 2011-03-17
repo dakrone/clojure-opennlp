@@ -55,5 +55,5 @@
                         (lazy-seq (sentence-seq rdr sentence-finder))))
               (do (.mark rdr 0)
                   (recur (.read rdr) sb)))))
-      [(.toString sb)])))
+      [(.trim (.toString sb))])))
 
