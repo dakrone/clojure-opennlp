@@ -1,7 +1,6 @@
 (ns opennlp.test.nlp
-  (:use [opennlp.nlp])
-  (:use [opennlp.tools.lazy])
-  (:use [clojure.test])
+  (:use [opennlp.nlp]
+        [clojure.test])
   (:import [java.io File FileNotFoundException]))
 
 (def get-sentences (make-sentence-detector "models/en-sent.bin"))
@@ -63,25 +62,4 @@
   (is (thrown? FileNotFoundException (make-tokenizer "nonexistantfile")))
   (is (thrown? FileNotFoundException (make-pos-tagger "nonexistantfile")))
   (is (thrown? FileNotFoundException (make-name-finder "nonexistantfile"))))
-
-(deftest laziness-test
-  (let [s (get-sentences "First sentence. Second sentence?")]
-    (is (= (type (lazy-tokenize s tokenize))
-           clojure.lang.LazySeq))
-    (is (= (first (lazy-tokenize s tokenize))
-           ["First" "sentence" "."]))
-    (is (= (type (lazy-tag s tokenize pos-tag))
-           clojure.lang.LazySeq))
-    (is (= (first (lazy-tag s tokenize pos-tag))
-           '(["First" "RB"] ["sentence" "NN"] ["." "."]))))
-  (testing "should lazily read sentences from a file"
-    (with-open [rdr (clojure.java.io/reader "test/sentence-file")]
-      (let [sentences (sentence-seq rdr get-sentences)]
-        (is (= (type sentences) clojure.lang.Cons))
-        (is (= sentences
-               ["This is a sentence." "Another sentence."
-                "My name is awesome." "Another line."]))))))
-
-
-
 
