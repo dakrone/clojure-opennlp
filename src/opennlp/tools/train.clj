@@ -1,5 +1,5 @@
-; Clojure opennlp training functions
 (ns opennlp.tools.train
+  "This namespace contains tools used to train OpenNLP models"
   (:use [clojure.contrib.io :only [output-stream reader]])
   (:import [opennlp.tools.util PlainTextByLineStream])
   (:import [opennlp.tools.util.model BaseModel ModelType])
@@ -114,8 +114,8 @@
   ([in] (train-sentence-detector "en" in))
   ([lang in]
      (SentenceDetectorME/train lang
-       (->> (reader in)
-            (PlainTextByLineStream.)
-            (SentenceSampleStream.))
-       true
-       nil)))
+                               (->> (reader in)
+                                    (PlainTextByLineStream.)
+                                    (SentenceSampleStream.))
+                               true
+                               nil)))
