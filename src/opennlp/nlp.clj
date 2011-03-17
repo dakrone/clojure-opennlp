@@ -1,7 +1,7 @@
-(ns #^{:doc "The main namespace for the clojure-opennlp project. Functions for
-  creating NLP performers can be created with the tools in this namespace."
-       :author "Lee Hinman"}
+(ns #^{:author "Lee Hinman"}
   opennlp.nlp
+  "The main namespace for the clojure-opennlp project. Functions for
+  creating NLP performers can be created with the tools in this namespace."
   (:use [clojure.contrib.seq-utils :only [indexed]])
   (:use [clojure.java.io :only [file input-stream]])
   (:import [opennlp.tools.util Span])
