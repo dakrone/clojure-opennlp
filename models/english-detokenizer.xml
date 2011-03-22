@@ -20,6 +20,12 @@ under the License.
 -->
 
 <dictionary>
+  <entry operation="RIGHT_LEFT_MATCHING">
+    <token>"</token>
+  </entry>
+  <entry operation="RIGHT_LEFT_MATCHING">
+    <token>'</token>
+  </entry>
   <entry operation="MOVE_LEFT">
     <token>.</token>
   </entry>
@@ -38,11 +44,11 @@ under the License.
   <entry operation="MOVE_LEFT">
     <token>:</token>
   </entry>
-  <entry operation="MOVE_LEFT">
-    <token>)</token>
-  </entry>
   <entry operation="MOVE_RIGHT">
     <token>(</token>
+  </entry>
+  <entry operation="MOVE_LEFT">
+    <token>)</token>
   </entry>
   <entry operation="MOVE_LEFT">
     <token>}</token>
@@ -65,12 +71,6 @@ under the License.
   <entry operation="MOVE_LEFT">
     <token>%</token>
   </entry>
-  <entry operation="RIGHT_LEFT_MATCHING">
-    <token>"</token>
-  </entry>
-  <entry operation="RIGHT_LEFT_MATCHING">
-    <token>"</token>
-  </entry>
   <entry operation="MOVE_LEFT">
     <token>n't</token>
   </entry>
@@ -91,5 +91,17 @@ under the License.
   </entry>
   <entry operation="MOVE_LEFT">
     <token>'m</token>
+  </entry>
+  <entry operation="MOVE_LEFT">
+    <token>.org</token>
+  </entry>
+  <entry operation="MOVE_LEFT">
+    <token>.com</token>
+  </entry>
+  <entry operation="MOVE_LEFT">
+    <token>.net</token>
+  </entry>
+  <entry operation="MOVE_RIGHT">
+    <token>#</token>
   </entry>
 </dictionary>

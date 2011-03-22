@@ -49,7 +49,11 @@
   (is (= (detokenize (tokenize "She's the best."))
          "She's the best."))
   (is (= (detokenize (tokenize "I'm not sure."))
-         "I'm not sure.")))
+         "I'm not sure."))
+  (is (= (detokenize (tokenize "Mary likes cows (Mary is a cow)."))
+         "Mary likes cows (Mary is a cow)."))
+  (is (= (detokenize (tokenize "Mary exclaimed \"I am a cow!\""))
+         "Mary exclaimed \"I am a cow!\"")))
 
 (deftest precondition-test
   (is (thrown? java.lang.AssertionError (get-sentences 1)))

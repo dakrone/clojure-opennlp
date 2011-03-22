@@ -7,7 +7,8 @@
   (:import [opennlp.tools.util Span])
   (:import [opennlp.tools.tokenize TokenizerModel TokenizerME
             DictionaryDetokenizer DetokenizationDictionary Detokenizer
-            Detokenizer$DetokenizationOperation])
+            Detokenizer$DetokenizationOperation
+            DetokenizationDictionary$Operation])
   (:import [opennlp.tools.sentdetect SentenceModel SentenceDetectorME])
   (:import [opennlp.tools.namefind TokenNameFinderModel NameFinderME])
   (:import [opennlp.tools.postag POSModel POSTaggerME]))
@@ -122,38 +123,43 @@
     (make-detokenizer (DetokenizationDictionary. model-stream))))
 
 ;; TODO: clean this up, recursion is a smell
+;; TODO: remove debug printlns once I'm satisfied
 (defn- collapse-tokens
   [tokens detoken-ops]
-  (let [sb (StringBuilder.)]
+  (let [sb (StringBuilder.)
+        token-set (atom #{})]
+    ;;(println :ops detoken-ops)
     (loop [ts tokens dt-ops detoken-ops]
       (let [op (first dt-ops)
             op2 (second dt-ops)]
-        (if (or (= op2 nil)
-                (= op2 Detokenizer$DetokenizationOperation/MERGE_TO_LEFT))
-          (.append sb (first ts))
-          (.append sb (str (first ts) " ")))
-        (when (and op op2)
-          (recur (next ts) (next dt-ops)))))
-    (.toString sb)))
+        ;;(println :op op)
+        ;;(println :op2 op)
+        ;;(println :ts (first ts))
+        ;;(println :sb (.toString sb))
+        (cond
+         (or (= op2 nil)
+             (= op2 Detokenizer$DetokenizationOperation/MERGE_TO_LEFT))
+         (.append sb (first ts))
 
-;; older, cruddier version
-#_(defn- collapse-tokens
-  [tokens detoken-ops]
-  (let [sb (StringBuilder.)]
-    (loop [ts tokens dt-ops detoken-ops]
-      (let [op (first dt-ops)
-            op2 (second dt-ops)]
-        (println :ts ts)
-        (println :op op)
-        (println :op2 op2)
-        (if (and op
-                 (or op2
-                     (= op2 Detokenizer$DetokenizationOperation/MERGE_TO_LEFT)
-                     (= op Detokenizer$DetokenizationOperation/MERGE_TO_RIGHT)))
-          (.append sb (first ts))
-          (if (> (count dt-ops) 1)
-            (.append sb (str (first ts) " "))
-            (.append sb (str (first ts)))))
+         (or (= op nil)
+             (= op Detokenizer$DetokenizationOperation/MERGE_TO_RIGHT))
+         (.append sb (first ts))
+
+         (= op DetokenizationDictionary$Operation/RIGHT_LEFT_MATCHING)
+         (if (contains? @token-set (first ts))
+           (do
+             ;;(println :token-set @token-set)
+             ;;(println :ts (first ts))
+             (swap! token-set disj (first ts))
+             (.append sb (first ts)))
+           (do
+             ;;(println :token-set @token-set)
+             ;;(println :ts (first ts))
+             (swap! token-set conj (first ts))
+             (.append sb (str (first ts) " "))))
+
+         :else
+         (.append sb (str (first ts) " ")))
         (when (and op op2)
           (recur (next ts) (next dt-ops)))))
     (.toString sb)))
