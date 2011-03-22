@@ -132,10 +132,10 @@
     (loop [ts tokens dt-ops detoken-ops]
       (let [op (first dt-ops)
             op2 (second dt-ops)]
-        ;;(println :op op)
-        ;;(println :op2 op)
-        ;;(println :ts (first ts))
-        ;;(println :sb (.toString sb))
+        ;; (println :op op)
+        ;; (println :op2 op)
+        ;; (println :ts (first ts))
+        ;; (println :sb (.toString sb))
         (cond
          (or (= op2 nil)
              (= op2 Detokenizer$DetokenizationOperation/MERGE_TO_LEFT))
@@ -148,8 +148,8 @@
          (= op DetokenizationDictionary$Operation/RIGHT_LEFT_MATCHING)
          (if (contains? @token-set (first ts))
            (do
-             ;;(println :token-set @token-set)
-             ;;(println :ts (first ts))
+             ;; (println :token-set @token-set)
+             ;; (println :ts (first ts))
              (swap! token-set disj (first ts))
              (.append sb (first ts)))
            (do

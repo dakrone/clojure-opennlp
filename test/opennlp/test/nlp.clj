@@ -53,7 +53,13 @@
   (is (= (detokenize (tokenize "Mary likes cows (Mary is a cow)."))
          "Mary likes cows (Mary is a cow)."))
   (is (= (detokenize (tokenize "Mary exclaimed \"I am a cow!\""))
-         "Mary exclaimed \"I am a cow!\"")))
+         "Mary exclaimed \"I am a cow!\""))
+  (is (= (detokenize ["I" "know" "what" "\"" "it" "\"" "means" "well" "enough"
+                      "," "when" "I" "find" "a" "thing" "," "said" "the" "Duck"
+                      ":" "its" "generally" "a" "frog" "or" "a" "worm" "."])
+         (str "I know what \"it\" means well enough, when"
+              " I find a thing, said the Duck: its"
+              " generally a frog or a worm."))))
 
 (deftest precondition-test
   (is (thrown? java.lang.AssertionError (get-sentences 1)))
