@@ -121,8 +121,6 @@
 ;; So, B-* starts a sequence, I-* continues it. New phrase starts when
 ;; B-* is encountered
 
-
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Treebank parsing
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -131,10 +129,10 @@
   "Treebank-parser does not like parens and braces, so replace them."
   [s]
   (-> s
-    (.replaceAll "\\(" "-LRB-")
-    (.replaceAll "\\)" "-RRB-")
-    (.replaceAll "\\{" "-LCB-")
-    (.replaceAll "\\}" "-RCB-")))
+      (.replaceAll "\\(" "-LRB-")
+      (.replaceAll "\\)" "-RRB-")
+      (.replaceAll "\\{" "-LCB-")
+      (.replaceAll "\\}" "-RCB-")))
 
 
 (defn- parse-line
@@ -167,24 +165,22 @@
           parses (map #(parse-line % parser) text)]
       (vec parses))))
 
-
 (defn- strip-funny-chars
   "Strip out some characters that might cause trouble parsing the tree."
   [s]
   (-> s
-    (.replaceAll "'" "-SQUOTE-")
-    (.replaceAll "\"" "-DQUOTE-")
-    (.replaceAll "~" "-TILDE-")
-    (.replaceAll "`" "-BACKTICK-")
-    (.replaceAll "," "-COMMA-")
-    (.replaceAll "\\\\" "-BSLASH-")
-    (.replaceAll "\\/" "-FSLASH-")
-    (.replaceAll "\\^" "-CARROT-")
-    (.replaceAll "@" "-ATSIGN-")
-    (.replaceAll "#" "-HASH-")))
+      (.replaceAll "'" "-SQUOTE-")
+      (.replaceAll "\"" "-DQUOTE-")
+      (.replaceAll "~" "-TILDE-")
+      (.replaceAll "`" "-BACKTICK-")
+      (.replaceAll "," "-COMMA-")
+      (.replaceAll "\\\\" "-BSLASH-")
+      (.replaceAll "\\/" "-FSLASH-")
+      (.replaceAll "\\^" "-CARROT-")
+      (.replaceAll "@" "-ATSIGN-")
+      (.replaceAll "#" "-HASH-")))
 
-
-; Credit for this function goes to carkh in #clojure
+;; Credit for this function goes to carkh in #clojure
 (defn- tr
   "Generate a tree from the string output of a treebank-parser."
   [to-parse]
@@ -194,14 +190,11 @@
                                                (map tr body)
                                                (tr (first body)))})))
 
-
 (defn make-tree
   "Make a tree from the string output of a treebank-parser."
   [tree-text]
   (let [text (strip-funny-chars tree-text)]
     (tr (read-string text))))
-
-
 
 ;;------------------------------------------------------------------------
 ;;------------------------------------------------------------------------

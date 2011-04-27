@@ -1,18 +1,18 @@
-(ns #^{:author "Lee Hinman"}
-  opennlp.nlp
+(ns opennlp.nlp
   "The main namespace for the clojure-opennlp project. Functions for
   creating NLP performers can be created with the tools in this namespace."
-  (:use [clojure.contrib.seq-utils :only [indexed]])
-  (:use [clojure.java.io :only [file input-stream]])
-  (:import [opennlp.tools.util Span])
-  (:import [opennlp.tools.tokenize TokenizerModel TokenizerME
-            DictionaryDetokenizer DetokenizationDictionary Detokenizer
-            Detokenizer$DetokenizationOperation
-            DetokenizationDictionary$Operation])
-  (:import [opennlp.tools.sentdetect SentenceModel SentenceDetectorME])
-  (:import [opennlp.tools.namefind TokenNameFinderModel NameFinderME])
-  (:import [opennlp.tools.postag POSModel POSTaggerME]))
-
+  (:use [clojure.java.io :only [input-stream]])
+  (:import
+   (opennlp.tools.namefind NameFinderME TokenNameFinderModel)
+   (opennlp.tools.postag POSModel POSTaggerME)
+   (opennlp.tools.sentdetect SentenceDetectorME SentenceModel)
+   (opennlp.tools.tokenize
+    DetokenizationDictionary
+    DetokenizationDictionary$Operation
+    Detokenizer$DetokenizationOperation
+    DictionaryDetokenizer
+    TokenizerME
+    TokenizerModel)))
 
 ;; OpenNLP property for pos-tagging. Meant to be rebound before
 ;; calling the tagging creators
@@ -33,14 +33,14 @@
 (defmethod make-sentence-detector SentenceModel
   [model]
   (fn sentence-detector
-      [text]
-      {:pre [(string? text)]}
-        (let [detector (SentenceDetectorME. model)
-              sentences (.sentDetect detector text)
-              probs (seq (.getSentenceProbabilities detector))]
-          (with-meta
-            (into [] sentences)
-            {:probabilities probs}))))
+    [text]
+    {:pre [(string? text)]}
+    (let [detector (SentenceDetectorME. model)
+          sentences (.sentDetect detector text)
+          probs (seq (.getSentenceProbabilities detector))]
+      (with-meta
+        (into [] sentences)
+        {:probabilities probs}))))
 
 (defmulti make-tokenizer
   "Return a function for tokenizing a sentence based on a given model file."

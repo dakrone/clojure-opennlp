@@ -10,7 +10,6 @@
        [elements#]
        (filter (fn [t#] (re-find ~r (second t#))) elements#))))
 
-
 (defmacro chunk-filter
   "Declare a filter for treebank-chunked lists with the given name and regex."
   [n r]
@@ -21,8 +20,7 @@
        [elements#]
        (filter (fn [t#] (re-find ~r (:tag t#))) elements#))))
 
-
-; It's easy to define your own filters!
+;; It's easy to define your own filters!
 (pos-filter nouns #"^NN")
 (pos-filter nouns-and-verbs #"^(NN|VB)")
 (pos-filter proper-nouns #"^NNP")

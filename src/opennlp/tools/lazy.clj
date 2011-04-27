@@ -45,15 +45,16 @@
   given sentence-finder. rdr must implement java.io.BufferedReader."
   [^java.io.BufferedReader rdr sentence-finder]
   (.mark rdr 0)
-  (loop [c (.read rdr) sb (StringBuilder.)]
-    (if-not (= -1 c)
-      (do (.append sb (char c))
-          (let [sents (sentence-finder (.toString sb))]
-            (if (> (count sents) 1)
-              (do (.reset rdr)
-                  (cons (first sents)
-                        (lazy-seq (sentence-seq rdr sentence-finder))))
-              (do (.mark rdr 0)
-                  (recur (.read rdr) sb)))))
-      [(.trim (.toString sb))])))
+  (let [sb (StringBuilder.)]
+    (loop [c (.read rdr)]
+      (if-not (= -1 c)
+        (do (.append sb (char c))
+            (let [sents (sentence-finder (.toString sb))]
+              (if (> (count sents) 1)
+                (do (.reset rdr)
+                    (cons (first sents)
+                          (lazy-seq (sentence-seq rdr sentence-finder))))
+                (do (.mark rdr 0)
+                    (recur (.read rdr))))))
+        [(.trim (.toString sb))]))))
 
