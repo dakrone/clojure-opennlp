@@ -1,2 +1,4 @@
-lib
+lib/*
 coref
+classes/*
+docs/*
