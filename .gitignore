@@ -3,3 +3,4 @@ coref
 classes/*
 docs/*
 parser-model/en-parser-chunking.bin
+.lein-failures
