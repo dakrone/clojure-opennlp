@@ -2,16 +2,15 @@
              This includes treebank chuncking, parsing and linking (coref)."
        :author "Lee Hinman"}
   opennlp.treebank
-  (:use [opennlp.nlp :only [*beam-size*]])
-  (:use [clojure.contrib.seq-utils :only [indexed]])
-  (:use [clojure.java.io :only [input-stream]])
-  (:import [opennlp.tools.chunker ChunkerModel ChunkerME])
-  (:import [opennlp.tools.cmdline.parser ParserTool])
-  (:import [opennlp.tools.parser Parse ParserModel
-            ParserFactory AbstractBottomUpParser])
-  (:import [opennlp.tools.parser.chunking Parser])
-  (:import [opennlp.tools.coref.mention Mention DefaultParse])
-  (:import [opennlp.tools.coref LinkerMode DefaultLinker]))
+  (:use [opennlp.nlp :only [*beam-size*]]
+        [clojure.java.io :only [input-stream]]) 
+  (:import (opennlp.tools.chunker ChunkerModel ChunkerME)
+           (opennlp.tools.cmdline.parser ParserTool)
+           (opennlp.tools.parser Parse ParserModel
+                                 ParserFactory AbstractBottomUpParser)
+           (opennlp.tools.parser.chunking Parser)
+           (opennlp.tools.coref.mention Mention DefaultParse)
+           (opennlp.tools.coref LinkerMode DefaultLinker)))
 
 ;; Default advance percentage as defined by
 ;; AbstractBottomUpParser.defaultAdvancePercentage
@@ -249,7 +248,7 @@
   "Given a list of entities, return a map of parses to entities."
   [entities]
   (let [parse-map (atom {})
-        i-entities (indexed entities)]
+        i-entities (map vector (iterate inc 0) entities)]
     (dorun (map (fn [[index entity]] (add-mentions! entity index parse-map))
                 i-entities))
     @parse-map))
@@ -306,11 +305,12 @@
     (fn treebank-linker
       [sentences]
       (let [parses (atom [])
-            indexed-sentences (indexed sentences)
+            indexed-sentences (map vector (iterate inc 0) sentences)
             extents (doall (map #(coref-sentence (second %) parses
                                                  (first %) tblinker)
-                                indexed-sentences))]
-        #_(map #(parse-extent %1 tblinker parses %2) (indexed extents))
+                                indexed-sentences))
+            i-extents (map vector (iterate inc 0) extents)]
+        #_(map #(parse-extent %1 tblinker parses %2) i-extents)
         (doall (map println extents))
         extents))))
 
