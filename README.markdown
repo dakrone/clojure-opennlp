@@ -1,4 +1,4 @@
-Clojure library interface to OpenNLP - http://opennlp.sf.net
+Clojure library interface to OpenNLP - http://incubator.apache.org/opennlp/
 ============================================================
 
 A library to interface with the OpenNLP (Open Natural Language Processing)
