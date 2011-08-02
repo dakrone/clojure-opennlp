@@ -1,4 +1,6 @@
-(ns opennlp.tools.filters)
+(ns opennlp.tools.filters
+  "Namespace used for filtering POS-tagged datastructures by grammatical
+  classification. Also provides methods for building your own filters.")
 
 (defmacro pos-filter
   "Declare a filter for pos-tagged vectors with the given name and regex."
