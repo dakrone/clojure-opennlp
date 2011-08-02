@@ -2,9 +2,10 @@
   :description "Natural Language Processing with Clojure, library for opennlp.
                 http://github.com/dakrone/clojure-opennlp"
   :dependencies [[org.clojure/clojure "1.2.1"]
-                 [org.clojure/clojure-contrib "1.2.0"]
                  [org.apache.opennlp/opennlp-tools "1.5.1-incubating"]]
-  :dev-dependencies [[marginalia "0.5.1"]
-                     [slamhound "1.1.1"]]
+  :dev-dependencies [[slamhound "1.1.1"]
+                     [lein-multi "1.0.0"]]
+  :multi-deps {"1.3" [[org.clojure/clojure "1.3.0-beta1"]
+                      [org.apache.opennlp/opennlp-tools "1.5.1-incubating"]]}
   :jvm-opts ["-Xmx1024m"])
 
