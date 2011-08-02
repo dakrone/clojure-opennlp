@@ -1,28 +1,28 @@
 (ns opennlp.tools.train
   "This namespace contains tools used to train OpenNLP models"
   (:use [clojure.java.io :only [output-stream reader]])
-  (:import [opennlp.tools.util PlainTextByLineStream])
-  (:import [opennlp.tools.util.model BaseModel ModelType])
-  (:import [opennlp.tools.dictionary Dictionary])
-  (:import [opennlp.tools.tokenize TokenizerME
-            TokenizerModel
-            TokenSampleStream])
-  (:import [opennlp.tools.sentdetect SentenceDetectorME
-            SentenceModel
-            SentenceSampleStream])
-  (:import [opennlp.tools.namefind NameFinderEventStream
-            NameSampleDataStream
-            NameFinderME
-            TokenNameFinderModel])
-  (:import [opennlp.tools.chunker ChunkerME ChunkSampleStream ChunkerModel])
-  (:import [opennlp.tools.parser ParseSampleStream ParserModel])
-  (:import [opennlp.tools.parser.lang.en HeadRules])
-  (:import [opennlp.tools.parser.chunking Parser])
-  (:import [opennlp.tools.postag POSTaggerME
-            POSModel
-            POSDictionary
-            WordTagSampleStream
-            POSContextGenerator]))
+  (:import (opennlp.tools.util PlainTextByLineStream)
+           (opennlp.tools.util.model BaseModel ModelType)
+           (opennlp.tools.dictionary Dictionary)
+           (opennlp.tools.tokenize TokenizerME
+                                   TokenizerModel
+                                   TokenSampleStream)
+           (opennlp.tools.sentdetect SentenceDetectorME
+                                     SentenceModel
+                                     SentenceSampleStream)
+           (opennlp.tools.namefind NameFinderEventStream
+                                   NameSampleDataStream
+                                   NameFinderME
+                                   TokenNameFinderModel)
+           (opennlp.tools.chunker ChunkerME ChunkSampleStream ChunkerModel)
+           (opennlp.tools.parser ParseSampleStream ParserModel)
+           (opennlp.tools.parser.lang.en HeadRules)
+           (opennlp.tools.parser.chunking Parser)
+           (opennlp.tools.postag POSTaggerME
+                                 POSModel
+                                 POSDictionary
+                                 WordTagSampleStream
+                                 POSContextGenerator)))
 
 (defn write-model
   "Write a model to disk"
