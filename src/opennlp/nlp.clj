@@ -6,13 +6,12 @@
    (opennlp.tools.namefind NameFinderME TokenNameFinderModel)
    (opennlp.tools.postag POSModel POSTaggerME)
    (opennlp.tools.sentdetect SentenceDetectorME SentenceModel)
-   (opennlp.tools.tokenize
-    DetokenizationDictionary
-    DetokenizationDictionary$Operation
-    Detokenizer$DetokenizationOperation
-    DictionaryDetokenizer
-    TokenizerME
-    TokenizerModel)))
+   (opennlp.tools.tokenize DetokenizationDictionary
+                           DetokenizationDictionary$Operation
+                           Detokenizer$DetokenizationOperation
+                           DictionaryDetokenizer
+                           TokenizerME
+                           TokenizerModel)))
 
 ;; OpenNLP property for pos-tagging. Meant to be rebound before
 ;; calling the tagging creators
