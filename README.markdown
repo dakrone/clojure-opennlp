@@ -16,7 +16,9 @@ Read the source from Marginalia
 Usage from Leiningen:
 --------------------
 
-    [clojure-opennlp "0.1.6"]
+    [clojure-opennlp "0.1.7"]
+    
+clojure-opennlp works with both clojure 1.2.x and 1.3
 
 Basic Example usage (from a REPL):
 ----------------------------------
