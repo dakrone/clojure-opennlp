@@ -12,6 +12,7 @@ Additional information/documentation:
 Read the source from Marginalia
 
 - [http://dakrone.github.com/clojure-opennlp/](http://dakrone.github.com/clojure-opennlp/)
+[![Continuous Integration status](https://secure.travis-ci.org/dakrone/clojure-opennlp.png)](http://travis-ci.org/dakrone/clojure-opennlp)
 
 Usage from Leiningen:
 --------------------
