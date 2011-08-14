@@ -11,7 +11,7 @@ Additional information/documentation:
 
 Read the source from Marginalia
 
-- [http://dakrone.github.com/clojure-opennlp/](http://dakrone.github.com/clojure-opennlp/)
+- http://dakrone.github.com/clojure-opennlp/
 
 [![Continuous Integration status](https://secure.travis-ci.org/dakrone/clojure-opennlp.png)](http://travis-ci.org/dakrone/clojure-opennlp)
 
@@ -31,8 +31,8 @@ Basic Example usage (from a REPL):
 
 You will need to make the processing functions using the model files. These
 assume you're running from the root project directory. You can also download
-the model files from the opennlp project at
-[http://opennlp.sourceforge.net/models/](http://opennlp.sourceforge.net/models-1.5)
+the model files from the opennlp project at 
+http://opennlp.sourceforge.net/models-1.5
 
     user=> (def get-sentences (make-sentence-detector "models/en-sent.bin"))
     user=> (def tokenize (make-tokenizer "models/en-token.bin"))
