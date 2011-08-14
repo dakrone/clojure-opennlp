@@ -31,8 +31,7 @@ Basic Example usage (from a REPL):
 
 You will need to make the processing functions using the model files. These
 assume you're running from the root project directory. You can also download
-the model files from the opennlp project at 
-http://opennlp.sourceforge.net/models-1.5
+the model files from the opennlp project at [http://opennlp.sourceforge.net/models-1.5](http://opennlp.sourceforge.net/models-1.5)
 
     user=> (def get-sentences (make-sentence-detector "models/en-sent.bin"))
     user=> (def tokenize (make-tokenizer "models/en-token.bin"))
