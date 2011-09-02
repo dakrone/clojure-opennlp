@@ -6,7 +6,7 @@
   :dev-dependencies [[slamhound "1.1.1"]
                      [lein-marginalia "0.6.0"]
                      [lein-multi "1.0.0"]]
-  :multi-deps {"1.3" [[org.clojure/clojure "1.3.0-beta2"]
+  :multi-deps {"1.3" [[org.clojure/clojure "1.3.0-beta3"]
                       [org.apache.opennlp/opennlp-tools "1.5.1-incubating"]]}
   :jvm-opts ["-Xmx1024m"])
 
