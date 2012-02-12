@@ -3,7 +3,7 @@
        :author "Lee Hinman"}
   opennlp.treebank
   (:use [opennlp.nlp :only [*beam-size*]]
-        [clojure.java.io :only [input-stream]]) 
+        [clojure.java.io :only [input-stream]])
   (:import (opennlp.tools.chunker ChunkerModel ChunkerME)
            (opennlp.tools.cmdline.parser ParserTool)
            (opennlp.tools.parser Parse ParserModel
@@ -177,7 +177,26 @@
       (.replaceAll "\\/" "-FSLASH-")
       (.replaceAll "\\^" "-CARROT-")
       (.replaceAll "@" "-ATSIGN-")
-      (.replaceAll "#" "-HASH-")))
+      (.replaceAll "#" "-HASH-")
+      (.replaceAll ";" "-SEMICOLON-")
+      (.replaceAll ":" "-COLON-")))
+
+(defn- unstrip-funny-chars
+  "Un-strip out some characters that might cause trouble parsing the tree."
+  [s]
+  (-> s
+      (.replaceAll "-SQUOTE-" "'")
+      (.replaceAll "-DQUOTE-" "\"")
+      (.replaceAll "-TILDE-" "~")
+      (.replaceAll "-BACKTICK-" "`")
+      (.replaceAll "-COMMA-" ",")
+      (.replaceAll "-BSLASH-" "\\\\")
+      (.replaceAll "-FSLASH-" "\\/")
+      (.replaceAll "-CARROT-" "\\^")
+      (.replaceAll "-ATSIGN-" "@")
+      (.replaceAll "-HASH-" "#")
+      (.replaceAll "-SEMICOLON-" ";")
+      (.replaceAll "-COLON-" ":")))
 
 ;; Credit for this function goes to carkh in #clojure
 (defn- tr
