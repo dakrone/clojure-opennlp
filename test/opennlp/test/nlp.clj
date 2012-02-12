@@ -35,7 +35,10 @@
   (is (= (name-find (tokenize "My name is Lee, not John"))
          '("Lee" "John")))
   (is (= (name-find ["adsf"])
-         '())))
+         '()))
+  (is (= (name-find (tokenize "My name is James Brown"))
+         '("James Brown"))
+      "should find names with two words"))
 
 (deftest detokenizer-test
   (is (= (detokenize (tokenize "I don't think he would've."))

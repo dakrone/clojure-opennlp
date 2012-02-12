@@ -11,7 +11,8 @@
                            Detokenizer$DetokenizationOperation
                            DictionaryDetokenizer
                            TokenizerME
-                           TokenizerModel)))
+                           TokenizerModel)
+   (opennlp.tools.util Span)))
 
 ;; OpenNLP property for pos-tagging. Meant to be rebound before
 ;; calling the tagging creators
@@ -108,7 +109,7 @@
           matches (.find finder (into-array String tokens))
           probs (seq (.probs finder))]
       (with-meta
-        (distinct (map #(get tokens (.getStart %)) matches))
+        (distinct (Span/spansToStrings matches (into-array String tokens)))
         {:probabilities probs}))))
 
 (defmulti make-detokenizer

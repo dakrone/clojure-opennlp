@@ -5,3 +5,4 @@ docs/*
 parser-model/en-parser-chunking.bin
 .lein-failures
 multi-lib/*
+.lein-deps-sum
