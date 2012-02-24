@@ -30,15 +30,10 @@
              [(str "(TOP (S (NP (DT This)) (VP (VBZ is) (NP (DT a)"
                    " (NN sentence))) (. .)))")]))
       (is (= (make-tree (first (parser ["This is a sentence ."])))
-             '{:chunk
-               {:chunk
-                ({:chunk
-                  {:chunk "This", :tag DT}, :tag NP}
-                 {:chunk
-                  ({:chunk "is", :tag VBZ}
-                   {:chunk ({:chunk "a" :tag DT}
-                            {:chunk "sentence" :tag NN}) :tag NP}) :tag VP}
-                 {:chunk ".", :tag .}), :tag S}, :tag TOP})))
+
+ '{:tag TOP, :chunk ({:tag S, :chunk ({:tag NP, :chunk ({:tag DT, :chunk ("This")})} {:tag VP, :chunk ({:tag VBZ, :chunk ("is")} {:tag NP, :chunk ({:tag DT, :chunk ("a")} {:tag NN, :chunk ("sentence")})})} {:tag ., :chunk (".")})})})))
+
+
     #_(deftest treebank-coref-test
       (let [tbl (make-treebank-linker "coref")
             s (parser ["Mary said she would help me ."
