@@ -202,11 +202,9 @@
 (defn- tr
   "Generate a tree from the string output of a treebank-parser."
   [to-parse]
-  (cond 
+  (if 
     (seq? to-parse)  {:tag (first to-parse) :chunk (map tr (rest to-parse))}
-    '(true) (str to-parse)
-    )
-  )
+    (str to-parse)))
 
 (defn make-tree
   "Make a tree from the string output of a treebank-parser."
