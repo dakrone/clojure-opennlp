@@ -30,8 +30,21 @@
              [(str "(TOP (S (NP (DT This)) (VP (VBZ is) (NP (DT a)"
                    " (NN sentence))) (. .)))")]))
       (is (= (make-tree (first (parser ["This is a sentence ."])))
-
- '{:tag TOP, :chunk ({:tag S, :chunk ({:tag NP, :chunk ({:tag DT, :chunk ("This")})} {:tag VP, :chunk ({:tag VBZ, :chunk ("is")} {:tag NP, :chunk ({:tag DT, :chunk ("a")} {:tag NN, :chunk ("sentence")})})} {:tag ., :chunk (".")})})})))
+             '{:tag TOP,
+               :chunk (
+                       {:tag S,
+                        :chunk (
+                                {:tag NP,
+                                 :chunk (
+                                         {:tag DT, :chunk ("This")})}
+                                {:tag VP,
+                                 :chunk (
+                                         {:tag VBZ, :chunk ("is")}
+                                         {:tag NP,
+                                          :chunk (
+                                                  {:tag DT, :chunk ("a")}
+                                                  {:tag NN, :chunk ("sentence")})})}
+                                {:tag ., :chunk (".")})})})))
 
 
     #_(deftest treebank-coref-test
