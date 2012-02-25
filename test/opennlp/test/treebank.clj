@@ -23,36 +23,36 @@
   (is (thrown? FileNotFoundException (make-treebank-chunker "nonexistantfile")))
   (is (thrown? FileNotFoundException (make-treebank-parser "nonexistantfile"))))
 
-(try
-  (let [parser (make-treebank-parser "parser-model/en-parser-chunking.bin")]
-    (deftest parser-test
+(deftest parser-test
+  (try
+    (let [parser (make-treebank-parser "parser-model/en-parser-chunking.bin")]
       (is (= (parser ["This is a sentence ."])
              [(str "(TOP (S (NP (DT This)) (VP (VBZ is) (NP (DT a)"
                    " (NN sentence))) (. .)))")]))
       (is (= (make-tree (first (parser ["This is a sentence ."])))
-             '{:tag TOP,
+             '{:tag TOP
                :chunk (
-                       {:tag S,
-                        :chunk (
-                                {:tag NP,
-                                 :chunk (
-                                         {:tag DT, :chunk ("This")})}
-                                {:tag VP,
-                                 :chunk (
-                                         {:tag VBZ, :chunk ("is")}
-                                         {:tag NP,
-                                          :chunk (
-                                                  {:tag DT, :chunk ("a")}
-                                                  {:tag NN, :chunk ("sentence")})})}
-                                {:tag ., :chunk (".")})})})))
+                       {:tag S
+                        :chunk ({:tag NP
+                                 :chunk ({:tag DT :chunk ("This")})}
+                                {:tag VP
+                                 :chunk ({:tag VBZ :chunk ("is")}
+                                         {:tag NP
+                                          :chunk ({:tag DT :chunk ("a")}
+                                                  {:tag NN
+                                                   :chunk ("sentence")})})}
+                                {:tag . :chunk (".")})})})))
+    (catch FileNotFoundException e
+      (println "Unable to execute treebank-parser tests."
+               "Download the model files to $PROJECT_ROOT/parser-models."))))
 
-
-    #_(deftest treebank-coref-test
+#_(deftest treebank-coref-test
+    (try
       (let [tbl (make-treebank-linker "coref")
             s (parser ["Mary said she would help me ."
                        "I told her I didn't need her help ."])]
-        (is (= [] (tbl s))))))
-  (catch FileNotFoundException e
-    (println "Unable to execute treebank-parser tests."
-             "Download the model files to $PROJECT_ROOT/parser-models.")))
+        (is (= [] (tbl s))))
+      (catch FileNotFoundException e
+        (println "Unable to execute treebank-parser tests."
+                 "Download the model files to $PROJECT_ROOT/parser-models."))))
 

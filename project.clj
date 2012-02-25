@@ -10,5 +10,5 @@
                         [org.apache.opennlp/opennlp-tools "1.5.1-incubating"]]
                "1.4.0" [[org.clojure/clojure "1.4.0-alpha1"]
                         [org.apache.opennlp/opennlp-tools "1.5.1-incubating"]]}
-  :jvm-opts ["-Xmx1024m"])
+  :jvm-opts ["-Xmx2048m"])
 
