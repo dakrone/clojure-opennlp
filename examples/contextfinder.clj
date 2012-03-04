@@ -1,16 +1,13 @@
-; This example is very crazy and may be broken right now. Attempt to
-; use at your own risk. Eventually it will be documented.
-
+;; This example is very crazy and may be broken right now. Attempt to
+;; use at your own risk. Eventually it will be documented.
 (ns contextfinder
-  (:use [opennlp.nlp])
-  (:use [opennlp.tools.filters])
-  (:use [clojure.pprint :only [pprint]])
-  (:use [clojure.contrib.seq-utils :only [indexed]])
-  (:use [clojure.contrib.math :only [abs]]))
+  (:use [clojure.pprint :only [pprint]]
+        [opennlp.nlp]
+        [opennlp.tools.filters]))
 
 
-; Requires you to run this from the root opennlp directory or have the
-; models downloaded into a "models" folder
+;; Requires you to run this from the root opennlp directory or have the
+;; models downloaded into a "models" folder
 (def get-sentences (make-sentence-detector "models/en-sent.bin"))
 (def tokenize (make-tokenizer "models/en-token.bin"))
 (def pos-tag (make-pos-tagger "models/en-pos-maxent.bin"))
@@ -20,7 +17,7 @@
 (defn- mindist
   "Give the minimum distance from the first arg to any value in the second arg."
   [n ns]
-  (apply min (map #(abs (- n %)) ns)))
+  (apply min (map #(Math/abs (- n %)) ns)))
 
 
 (defn- score-word
@@ -39,11 +36,11 @@
   term.  Base score is optional and is 1 by default.  Case sensitive."
   ([term words] (score-words term words 1))
   ([term words base]
-   (let [iwords (indexed words)
-         iterms (map first (filter (fn [e] (= (second e) term)) iwords))]
-     (if (= 0 (count iterms))
-       (map #(vector % 0) words)
-       (map #(vector (second %) (score-word % iterms base)) iwords)))))
+     (let [iwords (map vector (iterate inc 0) words)
+           iterms (map first (filter (fn [e] (= (second e) term)) iwords))]
+       (if (= 0 (count iterms))
+         (map #(vector % 0) words)
+         (map #(vector (second %) (score-word % iterms base)) iwords)))))
 
 
 (defn nv-filter
@@ -129,9 +126,8 @@
 
 (def scorewords (get-scored-terms mytext "brake"))
 
-; Get a list of ranked sentences
+;; Get a list of ranked sentences
 (pprint (reverse (sort-by second (score-sentences mytext scorewords))))
 
-; Score the whole text
+;; Score the whole text
 (println (score-text mytext scorewords))
-
