@@ -143,7 +143,7 @@ The probabilities OpenNLP supplies for a given operation are available
 as metadata on the result, where applicable:
 
 ```clojure
-(meta (get-sentences "This is a sentence. "This is also one.")
+(meta (get-sentences "This is a sentence. This is also one.")
 {:probabilities (0.9999054310803004 0.9941126097177366)}
 
 (meta (tokenizer "This is a sentence."))
