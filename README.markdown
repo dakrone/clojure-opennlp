@@ -1,4 +1,4 @@
-Clojure library interface to OpenNLP - http://incubator.apache.org/opennlp/
+Clojure library interface to OpenNLP - https://opennlp.apache.org/
 ============================================================
 
 A library to interface with the OpenNLP (Open Natural Language Processing)
@@ -18,55 +18,66 @@ Read the source from Marginalia
 Usage from Leiningen:
 --------------------
 
-    [clojure-opennlp "0.1.9"]
+```clojure
+[clojure-opennlp "0.1.9"]
+```
     
 clojure-opennlp works with both clojure 1.2.x and 1.3
 
 Basic Example usage (from a REPL):
 ----------------------------------
 
-    (use 'clojure.pprint) ; just for this documentation
-    (use 'opennlp.nlp)
-    (use 'opennlp.treebank) ; treebank chunking, parsing and linking lives here
+```clojure
+(use 'clojure.pprint) ; just for this documentation
+(use 'opennlp.nlp)
+(use 'opennlp.treebank) ; treebank chunking, parsing and linking lives here
+```
 
 You will need to make the processing functions using the model files. These
 assume you're running from the root project directory. You can also download
 the model files from the opennlp project at [http://opennlp.sourceforge.net/models-1.5](http://opennlp.sourceforge.net/models-1.5)
 
-    user=> (def get-sentences (make-sentence-detector "models/en-sent.bin"))
-    user=> (def tokenize (make-tokenizer "models/en-token.bin"))
-    user=> (def detokenize (make-detokenizer "models/english-detokenizer.xml"))
-    user=> (def pos-tag (make-pos-tagger "models/en-pos-maxent.bin"))
-    user=> (def name-find (make-name-finder "models/namefind/en-ner-person.bin"))
-    user=> (def chunker (make-treebank-chunker "models/en-chunker.bin"))
+```clojure
+(def get-sentences (make-sentence-detector "models/en-sent.bin"))
+(def tokenize (make-tokenizer "models/en-token.bin"))
+(def detokenize (make-detokenizer "models/english-detokenizer.xml"))
+(def pos-tag (make-pos-tagger "models/en-pos-maxent.bin"))
+(def name-find (make-name-finder "models/namefind/en-ner-person.bin"))
+(def chunker (make-treebank-chunker "models/en-chunker.bin"))
+```
 
 The tool-creators are multimethods, so you can also create any of the
 tools using a model instead of a filename (you can create a model with
 the training tools in src/opennlp/tools/train.clj):
 
-    user=> (def tokenize (make-tokenizer my-tokenizer-model)) ;; etc, etc
+```clojure
+(def tokenize (make-tokenizer my-tokenizer-model)) ;; etc, etc
+```
     
 Then, use the functions you've created to perform operations on text:
 
 Detecting sentences:
 
-    user=> (pprint (get-sentences "First sentence. Second sentence? Here is another one. And so on and so forth - you get the idea..."))
-    ["First sentence. ", "Second sentence? ", "Here is another one. ",
-     "And so on and so forth - you get the idea..."]
-    nil
+```clojure
+(pprint (get-sentences "First sentence. Second sentence? Here is another one. And so on and so forth - you get the idea..."))
+["First sentence. ", "Second sentence? ", "Here is another one. ",
+ "And so on and so forth - you get the idea..."]
+```
 
 Tokenizing:
-    
-    user=> (pprint (tokenize "Mr. Smith gave a car to his son on Friday"))
-    ["Mr.", "Smith", "gave", "a", "car", "to", "his", "son", "on",
-     "Friday"]
-    nil
+
+```clojure
+(pprint (tokenize "Mr. Smith gave a car to his son on Friday"))
+["Mr.", "Smith", "gave", "a", "car", "to", "his", "son", "on",
+ "Friday"]
+```
 
 Detokenizing:
-    
-    user=> (detokenize ["Mr.", "Smith", "gave", "a", "car", "to", "his", "son", "on", "Friday"])
-    "Mr. Smith gave a car to his son on Friday."
-    nil
+
+```clojure
+(detokenize ["Mr.", "Smith", "gave", "a", "car", "to", "his", "son", "on", "Friday"])
+"Mr. Smith gave a car to his son on Friday."
+```
 
 Ideally, s == (detokenize (tokenize s)), the detokenization model XML
 file is a work in progress, please let me know if you run into
@@ -75,46 +86,54 @@ something that doesn't detokenize correctly in English.
 
 Part-of-speech tagging:
 
-    user=> (pprint (pos-tag (tokenize "Mr. Smith gave a car to his son on Friday.")))
-    (["Mr." "NNP"]
-     ["Smith" "NNP"]
-     ["gave" "VBD"]
-     ["a" "DT"]
-     ["car" "NN"]
-     ["to" "TO"]
-     ["his" "PRP$"]
-     ["son" "NN"]
-     ["on" "IN"]
-     ["Friday." "NNP"])
-    nil
+```clojure
+(pprint (pos-tag (tokenize "Mr. Smith gave a car to his son on Friday.")))
+(["Mr." "NNP"]
+ ["Smith" "NNP"]
+ ["gave" "VBD"]
+ ["a" "DT"]
+ ["car" "NN"]
+ ["to" "TO"]
+ ["his" "PRP$"]
+ ["son" "NN"]
+ ["on" "IN"]
+ ["Friday." "NNP"])
+```
 
 Name finding:
 
-    user=> (name-find (tokenize "My name is Lee, not John."))
-    ("Lee" "John")
+```clojure
+(name-find (tokenize "My name is Lee, not John."))
+("Lee" "John")
+```
 
 Treebank-chunking splits and tags phrases from a pos-tagged sentence.
 A notable difference is that it returns a list of structs with the
 :phrase and :tag keys, as seen below:
 
-    user=> (pprint (chunker (pos-tag (tokenize "The override system is meant to deactivate the accelerator when the brake pedal is pressed."))))
-    ({:phrase ["The" "override" "system"], :tag "NP"}
-     {:phrase ["is" "meant" "to" "deactivate"], :tag "VP"}
-     {:phrase ["the" "accelerator"], :tag "NP"}
-     {:phrase ["when"], :tag "ADVP"}
-     {:phrase ["the" "brake" "pedal"], :tag "NP"}
-     {:phrase ["is" "pressed"], :tag "VP"})
-    nil
+```clojure
+(pprint (chunker (pos-tag (tokenize "The override system is meant to deactivate the accelerator when the brake pedal is pressed."))))
+({:phrase ["The" "override" "system"], :tag "NP"}
+ {:phrase ["is" "meant" "to" "deactivate"], :tag "VP"}
+ {:phrase ["the" "accelerator"], :tag "NP"}
+ {:phrase ["when"], :tag "ADVP"}
+ {:phrase ["the" "brake" "pedal"], :tag "NP"}
+ {:phrase ["is" "pressed"], :tag "VP"})
+```
 
 For just the phrases:
 
-    user=> (phrases (chunker (pos-tag (tokenize "The override system is meant to deactivate the accelerator when the brake pedal is pressed."))))
-    (["The" "override" "system"] ["is" "meant" "to" "deactivate"] ["the" "accelerator"] ["when"] ["the" "brake" "pedal"] ["is" "pressed"])
+```clojure
+(phrases (chunker (pos-tag (tokenize "The override system is meant to deactivate the accelerator when the brake pedal is pressed."))))
+(["The" "override" "system"] ["is" "meant" "to" "deactivate"] ["the" "accelerator"] ["when"] ["the" "brake" "pedal"] ["is" "pressed"])
+```
 
 And with just strings:
 
-    user=> (phrase-strings (chunker (pos-tag (tokenize "The override system is meant to deactivate the accelerator when the brake pedal is pressed."))))
-    ("The override system" "is meant to deactivate" "the accelerator" "when" "the brake pedal" "is pressed")
+```clojure
+(phrase-strings (chunker (pos-tag (tokenize "The override system is meant to deactivate the accelerator when the brake pedal is pressed."))))
+("The override system" "is meant to deactivate" "the accelerator" "when" "the brake pedal" "is pressed")
+```
 
 
 Probabilities of confidence
@@ -123,20 +142,22 @@ Probabilities of confidence
 The probabilities OpenNLP supplies for a given operation are available
 as metadata on the result, where applicable:
 
-    user=> (meta (get-sentences "This is a sentence. "This is also one.")
-    {:probabilities (0.9999054310803004 0.9941126097177366)}
+```clojure
+(meta (get-sentences "This is a sentence. "This is also one.")
+{:probabilities (0.9999054310803004 0.9941126097177366)}
 
-    user=> (meta (tokenizer "This is a sentence."))
-    {:probabilities (1.0 1.0 1.0 0.9956236737394807 1.0)}
+(meta (tokenizer "This is a sentence."))
+{:probabilities (1.0 1.0 1.0 0.9956236737394807 1.0)}
 
-    user=> (meta (pos-tagger ["This" "is" "a" "sentence" "."]))
-    {:probabilities (0.9649410482478001 0.9982592902509803 0.9967282012835504 0.9952498677248117 0.9862225658078769)}
+(meta (pos-tagger ["This" "is" "a" "sentence" "."]))
+{:probabilities (0.9649410482478001 0.9982592902509803 0.9967282012835504 0.9952498677248117 0.9862225658078769)}
 
-    user=> (meta (chunker (pos-tagger ["This" "is" "a" "sentence" "."])))
-    {:probabilities (0.9941248001899835 0.9878092935921453 0.9986106511439116 0.9972975733070356 0.9906377695586069)}
+(meta (chunker (pos-tagger ["This" "is" "a" "sentence" "."])))
+{:probabilities (0.9941248001899835 0.9878092935921453 0.9986106511439116 0.9972975733070356 0.9906377695586069)}
 
-    user=> (meta (name-find ["My" "name" "is" "John"]))
-    {:probabilities (0.9996272005494383 0.999999997485361 0.9999948113868132 0.9982291838206192)}
+(meta (name-find ["My" "name" "is" "John"]))
+{:probabilities (0.9996272005494383 0.999999997485361 0.9999948113868132 0.9982291838206192)}
+```
 
 
 
@@ -146,8 +167,10 @@ Beam Size
 You can rebind ```opennlp.nlp/*beam-size*``` (the default is 3) for
 the pos-tagger and treebank-parser with:
 
-    (binding [*beam-size* 1]
-      (def pos-tag (make-pos-tagger "models/en-pos-maxent.bin")))
+```clojure
+(binding [*beam-size* 1]
+  (def pos-tag (make-pos-tagger "models/en-pos-maxent.bin")))
+```
 
 
 Advance Percentage
@@ -156,9 +179,10 @@ Advance Percentage
 You can rebind ```opennlp.treebank/*advance-percentage*``` (the default is 0.95) for
 the treebank-parser with:
 
-    (binding [*advance-percentage* 0.80]
-      (def parser (make-treebank-parser "parser-model/en-parser-chunking.bin")))
-
+```clojure
+(binding [*advance-percentage* 0.80]
+  (def parser (make-treebank-parser "parser-model/en-parser-chunking.bin")))
+```
 
 
 Treebank-parsing
@@ -175,37 +199,45 @@ have to download it separately from the opennlp project.
 
 Creating it:
 
-    user=> (def treebank-parser (make-treebank-parser "parser-model/en-parser-chunking.bin"))
+```clojure
+(def treebank-parser (make-treebank-parser "parser-model/en-parser-chunking.bin"))
+```
 
 To use the treebank-parser, pass an array of sentences with their tokens
 separated by whitespace (preferably using tokenize)
 
-    user=> (treebank-parser ["This is a sentence ."])
-    ["(TOP (S (NP (DT This)) (VP (VBZ is) (NP (DT a) (NN sentence))) (. .)))"]
+```clojure
+(treebank-parser ["This is a sentence ."])
+["(TOP (S (NP (DT This)) (VP (VBZ is) (NP (DT a) (NN sentence))) (. .)))"]
+```
 
 In order to transform the treebank-parser string into something a little easier
 for Clojure to perform on, use the (make-tree ...) function:
 
-    user=> (make-tree (first (treebank-parser ["This is a sentence ."])))
-    {:chunk {:chunk ({:chunk {:chunk "This", :tag DT}, :tag NP} {:chunk ({:chunk "is", :tag VBZ} {:chunk ({:chunk "a", :tag DT} {:chunk "sentence", :tag NN}), :tag NP}), :tag VP} {:chunk ".", :tag .}), :tag S}, :tag TOP}
+```clojure
+(make-tree (first (treebank-parser ["This is a sentence ."])))
+{:chunk {:chunk ({:chunk {:chunk "This", :tag DT}, :tag NP} {:chunk ({:chunk "is", :tag VBZ} {:chunk ({:chunk "a", :tag DT} {:chunk "sentence", :tag NN}), :tag NP}), :tag VP} {:chunk ".", :tag .}), :tag S}, :tag TOP}
+```
 
 Here's the datastructure split into a little more readable format:
 
-    {:tag TOP
-     :chunk {:tag S
-             :chunk ({:tag NP
-                      :chunk {:tag DT
-                              :chunk "This"}}
-                     {:tag VP
-                      :chunk ({:tag VBZ
-                               :chunk "is"}
-                              {:tag NP
-                               :chunk ({:tag DT
-                                        :chunk "a"}
-                                       {:tag NN
-                                        :chunk "sentence"})})}
-                     {:tag .
-                      :chunk "."})}}
+```clojure
+{:tag TOP
+ :chunk {:tag S
+         :chunk ({:tag NP
+                  :chunk {:tag DT
+                          :chunk "This"}}
+                 {:tag VP
+                  :chunk ({:tag VBZ
+                           :chunk "is"}
+                          {:tag NP
+                           :chunk ({:tag DT
+                                    :chunk "a"}
+                                   {:tag NN
+                                    :chunk "sentence"})})}
+                 {:tag .
+                  :chunk "."})}}
+```
 
 Hopefully that makes it a little bit clearer, a nested map. If anyone else has
 any suggesstions for better ways to represent this information, feel free to
@@ -228,54 +260,59 @@ Filters
 Filtering pos-tagged sequences
 ------------------------------
 
-    (use 'opennlp.tools.filters)
+```clojure
+(use 'opennlp.tools.filters)
 
-    user=> (pprint (nouns (pos-tag (tokenize "Mr. Smith gave a car to his son on Friday."))))
-    (["Mr." "NNP"]
-     ["Smith" "NNP"]
-     ["car" "NN"]
-     ["son" "NN"]
-     ["Friday" "NNP"])
-    nil
-    user=> (pprint (verbs (pos-tag (tokenize "Mr. Smith gave a car to his son on Friday."))))
-    (["gave" "VBD"])
-    nil
+(pprint (nouns (pos-tag (tokenize "Mr. Smith gave a car to his son on Friday."))))
+(["Mr." "NNP"]
+ ["Smith" "NNP"]
+ ["car" "NN"]
+ ["son" "NN"]
+ ["Friday" "NNP"])
+
+(pprint (verbs (pos-tag (tokenize "Mr. Smith gave a car to his son on Friday."))))
+(["gave" "VBD"])
+```
 
 Filtering treebank-chunks
 -------------------------
 
-    (use 'opennlp.tools.filters)
+```clojure
+(use 'opennlp.tools.filters)
 
-    opennlp.nlp=> (pprint (noun-phrases (chunker (pos-tag (tokenize "The override system is meant to deactivate the accelerator when the brake pedal is pressed")))))
-    ({:phrase ["The" "override" "system"], :tag "NP"}
-     {:phrase ["the" "accelerator"], :tag "NP"}
-     {:phrase ["the" "brake" "pedal"], :tag "NP"})
-    nil
+(pprint (noun-phrases (chunker (pos-tag (tokenize "The override system is meant to deactivate the accelerator when the brake pedal is pressed")))))
+({:phrase ["The" "override" "system"], :tag "NP"}
+ {:phrase ["the" "accelerator"], :tag "NP"}
+ {:phrase ["the" "brake" "pedal"], :tag "NP"})
+```
 
 Creating your own filters:
 --------------------------
 
-    user=> (pos-filter determiners #"^DT")
-    #'user/determiners
-    user=> (doc determiners)
-    -------------------------
-    user/determiners
-    ([elements__52__auto__])
-      Given a list of pos-tagged elements, return only the determiners in a list.
-    nil
-    user=> (pprint (determiners (pos-tag (tokenize "Mr. Smith gave a car to his son on Friday."))))
-    (["a" "DT"])
-    nil
+```clojure
+(pos-filter determiners #"^DT")
+#'user/determiners
+(doc determiners)
+-------------------------
+user/determiners
+([elements__52__auto__])
+  Given a list of pos-tagged elements, return only the determiners in a list.
+
+(pprint (determiners (pos-tag (tokenize "Mr. Smith gave a car to his son on Friday."))))
+(["a" "DT"])
+```
 
 You can also create treebank-chunk filters using (chunk-filter ...)
 
-    user=> (chunk-filter fragments #"^FRAG$")
-    opennlp.nlp=> (doc fragments)
-    -------------------------
-    opennlp.nlp/fragments
-    ([elements__178__auto__])
-      Given a list of treebank-chunked elements, return only the fragments in a list.
-    nil
+```clojure
+(chunk-filter fragments #"^FRAG$")
+
+(doc fragments)
+-------------------------
+opennlp.nlp/fragments
+([elements__178__auto__])
+  Given a list of treebank-chunked elements, return only the fragments in a list.
+```
 
 
 Being Lazy
@@ -292,30 +329,32 @@ use the corresponding method:
 
 Here's how to use them:
 
-    (use 'opennlp.nlp)
-    (use 'opennlp.treebank)
-    (use 'opennlp.tools.lazy)
+```clojure
+(use 'opennlp.nlp)
+(use 'opennlp.treebank)
+(use 'opennlp.tools.lazy)
 
-    (def get-sentences (make-sentence-detector "models/en-sent.bin"))
-    (def tokenize (make-tokenizer "models/en-token.bin"))
-    (def pos-tag (make-pos-tagger "models/en-pos-maxent.bin"))
-    (def chunker (make-treebank-chunker "models/en-chunker.bin"))
+(def get-sentences (make-sentence-detector "models/en-sent.bin"))
+(def tokenize (make-tokenizer "models/en-token.bin"))
+(def pos-tag (make-pos-tagger "models/en-pos-maxent.bin"))
+(def chunker (make-treebank-chunker "models/en-chunker.bin"))
 
-    (lazy-get-sentences ["This body of text has three sentences. This is the first. This is the third." "This body has only two. Here's the last one."] get-sentences)
-    ; will lazily return:
-    (["This body of text has three sentences. " "This is the first. " "This is the third."] ["This body has only two. " "Here's the last one."])
+(lazy-get-sentences ["This body of text has three sentences. This is the first. This is the third." "This body has only two. Here's the last one."] get-sentences)
+;; will lazily return:
+(["This body of text has three sentences. " "This is the first. " "This is the third."] ["This body has only two. " "Here's the last one."])
 
-    (lazy-tokenize ["This is a sentence." "This is another sentence." "This is the third."] tokenize)
-    ; will lazily return:
-    (["This" "is" "a" "sentence" "."] ["This" "is" "another" "sentence" "."] ["This" "is" "the" "third" "."])
+(lazy-tokenize ["This is a sentence." "This is another sentence." "This is the third."] tokenize)
+;; will lazily return:
+(["This" "is" "a" "sentence" "."] ["This" "is" "another" "sentence" "."] ["This" "is" "the" "third" "."])
 
-    (lazy-tag ["This is a sentence." "This is another sentence."] tokenize pos-tag)
-    ; will lazily return:
-    ((["This" "DT"] ["is" "VBZ"] ["a" "DT"] ["sentence" "NN"] ["." "."]) (["This" "DT"] ["is" "VBZ"] ["another" "DT"] ["sentence" "NN"] ["." "."]))
+(lazy-tag ["This is a sentence." "This is another sentence."] tokenize pos-tag)
+;; will lazily return:
+((["This" "DT"] ["is" "VBZ"] ["a" "DT"] ["sentence" "NN"] ["." "."]) (["This" "DT"] ["is" "VBZ"] ["another" "DT"] ["sentence" "NN"] ["." "."]))
 
-    (lazy-chunk ["This is a sentence." "This is another sentence."] tokenize pos-tag chunker)
-    ; will lazily return:
-    (({:phrase ["This"], :tag "NP"} {:phrase ["is"], :tag "VP"} {:phrase ["a" "sentence"], :tag "NP"}) ({:phrase ["This"], :tag "NP"} {:phrase ["is"], :tag "VP"} {:phrase ["another" "sentence"], :tag "NP"}))
+(lazy-chunk ["This is a sentence." "This is another sentence."] tokenize pos-tag chunker)
+;; will lazily return:
+(({:phrase ["This"], :tag "NP"} {:phrase ["is"], :tag "VP"} {:phrase ["a" "sentence"], :tag "NP"}) ({:phrase ["This"], :tag "NP"} {:phrase ["is"], :tag "VP"} {:phrase ["another" "sentence"], :tag "NP"}))
+```
 
 Feel free to use the lazy functions, but I'm still not 100% set on the
 layout, so they may change in the future. (Maybe chaining them so
@@ -325,11 +364,13 @@ instead of a sequence of sentences it looks like (lazy-chunk (lazy-tag
 <b>Generating a lazy sequence of sentences from a file using
 opennlp.tools.lazy/sentence-seq:</b>
 
-    (with-open [rdr (clojure.java.io/reader "/tmp/bigfile")]
-      (let [sentences (sentence-seq rdr get-sentences)]
-        ;; process your lazy seq of sentences however you desire
-        (println "first 5 sentences:")
-        (clojure.pprint/pprint (take 5 sentences))))
+```clojure
+(with-open [rdr (clojure.java.io/reader "/tmp/bigfile")]
+  (let [sentences (sentence-seq rdr get-sentences)]
+    ;; process your lazy seq of sentences however you desire
+    (println "first 5 sentences:")
+    (clojure.pprint/pprint (take 5 sentences))))
+```
 
 
 Training
