@@ -6,6 +6,7 @@
             [opennlp.tools.train :as train])
   (:import [java.io File FileOutputStream]))
 
+
 (deftest sentence-training-test
   (let [sent-model (train/train-sentence-detector "training/sentdetect.train")
         get-sentences (nlp/make-sentence-detector sent-model)]
@@ -78,3 +79,22 @@
            ["Being" "at" "the" "polls"
             "was" "just" "like" "being"
             "at" "church" "."])))))
+
+(deftest categorization-training-test
+  (let [cat-model (train/train-document-categorization "training/doccat.train")
+        get-category (nlp/make-document-categorizer cat-model)]
+    (is
+     (= (get-category "The third verse of the song was quite upbeat.")
+        "Happy"))
+    (is
+     (= (get-category "There was a sense of foreboding at the opening bell.")
+        "Unhappy"))
+    (is
+     (= (get-category "The sun was shining, there were smiles everywhere.")
+        "Happy"))
+    (is
+     (= (get-category "The confused prisoner could not figure out which way to go.")
+        "Unhappy"))
+    (is
+     (= (get-category "The frowning man chastized his son for not divulging the truth.")
+        "Unhappy"))))
