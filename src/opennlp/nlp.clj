@@ -3,6 +3,8 @@
   creating NLP performers can be created with the tools in this namespace."
   (:use [clojure.java.io :only [input-stream]])
   (:import
+   (opennlp.tools.doccat DoccatModel
+                         DocumentCategorizerME)
    (opennlp.tools.namefind NameFinderME TokenNameFinderModel)
    (opennlp.tools.postag POSModel POSTaggerME)
    (opennlp.tools.sentdetect SentenceDetectorME SentenceModel)
@@ -113,7 +115,7 @@
         {:probabilities probs}))))
 
 (defmulti make-detokenizer
-  "Retun a functin for taking tokens and recombining them into a sentence
+  "Return a function for taking tokens and recombining them into a sentence
   based on a given model file."
   class)
 
@@ -173,4 +175,22 @@
     (let [detoken (DictionaryDetokenizer. model)
           ops (.detokenize detoken (into-array String tokens))]
       (collapse-tokens tokens ops))))
+
+(defmulti make-document-categorizer
+  "Return a function for determining a category given a model."
+  class)
+
+(defmethod make-document-categorizer :default
+  [modelfile]
+  (with-open [model-stream (input-stream modelfile)]
+    (make-document-categorizer (DoccatModel. model-stream))))
+
+(defmethod make-document-categorizer DoccatModel
+  [model]
+  (fn document-categorizer
+    [text]
+    {:pre [(string? text)]}
+    (let [categorizer (DocumentCategorizerME. model)
+          outcomes (.categorize categorizer text)]
+      (.getBestCategory categorizer outcomes))))
 
