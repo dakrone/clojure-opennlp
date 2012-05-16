@@ -127,7 +127,6 @@
   "Returns a classification model based on a given training file"
   ([in] (train-document-categorization "en" in))
   ([lang in]
-     (println (str "train-document-categorization lang: " lang))
      (DocumentCategorizerME/train lang
                                   (->> (reader in)
                                        (PlainTextByLineStream.)
