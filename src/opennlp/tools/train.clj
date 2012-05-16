@@ -22,7 +22,10 @@
                                  POSModel
                                  POSDictionary
                                  WordTagSampleStream
-                                 POSContextGenerator)))
+                                 POSContextGenerator)
+           (opennlp.tools.doccat DoccatModel
+                                 DocumentCategorizerME
+                                 DocumentSampleStream)))
 
 (defn write-model
   "Write a model to disk"
@@ -119,3 +122,12 @@
                                     (SentenceSampleStream.))
                                true
                                nil)))
+
+(defn ^DoccatModel train-document-categorization
+  "Returns a classification model based on a given training file"
+  ([in] (train-document-categorization "en" in))
+  ([lang in]
+     (DocumentCategorizerME/train lang
+                                  (->> (reader in)
+                                       (PlainTextByLineStream.)
+                                       (DocumentSampleStream.)) 1 100)))
