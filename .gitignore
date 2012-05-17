@@ -19,3 +19,5 @@ multi-lib/
 /models/namefind/en-ner-percentage.bin
 /models/namefind/en-ner-time.bin
 target/*
+/clojure-opennlp-0.1.10-SNAPSHOT.jar
+/pom.xml
