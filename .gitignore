@@ -18,3 +18,4 @@ multi-lib/
 /models/namefind/en-ner-organization.bin
 /models/namefind/en-ner-percentage.bin
 /models/namefind/en-ner-time.bin
+target/*
