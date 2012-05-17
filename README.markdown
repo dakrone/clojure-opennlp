@@ -19,10 +19,10 @@ Usage from Leiningen:
 --------------------
 
 ```clojure
-[clojure-opennlp "0.1.9"]
+[clojure-opennlp "0.1.10"]
 ```
     
-clojure-opennlp works with both clojure 1.2.x and 1.3
+clojure-opennlp works with, clojure 1.2.x, 1.3 or 1.4
 
 Basic Example usage (from a REPL):
 ----------------------------------
