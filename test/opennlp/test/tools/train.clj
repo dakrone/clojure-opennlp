@@ -32,8 +32,8 @@
     (is (= (pos-tagger ["Being" "at" "the" "polls" "was" "just" "like"
                         "being" "at" "church."])
            '(["Being" "VBD"] ["at" "IN"] ["the" "NN"] ["polls" ","]
-             ["was" "VBD"] ["just" "RB"] ["like" "IN"] ["being" "NN"]
-             ["at" "IN"] ["church." "NN"])))))
+               ["was" "VBD"] ["just" "RB"] ["like" "IN"] ["being" "NN"]
+                 ["at" "IN"] ["church." "NN"])))))
 
 (deftest chunker-training-test
   (let [chunk-model (train/train-treebank-chunker "training/chunker.train")
@@ -76,25 +76,22 @@
     (is (=  (.exists tmp-file) true))
     (let [tokenizer (nlp/make-tokenizer (.getAbsolutePath tmp-file))]
       (is (= (tokenizer "Being at the polls was just like being at church.")
-           ["Being" "at" "the" "polls"
-            "was" "just" "like" "being"
-            "at" "church" "."])))))
+             ["Being" "at" "the" "polls"
+              "was" "just" "like" "being"
+              "at" "church" "."])))))
 
 (deftest categorization-training-test
   (let [cat-model (train/train-document-categorization "training/doccat.train")
         get-category (nlp/make-document-categorizer cat-model)]
-    (is
-     (= (get-category "The third verse of the song was quite upbeat.")
-        "Happy"))
-    (is
-     (= (get-category "There was a sense of foreboding at the opening bell.")
-        "Unhappy"))
-    (is
-     (= (get-category "The sun was shining, there were smiles everywhere.")
-        "Happy"))
-    (is
-     (= (get-category "The confused prisoner could not figure out which way to go.")
-        "Unhappy"))
-    (is
-     (= (get-category "The frowning man chastized his son for not divulging the truth.")
-        "Unhappy"))))
+    (is (= (get-category "The third verse of the song was quite upbeat.")
+           "Happy"))
+    (is (= (get-category "There was a sense of foreboding at the opening bell.")
+           "Unhappy"))
+    (is (= (get-category "The sun was shining, there were smiles everywhere.")
+           "Happy"))
+    (is (= (get-category
+            "The confused prisoner could not figure out which way to go.")
+           "Unhappy"))
+    (is (= (get-category
+            "The frowning man chastized his son for not divulging the truth.")
+           "Unhappy"))))
