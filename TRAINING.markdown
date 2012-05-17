@@ -239,6 +239,36 @@ to ```train-pos-tagger```
      (def pos-tag (make-pos-tagger (train-pos-tagger "en" "postagger.train" tagdict)))
 
 
+Document Categorization
+-----------------------
+
+To train a document categorizing tool, provide text with the format
+similar to (as an example, a sentiment detector):
+
+    Happy squealed
+    Happy delight
+    Happy upbeat
+    Happy success
+    Happy dream
+    Happy smile
+    Happy smiles
+    Happy well
+    Happy enjoy
+    Happy sunny
+    Unhappy foreboding
+    Unhappy prisoner
+    Unhappy frowning
+    Unhappy confused
+    Unhappy disapproving
+    Unhappy upset
+
+You can then train a model with this file:
+
+    (def doccat-model (train-document-categorization "training/doccat.train"))
+    (def doccat (make-document-categorizer doccat-model)
+    (doccat "I like to smile.")
+    => "Happy"
+
 Notes
 -----
 If you get an Exception, you might just not have enough data.

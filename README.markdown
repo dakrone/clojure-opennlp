@@ -135,6 +135,16 @@ And with just strings:
 ("The override system" "is meant to deactivate" "the accelerator" "when" "the brake pedal" "is pressed")
 ```
 
+Document Categorization:
+
+See opennlp.test.tools.train for better usage examples.
+
+```clojure
+(def doccat (make-document-categorizer "my-doccat-model"))
+
+(doccat "This is some good text")
+"Happy"
+```
 
 Probabilities of confidence
 ---------------------------
