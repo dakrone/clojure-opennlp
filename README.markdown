@@ -159,10 +159,10 @@ as metadata on the result, where applicable:
 (meta (tokenizer "This is a sentence."))
 {:probabilities (1.0 1.0 1.0 0.9956236737394807 1.0)}
 
-(meta (pos-tagger ["This" "is" "a" "sentence" "."]))
+(meta (pos-tag ["This" "is" "a" "sentence" "."]))
 {:probabilities (0.9649410482478001 0.9982592902509803 0.9967282012835504 0.9952498677248117 0.9862225658078769)}
 
-(meta (chunker (pos-tagger ["This" "is" "a" "sentence" "."])))
+(meta (chunker (pos-tag ["This" "is" "a" "sentence" "."])))
 {:probabilities (0.9941248001899835 0.9878092935921453 0.9986106511439116 0.9972975733070356 0.9906377695586069)}
 
 (meta (name-find ["My" "name" "is" "John"]))
