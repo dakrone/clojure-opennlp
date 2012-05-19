@@ -176,6 +176,13 @@
           ops (.detokenize detoken (into-array String tokens))]
       (collapse-tokens tokens ops))))
 
+(defn parse-categories [outcomes-string outcomes]
+  "Given a string that represents the opennlp outcomes and an array of
+  probability outcomes, zip them into a map of category-probability pairs"
+  (zipmap
+   (map first (map rest (re-seq #"(\w+)\[.*?\]" outcomes-string)))
+   outcomes))
+
 (defmulti make-document-categorizer
   "Return a function for determining a category given a model."
   class)
@@ -192,5 +199,8 @@
     {:pre [(string? text)]}
     (let [categorizer (DocumentCategorizerME. model)
           outcomes (.categorize categorizer text)]
-      (.getBestCategory categorizer outcomes))))
-
+      (with-meta
+        {:best-category (.getBestCategory categorizer outcomes)}
+        {:probabilities (parse-categories
+                         (.getAllResults categorizer outcomes)
+                         outcomes)}))))

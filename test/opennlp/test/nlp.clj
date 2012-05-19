@@ -76,3 +76,12 @@
   (is (thrown? FileNotFoundException (make-pos-tagger "nonexistantfile")))
   (is (thrown? FileNotFoundException (make-name-finder "nonexistantfile"))))
 
+(deftest parse-categories-test
+  (let [outcomes-string "CAT1[0.123] CAT2[0.234] CAT3[0.345] CAT4[0.456]"
+        outcomes [0.123456 0.234567 0.345678 0.456789]]
+    (is (= (count (parse-categories outcomes-string outcomes)) 4))
+    (is (= (get (parse-categories outcomes-string outcomes) "CAT1")) 0.123456)
+    (is (= (get (parse-categories outcomes-string outcomes) "CAT2")) 0.234567)
+    (is (= (get (parse-categories outcomes-string outcomes) "CAT3")) 0.345678)
+    (is (= (get (parse-categories outcomes-string outcomes) "CAT4")) 0.456789)
+    ))
