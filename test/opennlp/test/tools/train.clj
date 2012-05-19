@@ -83,15 +83,21 @@
 (deftest categorization-training-test
   (let [cat-model (train/train-document-categorization "training/doccat.train")
         get-category (nlp/make-document-categorizer cat-model)]
-    (is (= (get-category "The third verse of the song was quite upbeat.")
+    (let [test-cat (get-category
+                    "The third verse of the song was quite upbeat.")]
+      (is (= (:best-category test-cat) "Happy"))
+      (is (= (count (:probabilities (meta test-cat))) 2)))
+    
+    (let [test-cat (get-category
+                    "There was a sense of foreboding at the outset.")]
+      (is (= (:best-category test-cat) "Unhappy"))
+      (is (= (count (:probabilities (meta test-cat))) 2))) 
+    (is (= (:best-category (get-category
+                            "The sun was shining, smiles everywhere."))
            "Happy"))
-    (is (= (get-category "There was a sense of foreboding at the opening bell.")
+    (is (= (:best-category (get-category
+            "The confused prisoner could not figure out which way to go."))
            "Unhappy"))
-    (is (= (get-category "The sun was shining, there were smiles everywhere.")
-           "Happy"))
-    (is (= (get-category
-            "The confused prisoner could not figure out which way to go.")
-           "Unhappy"))
-    (is (= (get-category
-            "The frowning man chastized his son for not divulging the truth.")
+    (is (= (:best-category (get-category
+            "The frowning man chastized his son for not divulging the truth."))
            "Unhappy"))))
