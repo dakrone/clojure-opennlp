@@ -200,7 +200,7 @@
     (let [categorizer (DocumentCategorizerME. model)
           outcomes (.categorize categorizer text)]
       (with-meta
-        {:best_category (.getBestCategory categorizer outcomes)}
+        {:best-category (.getBestCategory categorizer outcomes)}
         {:probabilities (parse-categories
                          (.getAllResults categorizer outcomes)
                          outcomes)}))))
