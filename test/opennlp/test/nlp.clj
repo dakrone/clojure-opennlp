@@ -71,7 +71,8 @@
   (is (thrown? java.lang.AssertionError (name-find "asdf"))))
 
 (deftest no-model-file-test
-  (is (thrown? FileNotFoundException (make-sentence-detector "nonexistantfile")))
+  (is (thrown? FileNotFoundException
+               (make-sentence-detector "nonexistantfile")))
   (is (thrown? FileNotFoundException (make-tokenizer "nonexistantfile")))
   (is (thrown? FileNotFoundException (make-pos-tagger "nonexistantfile")))
   (is (thrown? FileNotFoundException (make-name-finder "nonexistantfile"))))
@@ -83,5 +84,4 @@
     (is (= (get (parse-categories outcomes-string outcomes) "CAT1")) 0.123456)
     (is (= (get (parse-categories outcomes-string outcomes) "CAT2")) 0.234567)
     (is (= (get (parse-categories outcomes-string outcomes) "CAT3")) 0.345678)
-    (is (= (get (parse-categories outcomes-string outcomes) "CAT4")) 0.456789)
-    ))
+    (is (= (get (parse-categories outcomes-string outcomes) "CAT4")) 0.456789)))
