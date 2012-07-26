@@ -153,10 +153,10 @@ The probabilities OpenNLP supplies for a given operation are available
 as metadata on the result, where applicable:
 
 ```clojure
-(meta (get-sentences "This is a sentence. This is also one.")
+(meta (get-sentences "This is a sentence. This is also one."))
 {:probabilities (0.9999054310803004 0.9941126097177366)}
 
-(meta (tokenizer "This is a sentence."))
+(meta (tokenize "This is a sentence."))
 {:probabilities (1.0 1.0 1.0 0.9956236737394807 1.0)}
 
 (meta (pos-tag ["This" "is" "a" "sentence" "."]))
@@ -204,7 +204,7 @@ or you will run out of heap space when using a treebank parser.</b>
 
 Treebank parsing gets its own section due to how complex it is.
 
-Note none of the treebank-parser model is not included in the git repo, you will
+Note none of the treebank-parser model is included in the git repo, you will
 have to download it separately from the opennlp project.
 
 Creating it:
