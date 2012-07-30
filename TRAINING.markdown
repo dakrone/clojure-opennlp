@@ -269,6 +269,13 @@ You can then train a model with this file:
     (doccat "I like to smile.")
     => "Happy"
 
+If you already have a model trained and saved as a .bin file, just load it as follows:
+    
+    (def doccat-model "models/en-doccat.bin"))
+    (def doccat (make-document-categorizer doccat-model))
+    (doccat "I like to smile.")
+    => "Happy"
+
 Notes
 -----
 If you get an Exception, you might just not have enough data.
