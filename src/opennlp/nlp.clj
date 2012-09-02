@@ -2,6 +2,7 @@
   "The main namespace for the clojure-opennlp project. Functions for
   creating NLP performers can be created with the tools in this namespace."
   (:use [clojure.java.io :only [input-stream]])
+  (:require [opennlp.span :as nspan])
   (:import
    (opennlp.tools.doccat DoccatModel
                          DocumentCategorizerME)
@@ -12,6 +13,7 @@
                            DetokenizationDictionary$Operation
                            Detokenizer$DetokenizationOperation
                            DictionaryDetokenizer
+                           TokenSample
                            TokenizerME
                            TokenizerModel)
    (opennlp.tools.util Span)))
@@ -22,6 +24,20 @@
 
 ;; Caching to use for pos-tagging
 (def #^{:dynamic true} *cache-size* 1024)
+
+(defn- opennlp-span-strings
+  "Takes a collection of spans and the data they refer to. Returns a list of substrings 
+corresponding to spans."
+  [span-col data] 
+  (if (seq span-col)
+    (seq (Span/spansToStrings (into-array span-col) (if (string? data) data (into-array data))))
+    []))
+  
+(defn- to-native-span
+  "Take an OpenNLP span object and return a pair [i j] where i and j are the
+start and end positions of the span."
+  [span] 
+  (nspan/make-span (.getStart span) (.getEnd span) (.getType span)))
 
 (defmulti make-sentence-detector
   "Return a function for splitting sentences given a model file."
@@ -37,12 +53,14 @@
   (fn sentence-detector
     [text]
     {:pre [(string? text)]}
-    (let [detector (SentenceDetectorME. model)
-          sentences (.sentDetect detector text)
-          probs (seq (.getSentenceProbabilities detector))]
+    (let [detector  (SentenceDetectorME. model)
+          spans     (.sentPosDetect detector text)
+          sentences (opennlp-span-strings spans text)
+          probs     (seq (.getSentenceProbabilities detector))]
       (with-meta
         (into [] sentences)
-        {:probabilities probs}))))
+        {:probabilities probs
+         :spans         (map to-native-span spans)}))))
 
 (defmulti make-tokenizer
   "Return a function for tokenizing a sentence based on a given model file."
@@ -59,15 +77,13 @@
     [sentence]
     {:pre [(string? sentence)]}
     (let [tokenizer (TokenizerME. model)
-          tokens (.tokenize tokenizer sentence)
-          spans (map #(hash-map :start (.getStart %)
-                                :end (.getEnd %))
-                     (seq (.tokenizePos tokenizer sentence)))
-          probs (seq (.getTokenProbabilities tokenizer))]
+          spans     (.tokenizePos tokenizer sentence)
+          probs     (seq (.getTokenProbabilities tokenizer))
+          tokens    (opennlp-span-strings spans sentence)]
       (with-meta
         (into [] tokens)
         {:probabilities probs
-         :spans spans}))))
+         :spans         (map to-native-span spans)}))))
 
 (defmulti make-pos-tagger
   "Return a function for tagging tokens based on a givel model file."
@@ -126,7 +142,7 @@
 
 ;; TODO: clean this up, recursion is a smell
 ;; TODO: remove debug printlns once I'm satisfied
-(defn- collapse-tokens
+#_(defn- collapse-tokens
   [tokens detoken-ops]
   (let [sb (StringBuilder.)
         token-set (atom #{})]
@@ -166,15 +182,50 @@
           (recur (next ts) (next dt-ops)))))
     (.toString sb)))
 
-(defmethod make-detokenizer DetokenizationDictionary
+;; In the current documentation there is no RIGHT_LEFT_MATCHING and 
+;; I've never seen such an operation in practice.
+;; http://opennlp.apache.org/documentation/apidocs/opennlp-tools/opennlp/tools/tokenize/Detokenizer.DetokenizationOperation.html
+(defn- detokenize*
+	"Given a sequence of DetokenizationOperations, produce a string."
+	[tokens ops]
+	(loop [toks        (seq tokens)
+	       ops         (seq ops)
+	       result-toks []]
+		(if toks
+			(let [op    (first ops)
+				    rtoks (cond
+					          (= op Detokenizer$DetokenizationOperation/MERGE_TO_LEFT)
+				            (if (not-empty result-toks)
+					            (conj (pop result-toks) (first toks) " ")
+					            (conj result-toks (first toks) " "))
+
+					          (= op Detokenizer$DetokenizationOperation/MERGE_TO_RIGHT)
+									  (conj result-toks (first toks))
+
+                    :else
+								    (conj result-toks (first toks) " "))]
+			  (recur (next toks) (next ops) rtoks))
+		(apply str (butlast result-toks)))))
+        
+#_(defmethod make-detokenizer DetokenizationDictionary
   [model]
   (fn detokenizer
     [tokens]
     {:pre [(seq tokens)
            (every? #(= (class %) String) tokens)]}
     (let [detoken (DictionaryDetokenizer. model)
-          ops (.detokenize detoken (into-array String tokens))]
-      (collapse-tokens tokens ops))))
+          ops     (.detokenize detoken (into-array String tokens))]
+      (detokenize* tokens ops))))
+
+(defmethod make-detokenizer DetokenizationDictionary
+  [model]
+  (fn detokenizer
+    [tokens]
+    {:pre [(seq tokens)
+           (every? #(= (class %) String) tokens)]}
+    (-> (DictionaryDetokenizer. model) 
+      (TokenSample. (into-array String tokens))
+      (.getText))))
 
 (defn parse-categories [outcomes-string outcomes]
   "Given a string that represents the opennlp outcomes and an array of
