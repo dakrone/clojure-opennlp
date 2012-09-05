@@ -98,7 +98,7 @@ start and end positions of the span."
   [model]
   (fn pos-tagger
     [tokens]
-    {:pre [(vector? tokens)]}
+    {:pre [(seq tokens)]}
     (let [token-array (into-array tokens)
           tagger (POSTaggerME. model *beam-size* *cache-size*)
           tags (.tag tagger token-array)
@@ -128,7 +128,8 @@ start and end positions of the span."
           probs (seq (.probs finder))]
       (with-meta
         (distinct (Span/spansToStrings matches (into-array String tokens)))
-        {:probabilities probs}))))
+        {:probabilities probs
+         :spans         (map to-native-span matches)}))))
 
 (defmulti make-detokenizer
   "Return a function for taking tokens and recombining them into a sentence

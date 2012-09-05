@@ -66,8 +66,9 @@ with the type of the first."
   (make-span (+ (:start span) i) (+ (:end span) i) (:type span)))
 
 (defn between-span
-  "Return a span of the area between two spans A and B. We assume (:end A) < (:start B)."
+  "Return a span of the area between two spans A and B. Precondition: (:end A) < (:start B)."
   [a b]
+  {:pre [(< (:end a) (:start b))]}
   (make-span (:end a) (:start b) :between))
 
 (defn re-spans
