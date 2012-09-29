@@ -70,12 +70,3 @@ with the type of the first."
   [a b]
   {:pre [(< (:end a) (:start b))]}
   (make-span (:end a) (:start b) :between))
-
-(defn re-spans
-  "Find text spans for all regular expression matches."
-  [re s]
-  (loop [m (re-matcher re s)
-         r []]
-    (if (.find m)
-      (recur m (conj r (make-span (.start m) (.end m) nil)))
-      r)))
