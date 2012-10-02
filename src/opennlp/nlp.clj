@@ -26,17 +26,18 @@
 (def #^{:dynamic true} *cache-size* 1024)
 
 (defn- opennlp-span-strings
-  "Takes a collection of spans and the data they refer to. Returns a list of substrings 
-corresponding to spans."
-  [span-col data] 
+  "Takes a collection of spans and the data they refer to. Returns a list of
+  substrings corresponding to spans."
+  [span-col data]
   (if (seq span-col)
-    (seq (Span/spansToStrings (into-array span-col) (if (string? data) data (into-array data))))
+    (seq (Span/spansToStrings (into-array span-col)
+                              (if (string? data) data (into-array data))))
     []))
-  
+
 (defn- to-native-span
   "Take an OpenNLP span object and return a pair [i j] where i and j are the
 start and end positions of the span."
-  [span] 
+  [span]
   (nspan/make-span (.getStart span) (.getEnd span) (.getType span)))
 
 (defmulti make-sentence-detector
@@ -144,70 +145,70 @@ start and end positions of the span."
 ;; TODO: clean this up, recursion is a smell
 ;; TODO: remove debug printlns once I'm satisfied
 #_(defn- collapse-tokens
-  [tokens detoken-ops]
-  (let [sb (StringBuilder.)
-        token-set (atom #{})]
-    ;;(println :ops detoken-ops)
-    (loop [ts tokens dt-ops detoken-ops]
-      (let [op (first dt-ops)
-            op2 (second dt-ops)]
-        ;; (println :op op)
-        ;; (println :op2 op)
-        ;; (println :ts (first ts))
-        ;; (println :sb (.toString sb))
-        (cond
-         (or (= op2 nil)
-             (= op2 Detokenizer$DetokenizationOperation/MERGE_TO_LEFT))
-         (.append sb (first ts))
+    [tokens detoken-ops]
+    (let [sb (StringBuilder.)
+          token-set (atom #{})]
+      ;;(println :ops detoken-ops)
+      (loop [ts tokens dt-ops detoken-ops]
+        (let [op (first dt-ops)
+              op2 (second dt-ops)]
+          ;; (println :op op)
+          ;; (println :op2 op)
+          ;; (println :ts (first ts))
+          ;; (println :sb (.toString sb))
+          (cond
+            (or (= op2 nil)
+                (= op2 Detokenizer$DetokenizationOperation/MERGE_TO_LEFT))
+            (.append sb (first ts))
 
-         (or (= op nil)
-             (= op Detokenizer$DetokenizationOperation/MERGE_TO_RIGHT))
-         (.append sb (first ts))
+            (or (= op nil)
+                (= op Detokenizer$DetokenizationOperation/MERGE_TO_RIGHT))
+            (.append sb (first ts))
 
-         (= op DetokenizationDictionary$Operation/RIGHT_LEFT_MATCHING)
-         (if (contains? @token-set (first ts))
-           (do
-             ;; (println :token-set @token-set)
-             ;; (println :ts (first ts))
-             (swap! token-set disj (first ts))
-             (.append sb (first ts)))
-           (do
-             ;;(println :token-set @token-set)
-             ;;(println :ts (first ts))
-             (swap! token-set conj (first ts))
-             (.append sb (str (first ts) " "))))
+            (= op DetokenizationDictionary$Operation/RIGHT_LEFT_MATCHING)
+            (if (contains? @token-set (first ts))
+              (do
+                ;; (println :token-set @token-set)
+                ;; (println :ts (first ts))
+                (swap! token-set disj (first ts))
+                (.append sb (first ts)))
+              (do
+                ;;(println :token-set @token-set)
+                ;;(println :ts (first ts))
+                (swap! token-set conj (first ts))
+                (.append sb (str (first ts) " "))))
 
-         :else
-         (.append sb (str (first ts) " ")))
-        (when (and op op2)
-          (recur (next ts) (next dt-ops)))))
-    (.toString sb)))
+            :else
+            (.append sb (str (first ts) " ")))
+          (when (and op op2)
+            (recur (next ts) (next dt-ops)))))
+      (.toString sb)))
 
-;; In the current documentation there is no RIGHT_LEFT_MATCHING and 
+;; In the current documentation there is no RIGHT_LEFT_MATCHING and
 ;; I've never seen such an operation in practice.
 ;; http://opennlp.apache.org/documentation/apidocs/opennlp-tools/opennlp/tools/tokenize/Detokenizer.DetokenizationOperation.html
 (defn- detokenize*
-	"Given a sequence of DetokenizationOperations, produce a string."
-	[tokens ops]
-	(loop [toks        (seq tokens)
-	       ops         (seq ops)
-	       result-toks []]
-		(if toks
-			(let [op    (first ops)
-				    rtoks (cond
-					          (= op Detokenizer$DetokenizationOperation/MERGE_TO_LEFT)
-				            (if (not-empty result-toks)
-					            (conj (pop result-toks) (first toks) " ")
-					            (conj result-toks (first toks) " "))
+  "Given a sequence of DetokenizationOperations, produce a string."
+  [tokens ops]
+  (loop [toks        (seq tokens)
+         ops         (seq ops)
+         result-toks []]
+    (if toks
+      (let [op    (first ops)
+            rtoks (cond
+                    (= op Detokenizer$DetokenizationOperation/MERGE_TO_LEFT)
+                    (if (not-empty result-toks)
+                      (conj (pop result-toks) (first toks) " ")
+                      (conj result-toks (first toks) " "))
 
-					          (= op Detokenizer$DetokenizationOperation/MERGE_TO_RIGHT)
-									  (conj result-toks (first toks))
+                    (= op Detokenizer$DetokenizationOperation/MERGE_TO_RIGHT)
+                    (conj result-toks (first toks))
 
                     :else
-								    (conj result-toks (first toks) " "))]
-			  (recur (next toks) (next ops) rtoks))
-		(apply str (butlast result-toks)))))
-        
+                    (conj result-toks (first toks) " "))]
+        (recur (next toks) (next ops) rtoks))
+      (apply str (butlast result-toks)))))
+
 #_(defmethod make-detokenizer DetokenizationDictionary
     [model]
     (fn detokenizer
@@ -224,9 +225,9 @@ start and end positions of the span."
     [tokens]
     {:pre [(coll? tokens)
            (every? #(= (class %) String) tokens)]}
-    (-> (DictionaryDetokenizer. model) 
-      (TokenSample. (into-array String tokens))
-      (.getText))))
+    (-> (DictionaryDetokenizer. model)
+        (TokenSample. (into-array String tokens))
+        (.getText))))
 
 (defn parse-categories [outcomes-string outcomes]
   "Given a string that represents the opennlp outcomes and an array of
