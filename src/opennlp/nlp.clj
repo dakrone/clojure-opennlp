@@ -98,7 +98,7 @@ start and end positions of the span."
   [model]
   (fn pos-tagger
     [tokens]
-    {:pre [(seq tokens)]}
+    {:pre [(coll? tokens)]}
     (let [token-array (into-array tokens)
           tagger (POSTaggerME. model *beam-size* *cache-size*)
           tags (.tag tagger token-array)
@@ -121,7 +121,7 @@ start and end positions of the span."
   [model]
   (fn name-finder
     [tokens & contexts]
-    {:pre [(seq tokens)
+    {:pre [(coll? tokens)
            (every? #(= (class %) String) tokens)]}
     (let [finder (NameFinderME. model)
           matches (.find finder (into-array String tokens))
@@ -209,20 +209,20 @@ start and end positions of the span."
 		(apply str (butlast result-toks)))))
         
 #_(defmethod make-detokenizer DetokenizationDictionary
-  [model]
-  (fn detokenizer
-    [tokens]
-    {:pre [(seq tokens)
-           (every? #(= (class %) String) tokens)]}
-    (let [detoken (DictionaryDetokenizer. model)
-          ops     (.detokenize detoken (into-array String tokens))]
-      (detokenize* tokens ops))))
+    [model]
+    (fn detokenizer
+      [tokens]
+      {:pre [(coll? tokens)
+             (every? #(= (class %) String) tokens)]}
+      (let [detoken (DictionaryDetokenizer. model)
+            ops     (.detokenize detoken (into-array String tokens))]
+        (detokenize* tokens ops))))
 
 (defmethod make-detokenizer DetokenizationDictionary
   [model]
   (fn detokenizer
     [tokens]
-    {:pre [(seq tokens)
+    {:pre [(coll? tokens)
            (every? #(= (class %) String) tokens)]}
     (-> (DictionaryDetokenizer. model) 
       (TokenSample. (into-array String tokens))
