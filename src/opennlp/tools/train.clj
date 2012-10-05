@@ -1,7 +1,7 @@
 (ns opennlp.tools.train
   "This namespace contains tools used to train OpenNLP models"
   (:use [clojure.java.io :only [output-stream reader]])
-  (:import (opennlp.tools.util PlainTextByLineStream)
+  (:import (opennlp.tools.util PlainTextByLineStream TrainingParameters)
            (opennlp.tools.util.model BaseModel ModelType)
            (opennlp.tools.dictionary Dictionary)
            (opennlp.tools.tokenize TokenizerME
@@ -67,21 +67,27 @@
        (PlainTextByLineStream.
         (.getChannel (java.io.FileInputStream. in)) "UTF-8"))
       (HeadRules. (reader headrules)) iter cut)))
+            
 
 (defn ^TokenNameFinderModel train-name-finder
-  "Returns a name finder based on a given training file"
+  "Returns a trained name finder based on a given training file. Uses a non-deprecated train() method that allows 
+   for perceptron training with minimum modification. Optional arguments include the type of entity (e.g \"person\"), custom feature generation and 
+   a knob for switching to perceptron training (maXent is the default). For perceptron prefer cutoff 0, whereas for maXent 5."
   ([in] (train-name-finder "en" in))
   ([lang in] (train-name-finder lang in 100 5))
-  ([lang in iter cut]
+  ([lang in iter cut & {:keys [entity-type feature-gen classifier]  
+                        :or  {entity-type "default" classifier "MAXENT"}}] ;;MUST be either "MAXENT" or "PERCEPTRON"                   
      (NameFinderME/train
       lang
-      "default"
+      entity-type
       (->> (reader in)
            (PlainTextByLineStream.)
            (NameSampleDataStream.))
-      {}
-      iter
-      cut)))
+      (doto (TrainingParameters.)
+         (.put TrainingParameters/ALGORITHM_PARAM classifier)
+         (.put TrainingParameters/ITERATIONS_PARAM (Integer/toString iter))
+         (.put TrainingParameters/CUTOFF_PARAM     (Integer/toString cut)))     
+      feature-gen  {})))
 
 (defn ^TokenizerModel train-tokenizer
   "Returns a tokenizer based on given training file"
