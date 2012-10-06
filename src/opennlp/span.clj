@@ -6,19 +6,19 @@
   "Make a native span object."
   [start end type]
   (Span. start end type))
-  
+
 (defn in-span?
   "Return true if location k is in span. We assume span is [i,j)."
   [span k]
   (and (>= k (:start span)) (< k (:end span))))
 
 (defn contains-span?
-	"Return true if s1 is contains spans s2."
-	[s1 s2]
-	(and (>= (:start s2) (:start s1))
-		   (<= (:start s2) (:end s1))
-			 (>= (:end s2) (:start s1))
-			 (<= (:end s2) (:end s1))))
+  "Return true if s1 is contains spans s2."
+  [s1 s2]
+  (and (>= (:start s2) (:start s1))
+       (<= (:start s2) (:end s1))
+       (>= (:end s2) (:start s1))
+       (<= (:end s2) (:end s1))))
 
 (defn right-of-span?
   "Return true if location k is to the right of span."
@@ -29,10 +29,10 @@
   "Return true if location k is the end of span."
   [span k]
   (== (dec (:end span)) k))
- 
+
 (defn merge-spans
-  "Given two overlapping spans where the first comes before the second, return a merged span
-with the type of the first."
+  "Given two overlapping spans where the first comes before the second, return a
+  merged span with the type of the first."
   [A B] (assoc A :end (:end B)))
 
 (defn span-disjoint?
@@ -52,9 +52,9 @@ with the type of the first."
 
 (defn span-length
   "Return the length of the span."
-  [s] 
+  [s]
   (- (:end s) (:start s)))
-  
+
 (defn subs-span
   "Return the substring corresponding to the span."
   [s span]
@@ -66,7 +66,8 @@ with the type of the first."
   (make-span (+ (:start span) i) (+ (:end span) i) (:type span)))
 
 (defn between-span
-  "Return a span of the area between two spans A and B. Precondition: (:end A) < (:start B)."
+  "Return a span of the area between two spans A and B. Precondition: (:end A)
+  < (:start B)."
   [a b]
   {:pre [(< (:end a) (:start b))]}
   (make-span (:end a) (:start b) :between))
