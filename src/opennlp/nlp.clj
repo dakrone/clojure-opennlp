@@ -108,10 +108,10 @@ start and end positions of the span."
         (map vector tokens tags)
         {:probabilities probs}))))
 
-(defmulti make-name-finder 
+(defmulti make-name-finder
   "Return a function for finding names from tokens based on a given
    model file."
- (fn [model & args] (class model)))
+  (fn [model & args] (class model)))
 
 (defmethod make-name-finder :default
   [modelfile & args]
@@ -130,8 +130,8 @@ start and end positions of the span."
       (with-meta
         (distinct (Span/spansToStrings matches (into-array String tokens)))
         {:probabilities probs
-         :spans  (map to-native-span matches)}))))
-         
+         :spans (map to-native-span matches)}))))
+
 
 (defmulti make-detokenizer
   "Return a function for taking tokens and recombining them into a sentence
@@ -158,29 +158,29 @@ start and end positions of the span."
           ;; (println :ts (first ts))
           ;; (println :sb (.toString sb))
           (cond
-            (or (= op2 nil)
-                (= op2 Detokenizer$DetokenizationOperation/MERGE_TO_LEFT))
-            (.append sb (first ts))
+           (or (= op2 nil)
+               (= op2 Detokenizer$DetokenizationOperation/MERGE_TO_LEFT))
+           (.append sb (first ts))
 
-            (or (= op nil)
-                (= op Detokenizer$DetokenizationOperation/MERGE_TO_RIGHT))
-            (.append sb (first ts))
+           (or (= op nil)
+               (= op Detokenizer$DetokenizationOperation/MERGE_TO_RIGHT))
+           (.append sb (first ts))
 
-            (= op DetokenizationDictionary$Operation/RIGHT_LEFT_MATCHING)
-            (if (contains? @token-set (first ts))
-              (do
-                ;; (println :token-set @token-set)
-                ;; (println :ts (first ts))
-                (swap! token-set disj (first ts))
-                (.append sb (first ts)))
-              (do
-                ;;(println :token-set @token-set)
-                ;;(println :ts (first ts))
-                (swap! token-set conj (first ts))
-                (.append sb (str (first ts) " "))))
+           (= op DetokenizationDictionary$Operation/RIGHT_LEFT_MATCHING)
+           (if (contains? @token-set (first ts))
+             (do
+               ;; (println :token-set @token-set)
+               ;; (println :ts (first ts))
+               (swap! token-set disj (first ts))
+               (.append sb (first ts)))
+             (do
+               ;;(println :token-set @token-set)
+               ;;(println :ts (first ts))
+               (swap! token-set conj (first ts))
+               (.append sb (str (first ts) " "))))
 
-            :else
-            (.append sb (str (first ts) " ")))
+           :else
+           (.append sb (str (first ts) " ")))
           (when (and op op2)
             (recur (next ts) (next dt-ops)))))
       (.toString sb)))
@@ -197,16 +197,16 @@ start and end positions of the span."
     (if toks
       (let [op    (first ops)
             rtoks (cond
-                    (= op Detokenizer$DetokenizationOperation/MERGE_TO_LEFT)
-                    (if (not-empty result-toks)
-                      (conj (pop result-toks) (first toks) " ")
-                      (conj result-toks (first toks) " "))
+                   (= op Detokenizer$DetokenizationOperation/MERGE_TO_LEFT)
+                   (if (not-empty result-toks)
+                     (conj (pop result-toks) (first toks) " ")
+                     (conj result-toks (first toks) " "))
 
-                    (= op Detokenizer$DetokenizationOperation/MERGE_TO_RIGHT)
-                    (conj result-toks (first toks))
+                   (= op Detokenizer$DetokenizationOperation/MERGE_TO_RIGHT)
+                   (conj result-toks (first toks))
 
-                    :else
-                    (conj result-toks (first toks) " "))]
+                   :else
+                   (conj result-toks (first toks) " "))]
         (recur (next toks) (next ops) rtoks))
       (apply str (butlast result-toks)))))
 
