@@ -108,29 +108,30 @@ start and end positions of the span."
         (map vector tokens tags)
         {:probabilities probs}))))
 
-(defmulti make-name-finder
+(defmulti make-name-finder 
   "Return a function for finding names from tokens based on a given
    model file."
-  class)
+ (fn [model & args] (class model)))
 
 (defmethod make-name-finder :default
-  [modelfile]
+  [modelfile & args]
   (with-open [model-stream (input-stream modelfile)]
     (make-name-finder (TokenNameFinderModel. model-stream))))
 
 (defmethod make-name-finder TokenNameFinderModel
-  [model]
+  [model & {:keys [feature-generator beam] :or {beam *beam-size*}}]
   (fn name-finder
     [tokens & contexts]
-    {:pre [(coll? tokens)
+    {:pre [(seq tokens)
            (every? #(= (class %) String) tokens)]}
-    (let [finder (NameFinderME. model)
+    (let [finder (NameFinderME. model feature-generator beam)
           matches (.find finder (into-array String tokens))
           probs (seq (.probs finder))]
       (with-meta
         (distinct (Span/spansToStrings matches (into-array String tokens)))
         {:probabilities probs
-         :spans         (map to-native-span matches)}))))
+         :spans  (map to-native-span matches)}))))
+         
 
 (defmulti make-detokenizer
   "Return a function for taking tokens and recombining them into a sentence
