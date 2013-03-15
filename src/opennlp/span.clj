@@ -33,7 +33,7 @@
 (defn merge-spans
   "Given two overlapping spans where the first comes before the second, return a
   merged span with the type of the first."
-  [A B] 
+  [A B]
   (assoc A :end (:end B)))
 
 (defn span-disjoint?
@@ -43,11 +43,12 @@
 
 (defn span-overlaps?
   "Return true if A overlaps B."
-  [A B] 
+  [A B]
   (not (span-disjoint? A B)))
 
 (defn intersection-span
-  "Return the intersection of two spans as a span. Type of new span is :intersection."
+  "Return the intersection of two spans as a span. Type of new span is
+  :intersection."
   [A B]
   {:pre [(not (span-disjoint? A B))]}
   (->Span (max (:start A) (:start B)) (min (:end A) (:end B)) :intersection))
@@ -68,7 +69,8 @@
   (->Span (+ (:start span) i) (+ (:end span) i) (:type span)))
 
 (defn between-span
-  "Return a span of the area between two spans A and B. Type of new span is :between."
+  "Return a span of the area between two spans A and B. Type of new span is
+  :between."
   [a b]
   {:pre [(<= (:end a) (:start b))]}
   (->Span (:end a) (:start b) :between))
