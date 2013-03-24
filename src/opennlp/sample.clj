@@ -7,10 +7,10 @@
   (.write w "#opennlp/sample {")
   (.write w ":category ")
   (binding [*out* w]
-    (prn (.getCategory sample)))
+    (pr (.getCategory sample)))
   (.write w " :text ")
   (binding [*out* w]
-    (prn (vec (.getText sample))))
+    (pr (vec (.getText sample))))
   (.write w "}"))
 
 (defmethod print-method DocumentSample
