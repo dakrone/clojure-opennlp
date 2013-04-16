@@ -15,6 +15,14 @@ Read the source from Marginalia
 
 [![Continuous Integration status](https://secure.travis-ci.org/dakrone/clojure-opennlp.png)](http://travis-ci.org/dakrone/clojure-opennlp)
 
+Known Issues
+------------
+- When using the treebank-chunker on a sentence, please ensure you
+have a period at the end of the sentence, if you do not have a period,
+the chunker gets confused and drops the last word. Besides, your
+sentences should all be grammactially correct anyway right?
+
+
 Usage from Leiningen:
 --------------------
 
@@ -387,14 +395,6 @@ Training
 --------
 There is code to allow for training models for each of the
 tools. Please see the documentation in TRAINING.markdown
-
-
-Known Issues
-------------
-- When using the treebank-chunker on a sentence, please ensure you
-have a period at the end of the sentence, if you do not have a period,
-the chunker gets confused and drops the last word. Besides, your
-sentences should all be grammactially correct anyway right?
 
 
 License
