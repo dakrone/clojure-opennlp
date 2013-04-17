@@ -27,9 +27,9 @@ Usage from Leiningen:
 --------------------
 
 ```clojure
-[clojure-opennlp "0.2.0"]
+[clojure-opennlp "0.2.1"]
 ```
-    
+
 clojure-opennlp works with, clojure 1.2.x, 1.3, 1.4 or 1.5
 
 Basic Example usage (from a REPL):
@@ -61,7 +61,7 @@ the training tools in src/opennlp/tools/train.clj):
 ```clojure
 (def tokenize (make-tokenizer my-tokenizer-model)) ;; etc, etc
 ```
-    
+
 Then, use the functions you've created to perform operations on text:
 
 Detecting sentences:
