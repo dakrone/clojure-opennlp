@@ -1,4 +1,4 @@
-(defproject clojure-opennlp "0.2.2"
+(defproject clojure-opennlp "0.2.3-SNAPSHOT"
   :description "Natural Language Processing with Clojure, library for opennlp."
   :url "http://github.com/dakrone/clojure-opennlp"
   :min-lein-version "2.0.0"
