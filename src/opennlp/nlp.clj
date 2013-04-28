@@ -123,12 +123,13 @@ start and end positions of the span."
   (fn name-finder
     [tokens & contexts]
     {:pre [(seq tokens)
-           (every? #(= (class %) String) tokens)]}
+           (every? string? tokens)]}
     (let [finder (NameFinderME. model feature-generator beam)
-          matches (.find finder (into-array String tokens))
+          a-tokens (into-array String tokens)
+          matches (.find finder a-tokens)
           probs (seq (.probs finder))]
       (with-meta
-        (distinct (Span/spansToStrings matches (into-array String tokens)))
+        (distinct (Span/spansToStrings matches a-tokens))
         {:probabilities probs
          :spans (map to-native-span matches)}))))
 
@@ -215,7 +216,7 @@ start and end positions of the span."
     (fn detokenizer
       [tokens]
       {:pre [(coll? tokens)
-             (every? #(= (class %) String) tokens)]}
+             (every? string? tokens)]}
       (let [detoken (DictionaryDetokenizer. model)
             ops     (.detokenize detoken (into-array String tokens))]
         (detokenize* tokens ops))))
@@ -225,7 +226,7 @@ start and end positions of the span."
   (fn detokenizer
     [tokens]
     {:pre [(coll? tokens)
-           (every? #(= (class %) String) tokens)]}
+           (every? string? tokens)]}
     (-> (DictionaryDetokenizer. model)
         (TokenSample. (into-array String tokens))
         (.getText))))
