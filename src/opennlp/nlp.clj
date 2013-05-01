@@ -20,10 +20,10 @@
 
 ;; OpenNLP property for pos-tagging. Meant to be rebound before
 ;; calling the tagging creators
-(def #^{:dynamic true} *beam-size* 3)
+(def ^:dynamic *beam-size* 3)
 
 ;; Caching to use for pos-tagging
-(def #^{:dynamic true} *cache-size* 1024)
+(def ^:dynamic *cache-size* 1024)
 
 (defn- opennlp-span-strings
   "Takes a collection of spans and the data they refer to. Returns a list of
