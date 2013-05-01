@@ -1,4 +1,4 @@
-(ns #^{:doc "Namespace containing tools pertaining to the treebank NLP tools.
+(ns ^{:doc "Namespace containing tools pertaining to the treebank NLP tools.
              This includes treebank chuncking, parsing and linking (coref)."
        :author "Lee Hinman"}
   opennlp.treebank
@@ -14,7 +14,7 @@
 
 ;; Default advance percentage as defined by
 ;; AbstractBottomUpParser.defaultAdvancePercentage
-(def #^{:dynamic true} *advance-percentage* 0.95)
+(def ^:dynamic *advance-percentage* 0.95)
 
 (defn- split-chunks
   "Partition a sequence of treebank chunks by their phrases."

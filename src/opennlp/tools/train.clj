@@ -29,7 +29,7 @@
 
 (defn write-model
   "Write a model to disk"
-  [#^BaseModel model out-stream]
+  [^BaseModel model out-stream]
   (with-open [out (output-stream out-stream)]
     (.serialize model out)))
 
