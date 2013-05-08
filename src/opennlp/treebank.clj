@@ -4,6 +4,7 @@
   opennlp.treebank
   (:use [opennlp.nlp :only [*beam-size*]]
         [clojure.java.io :only [input-stream]])
+  (:require [clojure.string :as str])
   (:import (opennlp.tools.chunker ChunkerModel ChunkerME)
            (opennlp.tools.cmdline.parser ParserTool)
            (opennlp.tools.parser Parse ParserModel
@@ -128,10 +129,10 @@
   "Treebank-parser does not like parens and braces, so replace them."
   [s]
   (-> s
-      (.replaceAll "\\(" "-LRB-")
-      (.replaceAll "\\)" "-RRB-")
-      (.replaceAll "\\{" "-LCB-")
-      (.replaceAll "\\}" "-RCB-")))
+      (str/replace "\\(" "-LRB-")
+      (str/replace "\\)" "-RRB-")
+      (str/replace "\\{" "-LCB-")
+      (str/replace "\\}" "-RCB-")))
 
 
 (defn- parse-line
@@ -141,7 +142,7 @@
         results (StringBuffer.)
         parse-num 1]
     (.show (first (ParserTool/parseLine line parser parse-num)) results)
-    (.toString results)))
+    (str results)))
 
 
 (defmulti make-treebank-parser
@@ -168,35 +169,35 @@
   "Strip out some characters that might cause trouble parsing the tree."
   [s]
   (-> s
-      (.replaceAll "'" "-SQUOTE-")
-      (.replaceAll "\"" "-DQUOTE-")
-      (.replaceAll "~" "-TILDE-")
-      (.replaceAll "`" "-BACKTICK-")
-      (.replaceAll "," "-COMMA-")
-      (.replaceAll "\\\\" "-BSLASH-")
-      (.replaceAll "\\/" "-FSLASH-")
-      (.replaceAll "\\^" "-CARROT-")
-      (.replaceAll "@" "-ATSIGN-")
-      (.replaceAll "#" "-HASH-")
-      (.replaceAll ";" "-SEMICOLON-")
-      (.replaceAll ":" "-COLON-")))
+      (str/replace "'" "-SQUOTE-")
+      (str/replace "\"" "-DQUOTE-")
+      (str/replace "~" "-TILDE-")
+      (str/replace "`" "-BACKTICK-")
+      (str/replace "," "-COMMA-")
+      (str/replace "\\\\" "-BSLASH-")
+      (str/replace "\\/" "-FSLASH-")
+      (str/replace "\\^" "-CARROT-")
+      (str/replace "@" "-ATSIGN-")
+      (str/replace "#" "-HASH-")
+      (str/replace ";" "-SEMICOLON-")
+      (str/replace ":" "-COLON-")))
 
 (defn- unstrip-funny-chars
   "Un-strip out some characters that might cause trouble parsing the tree."
   [s]
   (-> s
-      (.replaceAll "-SQUOTE-" "'")
-      (.replaceAll "-DQUOTE-" "\"")
-      (.replaceAll "-TILDE-" "~")
-      (.replaceAll "-BACKTICK-" "`")
-      (.replaceAll "-COMMA-" ",")
-      (.replaceAll "-BSLASH-" "\\\\")
-      (.replaceAll "-FSLASH-" "\\/")
-      (.replaceAll "-CARROT-" "\\^")
-      (.replaceAll "-ATSIGN-" "@")
-      (.replaceAll "-HASH-" "#")
-      (.replaceAll "-SEMICOLON-" ";")
-      (.replaceAll "-COLON-" ":")))
+      (str/replace "-SQUOTE-" "'")
+      (str/replace "-DQUOTE-" "\"")
+      (str/replace "-TILDE-" "~")
+      (str/replace "-BACKTICK-" "`")
+      (str/replace "-COMMA-" ",")
+      (str/replace "-BSLASH-" "\\\\")
+      (str/replace "-FSLASH-" "\\/")
+      (str/replace "-CARROT-" "\\^")
+      (str/replace "-ATSIGN-" "@")
+      (str/replace "-HASH-" "#")
+      (str/replace "-SEMICOLON-" ";")
+      (str/replace "-COLON-" ":")))
 
 ;; Credit for this function goes to carkh in #clojure
 (defn- tr
@@ -226,7 +227,7 @@
   [c p start]
   (let [s (.getSpan c)]
     (if (< @start (.getStart s))
-      (print (.substring (.getText p) start (.getStart s))))
+      (print (subs (.getText p) start (.getStart s))))
     (print-parse c)
     (reset! start (.getEnd s))))
 
@@ -244,7 +245,7 @@
         (print " ")))
     (map #(print-child % p start) children)
     ;; FIXME: don't use substring
-    (print (.substring (.getText p) @start (.getEnd (.getSpan p))))
+    (print (subs (.getText p) @start (.getEnd (.getSpan p))))
     (if-not (= Parser/TOK_NODE (.getType p))
       (print ")"))))
 

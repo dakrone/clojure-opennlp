@@ -1,5 +1,6 @@
 (ns opennlp.tools.lazy
-  "Tools for lazily separating, tokenizing and tagging sentences.")
+  "Tools for lazily separating, tokenizing and tagging sentences."
+  (:require [clojure.string :as str]))
 
 ;; TODO: collapse these 3 functions into a generic one
 (defn lazy-get-sentences
@@ -49,11 +50,11 @@
     (loop [c (.read rdr)]
       (if-not (= -1 c)
         (do (.append sb (char c))
-            (let [sents (sentence-finder (.toString sb))]
+            (let [sents (sentence-finder (str sb))]
               (if (> (count sents) 1)
                 (do (.reset rdr)
                     (cons (first sents)
                           (lazy-seq (sentence-seq rdr sentence-finder))))
                 (do (.mark rdr 0)
                     (recur (.read rdr))))))
-        [(.trim (.toString sb))]))))
+        [(str/trim (str sb))]))))
