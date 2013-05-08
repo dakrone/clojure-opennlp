@@ -184,7 +184,7 @@ start and end positions of the span."
            (.append sb (str (first ts) " ")))
           (when (and op op2)
             (recur (next ts) (next dt-ops)))))
-      (.toString sb)))
+      (str sb)))
 
 ;; In the current documentation there is no RIGHT_LEFT_MATCHING and
 ;; I've never seen such an operation in practice.
