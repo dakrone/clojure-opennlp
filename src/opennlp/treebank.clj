@@ -4,7 +4,8 @@
   opennlp.treebank
   (:use [opennlp.nlp :only [*beam-size*]]
         [clojure.java.io :only [input-stream]])
-  (:require [clojure.string :as str])
+  (:require [clojure.string :as str]
+            [instaparse.core :as insta])
   (:import (opennlp.tools.chunker ChunkerModel ChunkerME)
            (opennlp.tools.cmdline.parser ParserTool)
            (opennlp.tools.parser Parse ParserModel
@@ -165,55 +166,22 @@
           parses (map #(parse-line % parser) text)]
       (vec parses))))
 
-(defn- strip-funny-chars
-  "Strip out some characters that might cause trouble parsing the tree."
-  [s]
-  (-> s
-      (str/replace "'" "-SQUOTE-")
-      (str/replace "\"" "-DQUOTE-")
-      (str/replace "~" "-TILDE-")
-      (str/replace "`" "-BACKTICK-")
-      (str/replace "," "-COMMA-")
-      (str/replace "\\\\" "-BSLASH-")
-      (str/replace "\\/" "-FSLASH-")
-      (str/replace "\\^" "-CARROT-")
-      (str/replace "@" "-ATSIGN-")
-      (str/replace "#" "-HASH-")
-      (str/replace ";" "-SEMICOLON-")
-      (str/replace ":" "-COLON-")))
-
-(defn- unstrip-funny-chars
-  "Un-strip out some characters that might cause trouble parsing the tree."
-  [s]
-  (-> s
-      (str/replace "-SQUOTE-" "'")
-      (str/replace "-DQUOTE-" "\"")
-      (str/replace "-TILDE-" "~")
-      (str/replace "-BACKTICK-" "`")
-      (str/replace "-COMMA-" ",")
-      (str/replace "-BSLASH-" "\\\\")
-      (str/replace "-FSLASH-" "\\/")
-      (str/replace "-CARROT-" "\\^")
-      (str/replace "-ATSIGN-" "@")
-      (str/replace "-HASH-" "#")
-      (str/replace "-SEMICOLON-" ";")
-      (str/replace "-COLON-" ":")))
+(def ^:private s-parser
+  (insta/parser
+   "E = <'('> T <WS> (T | (E <WS?>)+) <')'> <WS?> ; T = #'[^)\\s]+' ; WS = #'\\s+'"))
 
 ;; Credit for this function goes to carkh in #clojure
 (defn- tr
-  "Generate a tree from the string output of a treebank-parser."
-  [to-parse]
-  (if (seq? to-parse)
-    {:tag (first to-parse) :chunk (map tr (rest to-parse))}
-    (str to-parse)))
+  "Transforms treebank string into series of s-like expressions."
+  [ptree]
+  (if (= :E (first ptree))
+    {:tag (symbol (second (second ptree))) :chunk (map tr (drop 2 ptree))}
+    (second ptree)))
 
 (defn make-tree
   "Make a tree from the string output of a treebank-parser."
   [tree-text]
-  (let [text (strip-funny-chars tree-text)]
-    (tr (read-string text))))
-
-
+  (tr (s-parser tree-text)))
 
 ;;------------------------------------------------------------------------
 ;;------------------------------------------------------------------------
