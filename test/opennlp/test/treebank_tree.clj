@@ -24,7 +24,7 @@
                         :chunk ({:tag NP
                                  :chunk ({:tag NN
                                           :chunk
-                                          ("-DQUOTE-2-COLON-30-DQUOTE-")})}
+                                          ("\"2:30\"")})}
                                 {:tag VP
                                  :chunk ({:tag VBZ :chunk ("is")}
                                          {:tag NP
