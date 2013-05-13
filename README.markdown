@@ -27,7 +27,7 @@ Usage from Leiningen:
 --------------------
 
 ```clojure
-[clojure-opennlp "0.2.2"] ;; uses Opennlp 1.5.3
+[clojure-opennlp "0.3.0"] ;; uses Opennlp 1.5.3
 ```
 
 clojure-opennlp works with clojure 1.4 or 1.5.x
@@ -260,14 +260,6 @@ Here's the datastructure split into a little more readable format:
 Hopefully that makes it a little bit clearer, a nested map. If anyone else has
 any suggesstions for better ways to represent this information, feel free to
 send me an email or a patch.
-
-Also note, make-tree uses Clojure's reader, so certain characters are not
-supported, they will automatically be replaced:
-
-    ( ) \ / # ~ ` ' " ^ @ ,
-
-For a full reference of replaced chars, you can always look at strip-funny-chars
-in src/opennlp/treebank.clj
 
 Treebank parsing is considered beta at this point.
 
