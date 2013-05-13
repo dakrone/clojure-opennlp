@@ -23,7 +23,7 @@
   (is (thrown? FileNotFoundException (make-treebank-chunker "nonexistantfile")))
   (is (thrown? FileNotFoundException (make-treebank-parser "nonexistantfile"))))
 
-(deftest parser-test
+(deftest parser-test-normal
   (try
     (let [parser (make-treebank-parser "parser-model/en-parser-chunking.bin")]
       (is (= (parser ["This is a sentence ."])
@@ -42,6 +42,23 @@
                                                   {:tag NN
                                                    :chunk ("sentence")})})}
                                 {:tag . :chunk (".")})})})))
+    (catch FileNotFoundException e
+      (println "Unable to execute treebank-parser tests."
+               "Download the model files to $PROJECT_ROOT/parser-models."))))
+
+(deftest parser-test-with-bad-chars
+  (try
+    (let [parser (make-treebank-parser "parser-model/en-parser-chunking.bin")]
+      (is (= (parser ["2:30 isn't bad"])
+             ["(TOP (NP (CD 2:30) (RB isn't) (JJ bad)))"]))
+      (is (= (make-tree (first (parser ["2:30 isn't bad"])))
+             '{:tag TOP,
+               :chunk ({:tag NP,
+                        :chunk ({:tag CD,
+                                 :chunk ("2:30")}
+                                {:tag RB, :chunk ("isn't")}
+                                {:tag JJ, :chunk ("bad")})})
+               })))
     (catch FileNotFoundException e
       (println "Unable to execute treebank-parser tests."
                "Download the model files to $PROJECT_ROOT/parser-models."))))
