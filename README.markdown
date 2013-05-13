@@ -30,7 +30,7 @@ Usage from Leiningen:
 [clojure-opennlp "0.2.2"] ;; uses Opennlp 1.5.3
 ```
 
-clojure-opennlp works with, clojure 1.2.x, 1.3, 1.4 or 1.5
+clojure-opennlp works with clojure 1.4 or 1.5.x
 
 Basic Example usage (from a REPL):
 ----------------------------------
