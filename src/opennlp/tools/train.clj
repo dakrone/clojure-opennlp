@@ -1,6 +1,6 @@
 (ns opennlp.tools.train
   "This namespace contains tools used to train OpenNLP models"
-  (:use [clojure.java.io :only [output-stream reader]])
+  (:use [clojure.java.io :only [output-stream reader input-stream]])
   (:import (opennlp.tools.util PlainTextByLineStream TrainingParameters)
            (opennlp.tools.util.model BaseModel ModelType)
            (opennlp.tools.dictionary Dictionary)
@@ -45,8 +45,8 @@
    A POSDictionary records which part-of-speech tags a word
    may be assigned"
   [in]
-  (with-open [rdr (reader in)]
-    (POSDictionary/create rdr)))
+  (with-open [is (input-stream in)]
+    (POSDictionary/create is)))
 
 (defn ^ChunkerModel train-treebank-chunker
   "Returns a treebank chunker based on given training file"
