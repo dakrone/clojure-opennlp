@@ -7,4 +7,4 @@ parser-model/en-parser-chunking.bin
 multi-lib/*
 .lein-deps-sum
 target/*
-pom.xml
+pom.xml*

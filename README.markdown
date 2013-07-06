@@ -27,7 +27,7 @@ Usage from Leiningen:
 --------------------
 
 ```clojure
-[clojure-opennlp "0.3.0"] ;; uses Opennlp 1.5.3
+[clojure-opennlp "0.3.1"] ;; uses Opennlp 1.5.3
 ```
 
 clojure-opennlp works with clojure 1.4 or 1.5.x
