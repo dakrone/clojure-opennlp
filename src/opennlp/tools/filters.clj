@@ -20,7 +20,11 @@
     `(defn ~n
        ~docstring
        [elements#]
-       (filter (fn [t#] (re-find ~r (:tag t#))) elements#))))
+       (filter (fn [t#] (if (nil? ~r)
+                          (nil? (:tag t#))
+                          (and (:tag t#)
+                               (re-find ~r (:tag t#)))))
+               elements#))))
 
 ;; It's easy to define your own filters!
 (pos-filter nouns #"^NN")
@@ -32,3 +36,5 @@
 (chunk-filter noun-phrases #"^NP$")
 (chunk-filter adverb-phrases #"^ADVP$")
 (chunk-filter adjective-phrases #"^ADJP$")
+
+(chunk-filter nil-phrases nil)
