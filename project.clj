@@ -2,6 +2,8 @@
   :description "Natural Language Processing with Clojure, library for opennlp."
   :url "http://github.com/dakrone/clojure-opennlp"
   :min-lein-version "2.0.0"
+  :license {:name "Eclipse Public License"
+            :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[org.apache.opennlp/opennlp-tools "1.5.3"]
                  [instaparse "1.2.12"]]
   :profiles {:dev {:dependencies [[org.clojure/clojure "1.5.1"]]}
