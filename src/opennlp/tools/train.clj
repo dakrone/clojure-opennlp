@@ -146,7 +146,8 @@
 (defn ^DoccatModel train-document-categorization
   "Returns a classification model based on a given training file"
   ([in] (train-document-categorization "en" in 1 100))
-  ([lang in] (train-document-categorization "en" in 1 100))
+  ([lang in] (train-document-categorization lang in 1 100))
+  ([lang in cutoff] (train-document-categorization lang in cutoff 100))
   ([lang in cutoff iterations]
      (with-open [rdr (reader in)]
        (DocumentCategorizerME/train lang
