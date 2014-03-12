@@ -173,10 +173,12 @@
 ;; Credit for this function goes to carkh in #clojure
 (defn- tr
   "Transforms treebank string into series of s-like expressions."
-  [ptree]
-  (if (= :E (first ptree))
-    {:tag (symbol (second (second ptree))) :chunk (map tr (drop 2 ptree))}
-    (second ptree)))
+  [ptree & [tag-fn]]
+  (let [t (or tag-fn symbol)]
+    (if (= :E (first ptree))
+      {:tag 
+      (t (second (second ptree))) :chunk (map tr (drop 2 ptree))}
+      (second ptree))))
 
 (defn make-tree
   "Make a tree from the string output of a treebank-parser."
