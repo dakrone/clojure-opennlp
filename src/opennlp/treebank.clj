@@ -177,7 +177,7 @@
   (let [t (or tag-fn symbol)]
     (if (= :E (first ptree))
       {:tag 
-      (t (second (second ptree))) :chunk (map tr (drop 2 ptree))}
+      (t (second (second ptree))) :chunk (map #(tr % tag-fn) (drop 2 ptree))}
       (second ptree))))
 
 (defn make-tree
