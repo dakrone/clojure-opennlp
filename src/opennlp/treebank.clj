@@ -171,19 +171,19 @@
    "E = <'('> T <WS> (T | (E <WS?>)+) <')'> <WS?> ; T = #'[^)\\s]+' ; WS = #'\\s+'"))
 
 ;; Credit for this function goes to carkh in #clojure
-(defn tr
+(defn- tr
   "Transforms treebank string into series of s-like expressions."
   [ptree & [tag-fn]]
   (let [t (or tag-fn symbol)]
     (if (= :E (first ptree))
       {:tag 
-      (t (second (second ptree))) :chunk (map tr (drop 2 ptree))}
+      (t (second (second ptree))) :chunk (map #(tr % tag-fn) (drop 2 ptree))}
       (second ptree))))
 
 (defn make-tree
   "Make a tree from the string output of a treebank-parser."
-  [tree-text]
-  (tr (s-parser tree-text)))
+  [tree-text & [tag-fn]]
+  (tr (s-parser tree-text) tag-fn))
 
 ;;------------------------------------------------------------------------
 ;;------------------------------------------------------------------------
