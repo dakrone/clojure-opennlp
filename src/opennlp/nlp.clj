@@ -100,7 +100,7 @@ start and end positions of the span."
   (fn pos-tagger
     [tokens]
     {:pre [(coll? tokens)]}
-    (let [token-array (into-array tokens)
+    (let [token-array (into-array String tokens)
           tagger (POSTaggerME. model *beam-size* *cache-size*)
           tags (.tag tagger token-array)
           probs (seq (.probs tagger))]

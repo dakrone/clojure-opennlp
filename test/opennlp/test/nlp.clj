@@ -26,6 +26,8 @@
          ["Mr." "Smith" "gave" "a" "car" "to" "his" "son" "on" "Friday" "."])))
 
 (deftest pos-tag-test
+  (is (= (pos-tag (tokenize ""))
+         '()))
   (is (= (pos-tag (tokenize "Mr. Smith gave a car to his son on Friday."))
          '(["Mr." "NNP"] ["Smith" "NNP"] ["gave" "VBD"] ["a" "DT"] ["car" "NN"]
              ["to" "TO"] ["his" "PRP$"] ["son" "NN"] ["on" "IN"]
