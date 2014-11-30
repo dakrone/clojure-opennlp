@@ -27,10 +27,10 @@ Usage from Leiningen:
 --------------------
 
 ```clojure
-[clojure-opennlp "0.3.2"] ;; uses Opennlp 1.5.3
+[clojure-opennlp "0.3.3"] ;; uses Opennlp 1.5.3
 ```
 
-clojure-opennlp works with clojure 1.4 or 1.5.x
+clojure-opennlp works with clojure 1.5+
 
 Basic Example usage (from a REPL):
 ----------------------------------
