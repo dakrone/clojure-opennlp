@@ -5,9 +5,10 @@
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[org.apache.opennlp/opennlp-tools "1.5.3"]
-                 [instaparse "1.3.4"]]
+                 [instaparse "1.4.0"]]
   :profiles {:dev {:dependencies [[org.clojure/clojure "1.6.0"]]
                    :plugins [[lein-marginalia "0.8.0"]]}
-             :1.5 {:dependencies [[org.clojure/clojure "1.5.1"]]}}
-  :aliases {"all" ["with-profile" "dev,1.5:dev"]}
+             :1.5 {:dependencies [[org.clojure/clojure "1.5.1"]]}
+             :1.7 {:dependencies [[org.clojure/clojure "1.7.0-alpha6"]]}}
+  :aliases {"all" ["with-profile" "dev,1.5:dev:dev,1.7"]}
   :jvm-opts ["-Xmx2048m"])
