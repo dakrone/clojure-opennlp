@@ -133,7 +133,7 @@ start and end positions of the span."
            (every? string? tokens)]}
     (let [finder (NameFinderME.
                    model
-                   ^opennlp.tools.namefind.NameContextGenerator feature-generator
+                   ^opennlp.tools.util.featuregen.AdaptiveFeatureGenerator feature-generator
                    (int beam))
           a-tokens (into-array String tokens)
           matches (.find finder a-tokens)

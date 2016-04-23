@@ -144,7 +144,7 @@
   (let [line (strip-parens line)
         results (StringBuffer.)
         parse-num 1]
-    (.show (first (ParserTool/parseLine line parser parse-num)) results)
+    (.show ^Parse (first (ParserTool/parseLine line parser parse-num)) results)
     (str results)))
 
 
@@ -196,8 +196,8 @@
 
 (defn print-child
   "Given a child, parent and start, print out the child parse."
-  [c p start]
-  (let [^Span s (.getSpan c)]
+  [^Parse c ^Parse p start]
+  (let [s (.getSpan c)]
     (if (< @start (.getStart s))
       (print (subs (.getText p) start (.getStart s))))
     (print-parse c)
@@ -225,7 +225,7 @@
 (defn add-mention!
   "Add a single mention to the parse-map with index."
   [^Mention mention index parse-map]
-  (let [mention-parse (.getParse (.getParse mention))]
+  (let [mention-parse (.getParse ^DefaultParse (.getParse mention))]
     (swap! parse-map assoc mention-parse (+ index 1))))
 
 
