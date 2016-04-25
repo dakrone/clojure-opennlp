@@ -6,13 +6,15 @@
         [clojure.java.io :only [input-stream]])
   (:require [clojure.string :as str]
             [instaparse.core :as insta])
-  (:import (opennlp.tools.chunker ChunkerModel ChunkerME)
+  (:import (java.util List)
+           (opennlp.tools.chunker ChunkerModel ChunkerME)
            (opennlp.tools.cmdline.parser ParserTool)
            (opennlp.tools.parser Parse ParserModel
                                  ParserFactory AbstractBottomUpParser)
            (opennlp.tools.parser.chunking Parser)
            (opennlp.tools.coref.mention Mention DefaultParse)
-           (opennlp.tools.coref LinkerMode DefaultLinker)))
+           (opennlp.tools.coref LinkerMode DefaultLinker)
+           (opennlp.tools.util Span)))
 
 ;; Default advance percentage as defined by
 ;; AbstractBottomUpParser.defaultAdvancePercentage
@@ -23,7 +25,7 @@
   [chunks]
   (let [seqnum    (atom 0)
         splitfunc (fn
-                    [item]
+                    [^String item]
                     (if (.startsWith item "B-")
                       (swap! seqnum inc)
                       @seqnum))]
@@ -68,12 +70,12 @@
     (make-treebank-chunker (ChunkerModel. modelstream))))
 
 (defmethod make-treebank-chunker ChunkerModel
-  [model]
+  [^ChunkerModel model]
   (fn treebank-chunker
     [pos-tagged-tokens]
-    (let [chunker (ChunkerME. model *beam-size*)
+    (let [chunker (ChunkerME. model (int *beam-size*))
           [tokens tags] (de-interleave pos-tagged-tokens)
-          chunks  (into [] (seq (.chunk chunker tokens tags)))
+          chunks  (into [] (seq (.chunk chunker ^List tokens ^List tags)))
           sized-chunks (map size-chunk (split-chunks chunks))
           [types sizes] (de-interleave sized-chunks)
           token-chunks (split-with-size sizes tokens)
@@ -142,7 +144,7 @@
   (let [line (strip-parens line)
         results (StringBuffer.)
         parse-num 1]
-    (.show (first (ParserTool/parseLine line parser parse-num)) results)
+    (.show ^Parse (first (ParserTool/parseLine line parser parse-num)) results)
     (str results)))
 
 
@@ -194,7 +196,7 @@
 
 (defn print-child
   "Given a child, parent and start, print out the child parse."
-  [c p start]
+  [^Parse c ^Parse p start]
   (let [s (.getSpan c)]
     (if (< @start (.getStart s))
       (print (subs (.getText p) start (.getStart s))))
@@ -204,8 +206,8 @@
 ;; This is broken, don't use this.
 (defn print-parse
   "Given a parse and the EntityMentions-to-parse map, print out the parse."
-  [p parse-map]
-  (let [start (atom (.getStart (.getSpan p)))
+  [^Parse p parse-map]
+  (let [start (atom (.getStart ^Span (.getSpan p)))
         children (.getChildren p)]
     (if-not (= Parser/TOK_NODE (.getType p))
       (do
@@ -222,8 +224,8 @@
 
 (defn add-mention!
   "Add a single mention to the parse-map with index."
-  [mention index parse-map]
-  (let [mention-parse (.getParse (.getParse mention))]
+  [^Mention mention index parse-map]
+  (let [mention-parse (.getParse ^DefaultParse (.getParse mention))]
     (swap! parse-map assoc mention-parse (+ index 1))))
 
 
@@ -256,17 +258,17 @@
 
 
 (defn coref-extent
-  [extent p index]
+  [^Mention extent ^Parse p index]
   (if (nil? extent)
-    (let [snp (Parse. (.getText p) (.getSpan extent) "NML" 1.0 0)]
+    (let [snp (Parse. (.getText p) (.getSpan extent) "NML" (double 1.0) (int 0))]
       (.insert p snp) ; FIXME
       (.setParse extent (DefaultParse. snp index)))
     nil))
 
 
 (defn coref-sentence
-  [sentence parses index tblinker]
-  (let [p (Parse/parseParse sentence)
+  [^String sentence parses index ^DefaultLinker tblinker]
+  (let [^Parse p (Parse/parseParse sentence)
         extents (.getMentions (.getMentionFinder tblinker)
                               (DefaultParse. p index))]
     (swap! parses #(assoc % (count %) p))
@@ -278,12 +280,12 @@
 (defn parse-extent
   "Given an coref extent, a treebank linker, a parses atom and the index of
   the extent, return a tuple of the coresponding parse and discourse entities"
-  [extent tblinker parses pindex]
+  [extent ^DefaultLinker tblinker parses pindex]
   (println :ext (bean extent))
   (let [e (filter #(not (nil? (:parse (bean %)))) extent)
         ;;_ (println :e e)
         mention-array (into-array Mention e)
-        entities (.getEntities tblinker mention-array)]
+        entities (.getEntities tblinker #^"[Lopennlp.tools.coref.mention.Mention;" mention-array)]
     (println :entities (seq entities) (bean (first entities)))
     [(get @parses pindex) (seq entities)]))
 

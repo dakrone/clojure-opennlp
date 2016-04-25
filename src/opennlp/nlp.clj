@@ -20,24 +20,31 @@
 
 ;; OpenNLP property for pos-tagging. Meant to be rebound before
 ;; calling the tagging creators
-(def ^:dynamic *beam-size* 3)
+(def ^:dynamic *beam-size* (int 3))
 
 ;; Caching to use for pos-tagging
-(def ^:dynamic *cache-size* 1024)
+(def ^:dynamic *cache-size* (int 1024))
 
 (defn- opennlp-span-strings
   "Takes a collection of spans and the data they refer to. Returns a list of
   substrings corresponding to spans."
   [span-col data]
   (if (seq span-col)
-    (seq (Span/spansToStrings (into-array span-col)
-                              (if (string? data) data (into-array data))))
+    (if (string? data)
+      (seq
+        (Span/spansToStrings
+          #^"[Lopennlp.tools.util.Span;" (into-array span-col)
+          ^String data))
+      (seq
+        (Span/spansToStrings
+          #^"[Lopennlp.tools.util.Span;" (into-array span-col)
+          #^"[Ljava.lang.String;" (into-array data))))
     []))
 
 (defn- to-native-span
   "Take an OpenNLP span object and return a pair [i j] where i and j are the
 start and end positions of the span."
-  [span]
+  [^Span span]
   (nspan/make-span (.getStart span) (.getEnd span) (.getType span)))
 
 (defmulti make-sentence-detector
@@ -96,13 +103,13 @@ start and end positions of the span."
     (make-pos-tagger (POSModel. model-stream))))
 
 (defmethod make-pos-tagger POSModel
-  [model]
+  [^POSModel model]
   (fn pos-tagger
     [tokens]
     {:pre [(coll? tokens)]}
     (let [token-array (into-array String tokens)
-          tagger (POSTaggerME. model *beam-size* *cache-size*)
-          tags (.tag tagger token-array)
+          tagger (POSTaggerME. model ^int *beam-size* ^int *cache-size*)
+          tags (.tag tagger #^"[Ljava.lang.String;" token-array)
           probs (seq (.probs tagger))]
       (with-meta
         (map vector tokens tags)
@@ -119,17 +126,20 @@ start and end positions of the span."
     (make-name-finder (TokenNameFinderModel. model-stream))))
 
 (defmethod make-name-finder TokenNameFinderModel
-  [model & {:keys [feature-generator beam] :or {beam *beam-size*}}]
+  [^TokenNameFinderModel model & {:keys [feature-generator beam] :or {beam *beam-size*}}]
   (fn name-finder
     [tokens & contexts]
     {:pre [(seq tokens)
            (every? string? tokens)]}
-    (let [finder (NameFinderME. model feature-generator beam)
+    (let [finder (NameFinderME.
+                   model
+                   ^opennlp.tools.util.featuregen.AdaptiveFeatureGenerator feature-generator
+                   (int beam))
           a-tokens (into-array String tokens)
           matches (.find finder a-tokens)
           probs (seq (.probs finder))]
       (with-meta
-        (distinct (Span/spansToStrings matches a-tokens))
+        (distinct (Span/spansToStrings #^"[Lopennlp.tools.util.Span;" matches #^"[Ljava.lang.String;" a-tokens))
         {:probabilities probs
          :spans (map to-native-span matches)}))))
 
@@ -228,7 +238,7 @@ start and end positions of the span."
     {:pre [(coll? tokens)
            (every? string? tokens)]}
     (-> (DictionaryDetokenizer. model)
-        (TokenSample. (into-array String tokens))
+        (TokenSample. #^"[Ljava.lang.String;" (into-array String tokens))
         (.getText))))
 
 (defn parse-categories [outcomes-string outcomes]
@@ -248,12 +258,12 @@ start and end positions of the span."
     (make-document-categorizer (DoccatModel. model-stream))))
 
 (defmethod make-document-categorizer DoccatModel
-  [model]
+  [^DoccatModel model]
   (fn document-categorizer
     [text]
     {:pre [(string? text)]}
     (let [categorizer (DocumentCategorizerME. model)
-          outcomes (.categorize categorizer text)]
+          outcomes (.categorize categorizer ^String text)]
       (with-meta
         {:best-category (.getBestCategory categorizer outcomes)}
         {:probabilities (parse-categories
