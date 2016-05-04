@@ -6,8 +6,8 @@ library of functions. Not all functions are implemented yet.
 
 Additional information/documentation:
 
-- [Natural Language Processing in Clojure with clojure-opennlp](http://writequit.org/blog/?p=365)
-- [Context searching using Clojure-OpenNLP](http://writequit.org/blog/?p=351)
+- [Natural Language Processing in Clojure with clojure-opennlp](http://writequit.org/blog/index.html%3Fp=365.html)
+- [Context searching using Clojure-OpenNLP](http://writequit.org/blog/index.html%3Fp=351.html)
 
 Read the source from Marginalia
 
