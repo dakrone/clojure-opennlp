@@ -18,13 +18,6 @@
                            TokenizerModel)
    (opennlp.tools.util Span)))
 
-;; OpenNLP property for pos-tagging. Meant to be rebound before
-;; calling the tagging creators
-(def ^:dynamic *beam-size* (int 3))
-
-;; Caching to use for pos-tagging
-(def ^:dynamic *cache-size* (int 1024))
-
 (defn- opennlp-span-strings
   "Takes a collection of spans and the data they refer to. Returns a list of
   substrings corresponding to spans."
@@ -108,7 +101,7 @@ start and end positions of the span."
     [tokens]
     {:pre [(coll? tokens)]}
     (let [token-array (into-array String tokens)
-          tagger (POSTaggerME. model ^int *beam-size* ^int *cache-size*)
+          tagger (POSTaggerME. model)
           tags (.tag tagger #^"[Ljava.lang.String;" token-array)
           probs (seq (.probs tagger))]
       (with-meta
@@ -126,15 +119,12 @@ start and end positions of the span."
     (make-name-finder (TokenNameFinderModel. model-stream))))
 
 (defmethod make-name-finder TokenNameFinderModel
-  [^TokenNameFinderModel model & {:keys [feature-generator beam] :or {beam *beam-size*}}]
+  [^TokenNameFinderModel model]
   (fn name-finder
     [tokens & contexts]
     {:pre [(seq tokens)
            (every? string? tokens)]}
-    (let [finder (NameFinderME.
-                   model
-                   ^opennlp.tools.util.featuregen.AdaptiveFeatureGenerator feature-generator
-                   (int beam))
+    (let [finder (NameFinderME. model)
           a-tokens (into-array String tokens)
           matches (.find finder a-tokens)
           probs (seq (.probs finder))]
