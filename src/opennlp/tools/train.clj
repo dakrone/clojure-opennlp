@@ -1,6 +1,6 @@
 (ns opennlp.tools.train
   "This namespace contains tools used to train OpenNLP models"
-  (:use [clojure.java.io :only [output-stream reader input-stream]])
+  (:use [clojure.java.io :only [reader file input-stream output-stream]])
   (:import (opennlp.tools.util PlainTextByLineStream 
                                TrainingParameters
                                MarkableFileInputStreamFactory)
@@ -15,8 +15,7 @@
                                      SentenceModel
                                      SentenceSampleStream
                                      SentenceDetectorFactory)
-           (opennlp.tools.namefind NameFinderEventStream
-                                   NameSampleDataStream
+           (opennlp.tools.namefind NameSampleDataStream
                                    NameFinderME
                                    TokenNameFinderModel
                                    TokenNameFinderFactory
@@ -69,11 +68,11 @@
       lang
       (ChunkSampleStream.
         (PlainTextByLineStream. 
-          (MarkableFileInputStreamFactory. in) "UTF-8"))
-      (ChunkerFactory.)
+          (MarkableFileInputStreamFactory. (file in)) "UTF-8"))
       (doto (TrainingParameters.)
         (.put TrainingParameters/ITERATIONS_PARAM (Integer/toString iter))
-        (.put TrainingParameters/CUTOFF_PARAM     (Integer/toString cut))))))
+        (.put TrainingParameters/CUTOFF_PARAM     (Integer/toString cut)))
+      (ChunkerFactory.))))
 
 (defn ^ParserModel train-treebank-parser
   "Returns a treebank parser based a training file and a set of head rules"
@@ -85,7 +84,7 @@
         lang
         (ParseSampleStream.
          (PlainTextByLineStream.
-          (MarkableFileInputStreamFactory. in) "UTF-8"))
+          (MarkableFileInputStreamFactory. (file in)) "UTF-8"))
         (HeadRules. rdr) 
         (doto (TrainingParameters.)
           (.put TrainingParameters/ITERATIONS_PARAM (Integer/toString iter))
@@ -110,7 +109,7 @@
       entity-type
       (NameSampleDataStream.
         (PlainTextByLineStream.
-          (MarkableFileInputStreamFactory. in) "UTF-8"))
+          (MarkableFileInputStreamFactory. (file in)) "UTF-8"))
       (doto (TrainingParameters.)
         (.put TrainingParameters/ALGORITHM_PARAM classifier)
         (.put TrainingParameters/ITERATIONS_PARAM (Integer/toString iter))
@@ -126,7 +125,7 @@
     (TokenizerME/train
       (TokenSampleStream.
         (PlainTextByLineStream.
-          (MarkableFileInputStreamFactory. in) "UTF-8"))
+          (MarkableFileInputStreamFactory. (file in)) "UTF-8"))
       (TokenizerFactory. 
         lang nil false nil)
       (doto (TrainingParameters.)
@@ -143,11 +142,11 @@
       lang
       (WordTagSampleStream. 
         (PlainTextByLineStream.
-          (MarkableFileInputStreamFactory. in) "UTF-8"))
-      (POSTaggerFactory. nil tagdict)
+          (MarkableFileInputStreamFactory. (file in)) "UTF-8"))
       (doto (TrainingParameters.)
         (.put TrainingParameters/ITERATIONS_PARAM (Integer/toString iter))
-        (.put TrainingParameters/CUTOFF_PARAM     (Integer/toString cut))))))
+        (.put TrainingParameters/CUTOFF_PARAM     (Integer/toString cut)))
+      (POSTaggerFactory. nil tagdict))))
 
 (defn ^SentenceModel train-sentence-detector
   "Returns a sentence model based on a given training file"
@@ -157,7 +156,7 @@
       lang
       (SentenceSampleStream. 
         (PlainTextByLineStream.
-          (MarkableFileInputStreamFactory. in) "UTF-8"))
+          (MarkableFileInputStreamFactory. (file in)) "UTF-8"))
       (SentenceDetectorFactory. lang true nil nil)
       (TrainingParameters.))))
 
@@ -171,7 +170,7 @@
          lang
          (DocumentSampleStream.
            (PlainTextByLineStream.
-             (MarkableFileInputStreamFactory. in) "UTF-8"))
+             (MarkableFileInputStreamFactory. (file in)) "UTF-8"))
          (doto (TrainingParameters.)
            (.put TrainingParameters/ITERATIONS_PARAM (Integer/toString iter))
            (.put TrainingParameters/CUTOFF_PARAM     (Integer/toString cut)))

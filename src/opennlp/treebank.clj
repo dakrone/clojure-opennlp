@@ -74,7 +74,9 @@
     [pos-tagged-tokens]
     (let [chunker (ChunkerME. model)
           [tokens tags] (de-interleave pos-tagged-tokens)
-          chunks  (into [] (seq (.chunk chunker ^List tokens ^List tags)))
+          chunks  (into [] (seq (.chunk chunker 
+                                  (into-array ^List tokens) 
+                                  (into-array ^List tags))))
           sized-chunks (map size-chunk (split-chunks chunks))
           [types sizes] (de-interleave sized-chunks)
           token-chunks (split-with-size sizes tokens)
