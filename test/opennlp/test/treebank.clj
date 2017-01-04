@@ -28,7 +28,7 @@
     (let [parser (make-treebank-parser "parser-model/en-parser-chunking.bin")]
       (is (= (parser ["This is a sentence ."])
              [(str "(TOP (S (NP (DT This)) (VP (VBZ is) (NP (DT a)"
-                   " (NN sentence))) (. .)))")]))
+                   " (NN sentence))) (. .) ))")]))
       (is (= (make-tree (first (parser ["This is a sentence ."])))
              '{:tag TOP
                :chunk (
@@ -50,7 +50,7 @@
   (try
     (let [parser (make-treebank-parser "parser-model/en-parser-chunking.bin")]
       (is (= (parser ["2:30 isn't bad"])
-             ["(TOP (NP (CD 2:30) (RB isn't) (JJ bad)))"]))
+             ["(TOP (NP (CD 2:30) (RB isn't) (JJ bad)) )"]))
       (is (= (make-tree (first (parser ["2:30 isn't bad"])))
              '{:tag TOP,
                :chunk ({:tag NP,
