@@ -63,6 +63,12 @@ start and end positions of the span."
         {:probabilities probs
          :spans         (map to-native-span spans)}))))
 
+(defn make-sentence-detector-from-stream
+  "Return a function for taking tokens and recombining them into a sentence
+  based on a given model stream."
+  [stream]
+  (make-sentence-detector (SentenceModel. stream)))
+
 (defmulti make-tokenizer
   "Return a function for tokenizing a sentence based on a given model file."
   class)
@@ -86,6 +92,11 @@ start and end positions of the span."
         {:probabilities probs
          :spans         (map to-native-span spans)}))))
 
+(defn make-tokenizer-from-stream
+  "Return a function for toknizeing a sentence based on a given model stream."
+  [stream]
+  (make-tokenizer (TokenizerModel. stream)))
+
 (defmulti make-pos-tagger
   "Return a function for tagging tokens based on a givel model file."
   class)
@@ -107,6 +118,11 @@ start and end positions of the span."
       (with-meta
         (map vector tokens tags)
         {:probabilities probs}))))
+
+(defn make-pos-tagger-from-stream
+  "Return a function for tagging tokens based on a given model stream."
+  [stream]
+  (make-pos-tagger (POSModel. stream)))
 
 (defmulti make-name-finder
   "Return a function for finding names from tokens based on a given
@@ -133,6 +149,12 @@ start and end positions of the span."
         {:probabilities probs
          :spans (map to-native-span matches)}))))
 
+(defn make-name-finder-from-stream
+  "Return a function for finding names from tokens based on a given
+   model stream"
+  [stream]
+  (make-name-finder (TokenNameFinderModel. stream)))
+
 
 (defmulti make-detokenizer
   "Return a function for taking tokens and recombining them into a sentence
@@ -143,6 +165,12 @@ start and end positions of the span."
   [modelfile]
   (with-open [model-stream (input-stream modelfile)]
     (make-detokenizer (DetokenizationDictionary. model-stream))))
+
+(defn make-detokenizer-from-stream
+  "Return a function for taking tokens and recombining them into a sentence
+  based on a given model stream."
+  [stream]
+  (make-detokenizer (DetokenizationDictionary. stream)))
 
 ;; TODO: clean this up, recursion is a smell
 ;; TODO: remove debug printlns once I'm satisfied
