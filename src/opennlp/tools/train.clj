@@ -1,31 +1,42 @@
 (ns opennlp.tools.train
   "This namespace contains tools used to train OpenNLP models"
-  (:use [clojure.java.io :only [output-stream reader input-stream]])
-  (:import (opennlp.tools.util PlainTextByLineStream TrainingParameters)
-           (opennlp.tools.util.model BaseModel ModelType)
+  (:use [clojure.java.io :only [reader file input-stream output-stream]])
+  (:import (opennlp.tools.util PlainTextByLineStream 
+                               TrainingParameters
+                               MarkableFileInputStreamFactory)
+           (opennlp.tools.util.model BaseModel 
+                                     ModelType)
            (opennlp.tools.dictionary Dictionary)
            (opennlp.tools.tokenize TokenizerME
                                    TokenizerModel
-                                   TokenSampleStream)
+                                   TokenSampleStream
+                                   TokenizerFactory)
            (opennlp.tools.sentdetect SentenceDetectorME
                                      SentenceModel
-                                     SentenceSampleStream)
-           (opennlp.tools.namefind NameFinderEventStream
-                                   NameSampleDataStream
+                                     SentenceSampleStream
+                                     SentenceDetectorFactory)
+           (opennlp.tools.namefind NameSampleDataStream
                                    NameFinderME
-                                   TokenNameFinderModel)
-           (opennlp.tools.chunker ChunkerME ChunkSampleStream ChunkerModel)
-           (opennlp.tools.parser ParseSampleStream ParserModel)
+                                   TokenNameFinderModel
+                                   TokenNameFinderFactory
+                                   BioCodec)
+           (opennlp.tools.chunker ChunkerME 
+                                  ChunkSampleStream 
+                                  ChunkerModel
+                                  ChunkerFactory)
+           (opennlp.tools.parser ParseSampleStream 
+                                 ParserModel)
            (opennlp.tools.parser.lang.en HeadRules)
            (opennlp.tools.parser.chunking Parser)
            (opennlp.tools.postag POSTaggerME
                                  POSModel
                                  POSDictionary
                                  WordTagSampleStream
-                                 POSContextGenerator)
+                                 POSTaggerFactory)
            (opennlp.tools.doccat DoccatModel
                                  DocumentCategorizerME
-                                 DocumentSampleStream)))
+                                 DocumentSampleStream
+                                 DoccatFactory)))
 
 (defn write-model
   "Write a model to disk"
@@ -53,26 +64,31 @@
   ([in] (train-treebank-chunker "en" in))
   ([lang in] (train-treebank-chunker lang in 100 5))
   ([lang in iter cut]
-     (with-open [rdr (reader in)]
-       (ChunkerME/train
-        lang
-        (ChunkSampleStream.
-         (PlainTextByLineStream. rdr))
-        cut iter))))
+    (ChunkerME/train
+      lang
+      (ChunkSampleStream.
+        (PlainTextByLineStream. 
+          (MarkableFileInputStreamFactory. (file in)) "UTF-8"))
+      (doto (TrainingParameters.)
+        (.put TrainingParameters/ITERATIONS_PARAM (Integer/toString iter))
+        (.put TrainingParameters/CUTOFF_PARAM     (Integer/toString cut)))
+      (ChunkerFactory.))))
 
 (defn ^ParserModel train-treebank-parser
   "Returns a treebank parser based a training file and a set of head rules"
   ([in headrules] (train-treebank-parser "en" in headrules))
   ([lang in headrules] (train-treebank-parser lang in headrules 100 5))
   ([lang in headrules iter cut]
-     (with-open [rdr (reader headrules)
-                 fis (java.io.FileInputStream. in)]
+     (with-open [rdr (reader headrules)]
        (Parser/train
         lang
         (ParseSampleStream.
          (PlainTextByLineStream.
-          (.getChannel fis) "UTF-8"))
-        (HeadRules. rdr) iter cut))))
+          (MarkableFileInputStreamFactory. (file in)) "UTF-8"))
+        (HeadRules. rdr) 
+        (doto (TrainingParameters.)
+          (.put TrainingParameters/ITERATIONS_PARAM (Integer/toString iter))
+          (.put TrainingParameters/CUTOFF_PARAM     (Integer/toString cut)))))))
 
 
 (defn ^TokenNameFinderModel train-name-finder
@@ -87,33 +103,34 @@
   ([lang in iter cut & {:keys [entity-type feature-gen classifier]
                         ;;MUST be either "MAXENT" or "PERCEPTRON"
                         :or  {entity-type "default" classifier "MAXENT"}}]
-     (with-open [rdr (reader in)]
-       (NameFinderME/train
-        lang
-        entity-type
-        (->> rdr
-             (PlainTextByLineStream.)
-             (NameSampleDataStream.))
-        (doto (TrainingParameters.)
-          (.put TrainingParameters/ALGORITHM_PARAM classifier)
-          (.put TrainingParameters/ITERATIONS_PARAM (Integer/toString iter))
-          (.put TrainingParameters/CUTOFF_PARAM     (Integer/toString cut)))
-        feature-gen {}))))
+    
+    (NameFinderME/train
+      lang
+      entity-type
+      (NameSampleDataStream.
+        (PlainTextByLineStream.
+          (MarkableFileInputStreamFactory. (file in)) "UTF-8"))
+      (doto (TrainingParameters.)
+        (.put TrainingParameters/ALGORITHM_PARAM classifier)
+        (.put TrainingParameters/ITERATIONS_PARAM (Integer/toString iter))
+        (.put TrainingParameters/CUTOFF_PARAM     (Integer/toString cut)))
+      (TokenNameFinderFactory. 
+        feature-gen {} (BioCodec.)))))
 
 (defn ^TokenizerModel train-tokenizer
   "Returns a tokenizer based on given training file"
   ([in] (train-tokenizer "en" in))
   ([lang in] (train-tokenizer lang in 100 5))
   ([lang in iter cut]
-     (with-open [rdr (reader in)]
-       (TokenizerME/train
-        lang
-        (->> rdr
-             (PlainTextByLineStream.)
-             (TokenSampleStream.))
-        false
-        cut
-        iter))))
+    (TokenizerME/train
+      (TokenSampleStream.
+        (PlainTextByLineStream.
+          (MarkableFileInputStreamFactory. (file in)) "UTF-8"))
+      (TokenizerFactory. 
+        lang nil false nil)
+      (doto (TrainingParameters.)
+        (.put TrainingParameters/ITERATIONS_PARAM (Integer/toString iter))
+        (.put TrainingParameters/CUTOFF_PARAM     (Integer/toString cut))))))
 
 (defn ^POSModel train-pos-tagger
   "Returns a pos-tagger based on given training file"
@@ -121,37 +138,41 @@
   ([lang in] (train-pos-tagger lang in nil))
   ([lang in tagdict] (train-pos-tagger lang in tagdict 100 5))
   ([lang in tagdict iter cut]
-     (with-open [rdr (reader in)]
-       (POSTaggerME/train
-        lang
-        (WordTagSampleStream. rdr)
-        (ModelType/MAXENT)
-        tagdict
-        nil
-        cut
-        iter))))
+    (POSTaggerME/train
+      lang
+      (WordTagSampleStream. 
+        (PlainTextByLineStream.
+          (MarkableFileInputStreamFactory. (file in)) "UTF-8"))
+      (doto (TrainingParameters.)
+        (.put TrainingParameters/ITERATIONS_PARAM (Integer/toString iter))
+        (.put TrainingParameters/CUTOFF_PARAM     (Integer/toString cut)))
+      (POSTaggerFactory. nil tagdict))))
 
 (defn ^SentenceModel train-sentence-detector
   "Returns a sentence model based on a given training file"
   ([in] (train-sentence-detector "en" in))
   ([lang in]
-     (with-open [rdr (reader in)]
-       (SentenceDetectorME/train lang
-                                 (->> rdr
-                                      (PlainTextByLineStream.)
-                                      (SentenceSampleStream.))
-                                 true
-                                 nil))))
+    (SentenceDetectorME/train 
+      lang
+      (SentenceSampleStream. 
+        (PlainTextByLineStream.
+          (MarkableFileInputStreamFactory. (file in)) "UTF-8"))
+      (SentenceDetectorFactory. lang true nil nil)
+      (TrainingParameters.))))
 
 (defn ^DoccatModel train-document-categorization
   "Returns a classification model based on a given training file"
   ([in] (train-document-categorization "en" in 1 100))
   ([lang in] (train-document-categorization lang in 1 100))
-  ([lang in cutoff] (train-document-categorization lang in cutoff 100))
-  ([lang in cutoff iterations]
-     (with-open [rdr (reader in)]
-       (DocumentCategorizerME/train lang
-                                    (->> rdr
-                                         (PlainTextByLineStream.)
-                                         (DocumentSampleStream.))
-                                    cutoff iterations))))
+  ([lang in cut] (train-document-categorization lang in cut 100))
+  ([lang in cut iter]
+       (DocumentCategorizerME/train 
+         lang
+         (DocumentSampleStream.
+           (PlainTextByLineStream.
+             (MarkableFileInputStreamFactory. (file in)) "UTF-8"))
+         (doto (TrainingParameters.)
+           (.put TrainingParameters/ITERATIONS_PARAM (Integer/toString iter))
+           (.put TrainingParameters/CUTOFF_PARAM     (Integer/toString cut)))
+         (DoccatFactory.))))
+                                   

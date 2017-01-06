@@ -65,7 +65,7 @@
         parser (tb/make-treebank-parser tb-parser-model)]
     (is (= (parser ["This is a sentence ."])
            [(str "(INC (NP (DT This)) (NP (DT is)) (NP (DT a))"
-                 " (DT sentence) (. .))")]))))
+                 " (DT sentence) (. .) )")]))))
 
 (deftest write-out-training-model-test
   (let [token-model (train/train-tokenizer "training/tokenizer.train")

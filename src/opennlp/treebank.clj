@@ -2,8 +2,7 @@
              This includes treebank chuncking, parsing and linking (coref)."
        :author "Lee Hinman"}
   opennlp.treebank
-  (:use [opennlp.nlp :only [*beam-size*]]
-        [clojure.java.io :only [input-stream]])
+  (:use [clojure.java.io :only [input-stream]])
   (:require [clojure.string :as str]
             [instaparse.core :as insta])
   (:import (java.util List)
@@ -12,13 +11,13 @@
            (opennlp.tools.parser Parse ParserModel
                                  ParserFactory AbstractBottomUpParser)
            (opennlp.tools.parser.chunking Parser)
-           (opennlp.tools.coref.mention Mention DefaultParse)
-           (opennlp.tools.coref LinkerMode DefaultLinker)
            (opennlp.tools.util Span)))
 
 ;; Default advance percentage as defined by
 ;; AbstractBottomUpParser.defaultAdvancePercentage
 (def ^:dynamic *advance-percentage* 0.95)
+
+(def ^:dynamic *beam-size* 3)
 
 (defn- split-chunks
   "Partition a sequence of treebank chunks by their phrases."
@@ -73,9 +72,11 @@
   [^ChunkerModel model]
   (fn treebank-chunker
     [pos-tagged-tokens]
-    (let [chunker (ChunkerME. model (int *beam-size*))
+    (let [chunker (ChunkerME. model)
           [tokens tags] (de-interleave pos-tagged-tokens)
-          chunks  (into [] (seq (.chunk chunker ^List tokens ^List tags)))
+          chunks  (into [] (seq (.chunk chunker 
+                                  (into-array ^List tokens) 
+                                  (into-array ^List tags))))
           sized-chunks (map size-chunk (split-chunks chunks))
           [types sizes] (de-interleave sized-chunks)
           token-chunks (split-with-size sizes tokens)
@@ -187,138 +188,3 @@
   [tree-text & [tag-fn]]
   (tr (s-parser tree-text) tag-fn))
 
-;;------------------------------------------------------------------------
-;;------------------------------------------------------------------------
-;; Treebank Linking
-;; WIP, do not use yet.
-
-(declare print-parse)
-
-(defn print-child
-  "Given a child, parent and start, print out the child parse."
-  [^Parse c ^Parse p start]
-  (let [s (.getSpan c)]
-    (if (< @start (.getStart s))
-      (print (subs (.getText p) start (.getStart s))))
-    (print-parse c)
-    (reset! start (.getEnd s))))
-
-;; This is broken, don't use this.
-(defn print-parse
-  "Given a parse and the EntityMentions-to-parse map, print out the parse."
-  [^Parse p parse-map]
-  (let [start (atom (.getStart ^Span (.getSpan p)))
-        children (.getChildren p)]
-    (if-not (= Parser/TOK_NODE (.getType p))
-      (do
-        (print (str "(" (.getType p)))
-        (if (contains? parse-map p)
-          (print (str "#" (get parse-map p))))
-        (print " ")))
-    (map #(print-child % p start) children)
-    ;; FIXME: don't use substring
-    (print (subs (.getText p) @start (.getEnd (.getSpan p))))
-    (if-not (= Parser/TOK_NODE (.getType p))
-      (print ")"))))
-
-
-(defn add-mention!
-  "Add a single mention to the parse-map with index."
-  [^Mention mention index parse-map]
-  (let [mention-parse (.getParse ^DefaultParse (.getParse mention))]
-    (swap! parse-map assoc mention-parse (+ index 1))))
-
-
-(defn add-mentions!
-  "Add mentions to the parse map."
-  [entity index parse-map]
-  (dorun (map #(add-mention! % index parse-map)
-              (iterator-seq (.getMentions entity)))))
-
-
-(defn add-entities
-  "Given a list of entities, return a map of parses to entities."
-  [entities]
-  (let [parse-map (atom {})
-        i-entities (map vector (iterate inc 0) entities)]
-    (dorun (map (fn [[index entity]] (add-mentions! entity index parse-map))
-                i-entities))
-    @parse-map))
-
-
-;; This is intended to actually be called.
-(defn show-parses
-  "Given a list of parses and entities, print them out."
-  [parse entities]
-  (let [parse-map (add-entities entities)]
-    (println "parse-map:" parse-map)
-    (println "parse:" parse)
-    (print-parse parse parse-map)
-    parse-map))
-
-
-(defn coref-extent
-  [^Mention extent ^Parse p index]
-  (if (nil? extent)
-    (let [snp (Parse. (.getText p) (.getSpan extent) "NML" (double 1.0) (int 0))]
-      (.insert p snp) ; FIXME
-      (.setParse extent (DefaultParse. snp index)))
-    nil))
-
-
-(defn coref-sentence
-  [^String sentence parses index ^DefaultLinker tblinker]
-  (let [^Parse p (Parse/parseParse sentence)
-        extents (.getMentions (.getMentionFinder tblinker)
-                              (DefaultParse. p index))]
-    (swap! parses #(assoc % (count %) p))
-    (map #(coref-extent % p index) extents)
-    ;;(println :es (map #(println (bean %)) extents))
-    (map bean extents)))
-
-;; TODO: fix this function, currently doesn't parse correctly
-(defn parse-extent
-  "Given an coref extent, a treebank linker, a parses atom and the index of
-  the extent, return a tuple of the coresponding parse and discourse entities"
-  [extent ^DefaultLinker tblinker parses pindex]
-  (println :ext (bean extent))
-  (let [e (filter #(not (nil? (:parse (bean %)))) extent)
-        ;;_ (println :e e)
-        mention-array (into-array Mention e)
-        entities (.getEntities tblinker #^"[Lopennlp.tools.coref.mention.Mention;" mention-array)]
-    (println :entities (seq entities) (bean (first entities)))
-    [(get @parses pindex) (seq entities)]))
-
-;; Second Attempt
-(defn make-treebank-linker
-  "Make a TreebankLinker, given a model directory."
-  [modeldir]
-  (let [tblinker (DefaultLinker. modeldir LinkerMode/TEST)]
-    (fn treebank-linker
-      [sentences]
-      (let [parses (atom [])
-            indexed-sentences (map vector (iterate inc 0) sentences)
-            extents (doall (map #(coref-sentence (second %) parses
-                                                 (first %) tblinker)
-                                indexed-sentences))
-            i-extents (map vector (iterate inc 0) extents)]
-        #_(map #(parse-extent %1 tblinker parses %2) i-extents)
-        (doall (map println extents))
-        extents))))
-
-;; this is used for the treebank linking, it is a system property for
-;; the location of the wordnet installation 'dict' directory
-;; see: http://wordnet.princeton.edu/wordnet/
-(defn set-wordnet-location!
-  "Set the location of the WordNet 'dict' directory"
-  [location]
-  (System/setProperty "WNSEARCHDIR" location))
-
-;;  What I really need is a good way to express this in Clojure's datastructures.
-(comment
-  (def tbl (make-treebank-linker "coref"))
-  (def treebank-parser
-    (make-treebank-parser "parser-model/en-parser-chunking.bin"))
-  (def s (treebank-parser ["Mary said she liked me ."]))
-  (tbl s)
-  )
