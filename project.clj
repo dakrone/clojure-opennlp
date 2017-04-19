@@ -4,8 +4,8 @@
   :min-lein-version "2.0.0"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
-  :dependencies [[org.apache.opennlp/opennlp-tools "1.7.0"]
-                 [instaparse "1.4.1"]]
+  :dependencies [[org.apache.opennlp/opennlp-tools "1.7.2"]
+                 [instaparse "1.4.5"]]
   :profiles {:dev {:dependencies [[org.clojure/clojure "1.6.0"]]
                    :plugins [[lein-marginalia "0.8.0"]]}
              :1.5 {:dependencies [[org.clojure/clojure "1.5.1"]]}
