@@ -1,5 +1,4 @@
 language: clojure
 jdk: oraclejdk8
-lein: lein2
-script: lein2 all test
+script: lein all test
 
