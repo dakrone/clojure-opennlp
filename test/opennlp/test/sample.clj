@@ -11,11 +11,11 @@
                   (f))))
 
 (deftest test-samples-round-trip
-  (let [d (DocumentSample. "foo" "bar")]
+  (let [d (DocumentSample. "foo" (into-array ["bar"]))]
     (is (= d (read-string (pr-str d))))))
 
 (deftest test-clojure-document-sample-stream
-  (let [d (DocumentSample. "foo" "bar")
+  (let [d (DocumentSample. "foo" (into-array ["bar"]))
         x (java.io.ByteArrayInputStream.
            (.getBytes
             (with-out-str

@@ -7,3 +7,4 @@ multi-lib/*
 .lein-deps-sum
 target/*
 pom.xml*
+.lein-repl-history

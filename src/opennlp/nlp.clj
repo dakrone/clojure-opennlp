@@ -250,10 +250,9 @@ start and end positions of the span."
 (defmethod make-document-categorizer DoccatModel
   [^DoccatModel model]
   (fn document-categorizer
-    [text]
-    {:pre [(string? text)]}
+    [tokens]
     (let [categorizer (DocumentCategorizerME. model)
-          outcomes (.categorize categorizer ^String text)]
+          outcomes (.categorize categorizer (into-array tokens))]
       (with-meta
         {:best-category (.getBestCategory categorizer outcomes)}
         {:probabilities (parse-categories
