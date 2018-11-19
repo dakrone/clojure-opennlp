@@ -8,6 +8,7 @@
 (def pos-tag (make-pos-tagger "models/en-pos-maxent.bin"))
 (def name-find (make-name-finder "models/namefind/en-ner-person.bin"))
 (def detokenize (make-detokenizer "models/english-detokenizer.xml"))
+(def lemmatize (make-lemmatizer "models/en-lemmatizer.dict"))
 
 (deftest sentence-split-test
   (is (= (get-sentences (str "First sentence. Second sentence? Here is another"
@@ -65,6 +66,11 @@
          (str "I know what \"it\" means well enough, when"
               " I find a thing, said the Duck: its"
               " generally a frog or a worm."))))
+
+(deftest lemmatize-test
+  (is (= (lemmatize (tokenize "The suggestions started early.") (pos-tag (tokenize "The suggestions started early.")))
+         [["the"] ["suggestion"] ["start"] ["early"] ["O"]])))
+
 
 (deftest precondition-test
   (is (thrown? java.lang.AssertionError (get-sentences 1)))

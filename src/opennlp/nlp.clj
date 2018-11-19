@@ -16,6 +16,8 @@
                            TokenSample
                            TokenizerME
                            TokenizerModel)
+   (opennlp.tools.lemmatizer DictionaryLemmatizer
+                             LemmatizerME)
    (opennlp.tools.util Span)))
 
 (defn- opennlp-span-strings
@@ -25,13 +27,13 @@
   (if (seq span-col)
     (if (string? data)
       (seq
-        (Span/spansToStrings
-          #^"[Lopennlp.tools.util.Span;" (into-array span-col)
-          ^String data))
+       (Span/spansToStrings
+        #^"[Lopennlp.tools.util.Span;" (into-array span-col)
+        ^String data))
       (seq
-        (Span/spansToStrings
-          #^"[Lopennlp.tools.util.Span;" (into-array span-col)
-          #^"[Ljava.lang.String;" (into-array data))))
+       (Span/spansToStrings
+        #^"[Lopennlp.tools.util.Span;" (into-array span-col)
+        #^"[Ljava.lang.String;" (into-array data))))
     []))
 
 (defn- to-native-span
@@ -133,7 +135,6 @@ start and end positions of the span."
         {:probabilities probs
          :spans (map to-native-span matches)}))))
 
-
 (defmulti make-detokenizer
   "Return a function for taking tokens and recombining them into a sentence
   based on a given model file."
@@ -159,29 +160,29 @@ start and end positions of the span."
           ;; (println :ts (first ts))
           ;; (println :sb (.toString sb))
           (cond
-           (or (= op2 nil)
-               (= op2 Detokenizer$DetokenizationOperation/MERGE_TO_LEFT))
-           (.append sb (first ts))
+            (or (= op2 nil)
+                (= op2 Detokenizer$DetokenizationOperation/MERGE_TO_LEFT))
+            (.append sb (first ts))
 
-           (or (= op nil)
-               (= op Detokenizer$DetokenizationOperation/MERGE_TO_RIGHT))
-           (.append sb (first ts))
+            (or (= op nil)
+                (= op Detokenizer$DetokenizationOperation/MERGE_TO_RIGHT))
+            (.append sb (first ts))
 
-           (= op DetokenizationDictionary$Operation/RIGHT_LEFT_MATCHING)
-           (if (contains? @token-set (first ts))
-             (do
+            (= op DetokenizationDictionary$Operation/RIGHT_LEFT_MATCHING)
+            (if (contains? @token-set (first ts))
+              (do
                ;; (println :token-set @token-set)
                ;; (println :ts (first ts))
-               (swap! token-set disj (first ts))
-               (.append sb (first ts)))
-             (do
+                (swap! token-set disj (first ts))
+                (.append sb (first ts)))
+              (do
                ;;(println :token-set @token-set)
                ;;(println :ts (first ts))
-               (swap! token-set conj (first ts))
-               (.append sb (str (first ts) " "))))
+                (swap! token-set conj (first ts))
+                (.append sb (str (first ts) " "))))
 
-           :else
-           (.append sb (str (first ts) " ")))
+            :else
+            (.append sb (str (first ts) " ")))
           (when (and op op2)
             (recur (next ts) (next dt-ops)))))
       (str sb)))
@@ -198,16 +199,16 @@ start and end positions of the span."
     (if toks
       (let [op    (first ops)
             rtoks (cond
-                   (= op Detokenizer$DetokenizationOperation/MERGE_TO_LEFT)
-                   (if (not-empty result-toks)
-                     (conj (pop result-toks) (first toks) " ")
-                     (conj result-toks (first toks) " "))
+                    (= op Detokenizer$DetokenizationOperation/MERGE_TO_LEFT)
+                    (if (not-empty result-toks)
+                      (conj (pop result-toks) (first toks) " ")
+                      (conj result-toks (first toks) " "))
 
-                   (= op Detokenizer$DetokenizationOperation/MERGE_TO_RIGHT)
-                   (conj result-toks (first toks))
+                    (= op Detokenizer$DetokenizationOperation/MERGE_TO_RIGHT)
+                    (conj result-toks (first toks))
 
-                   :else
-                   (conj result-toks (first toks) " "))]
+                    :else
+                    (conj result-toks (first toks) " "))]
         (recur (next toks) (next ops) rtoks))
       (apply str (butlast result-toks)))))
 
@@ -258,3 +259,19 @@ start and end positions of the span."
         {:probabilities (parse-categories
                          (.getAllResults categorizer outcomes)
                          outcomes)}))))
+
+(defmulti make-lemmatizer
+  "Return a function for lemmatizing words"
+  class)
+
+(defmethod make-lemmatizer :default
+  [modelfile]
+  (with-open [model-stream (input-stream modelfile)]
+    (make-lemmatizer (DictionaryLemmatizer. model-stream))))
+
+(defmethod make-lemmatizer DictionaryLemmatizer
+  [model]
+  (fn lemmatizer
+    [tokens tags]
+    (.lemmatize model tokens (map (fn [coll] (nth coll 1)) tags))))
+
